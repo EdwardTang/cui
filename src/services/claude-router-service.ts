@@ -1,15 +1,58 @@
-import Server from '@musistudio/llms';
 import { RouterConfiguration } from '@/types/router-config.js';
 import { createLogger, type Logger } from './logger.js';
+import net from 'net';
+
+// Local minimal type shims to avoid any
+interface RouterServerConfig {
+  initialConfig?: {
+    providers?: unknown[];
+    Router?: Record<string, string | number>;
+    HOST?: string;
+    PORT?: number;
+  };
+}
+
+interface ToolDeclaration {
+  type?: string;
+}
+
+interface RequestBody {
+  model: string;
+  thinking?: boolean;
+  tools?: ToolDeclaration[];
+  // Allow other fields without using any
+  [key: string]: unknown;
+}
+
+interface HttpRequest {
+  url: string;
+  method: string;
+  body: RequestBody;
+}
+
+interface RouterServer {
+  start(): Promise<void>;
+  addHook(
+    name: 'preHandler',
+    hook: (req: HttpRequest, reply: unknown) => Promise<void> | void
+  ): void;
+  // The underlying Fastify app exposed by @musistudio/llms Server
+  app?: {
+    close: () => Promise<void>;
+  };
+}
+
+type RouterServerConstructor = new (config: RouterServerConfig) => RouterServer;
 
 /**
  * Wrapper around the Claude Code Router server
  */
 export class ClaudeRouterService {
-  private server?: any;
+  private server?: RouterServer;
   private readonly config: RouterConfiguration;
   private readonly logger: Logger;
-  private readonly port = 14001; // hardcoded 14xxx port
+  private port: number | null = null;
+  private Server?: RouterServerConstructor;
 
   constructor(config: RouterConfiguration) {
     this.config = config;
@@ -27,10 +70,24 @@ export class ClaudeRouterService {
       return;
     }
 
+    // Try to load the @musistudio/llms package dynamically
+    try {
+      const module = await import('@musistudio/llms');
+      this.Server = (module as unknown as { default: RouterServerConstructor }).default;
+    } catch (_error) {
+      this.logger.warn('@musistudio/llms package not installed. Router service disabled.');
+      this.logger.debug('Install with: npm install @musistudio/llms');
+      return;
+    }
+
     this.logger.debug(`Router service initializing with ${this.config.providers.length} provider(s)`);
 
     try {
-      this.server = new Server({
+      // Pick an available localhost port dynamically
+      this.port = await this.findOpenPort();
+      this.logger.debug('Selected router port', { port: this.port });
+
+      this.server = new this.Server({
         initialConfig: {
           providers: this.config.providers,
           Router: this.config.rules,
@@ -41,14 +98,14 @@ export class ClaudeRouterService {
       
       // Add routing transformation hook BEFORE the server starts
       // This hook runs BEFORE the @musistudio/llms preHandler that splits by comma
-      this.server.addHook('preHandler', async (req: any, _reply: any) => {
+      this.server.addHook('preHandler', async (req: HttpRequest, _reply: unknown) => {
         // Only process /v1/messages requests (Claude API format)
         if (!req.url.startsWith('/v1/messages') || req.method !== 'POST') {
           return;
         }
         
         try {
-          const body = req.body as any;
+          const body = req.body;
           if (!body || !body.model) {
             return;
           }
@@ -75,7 +132,7 @@ export class ClaudeRouterService {
             }
             // Check for web search
             else if (Array.isArray(body.tools) && 
-                     body.tools.some((tool: any) => tool.type?.startsWith('web_search')) && 
+                     body.tools.some((tool) => tool.type?.startsWith('web_search')) && 
                      this.config.rules.webSearch) {
               targetModel = this.config.rules.webSearch;
               this.logger.debug(`Routing web search -> ${targetModel}`);
@@ -111,7 +168,8 @@ export class ClaudeRouterService {
   }
 
   getProxyUrl(): string {
-    return `http://127.0.0.1:${this.port}`;
+    const effectivePort = this.port ?? 14001;
+    return `http://127.0.0.1:${effectivePort}`;
   }
 
   getProxyKey(): string {
@@ -119,11 +177,38 @@ export class ClaudeRouterService {
   }
 
   async stop(): Promise<void> {
-    if (this.server && typeof this.server.stop === 'function') {
-      this.logger.debug('Stopping Claude Code Router...');
-      await this.server.stop();
+    if (!this.server) return;
+    this.logger.debug('Stopping Claude Code Router...');
+    try {
+      if (typeof this.server.app?.close === 'function') {
+        await this.server.app.close();
+      } else {
+        this.logger.warn('Router server does not expose app.close(); skipping');
+      }
+    } catch (error) {
+      this.logger.error('Error while stopping Claude Code Router', error);
+    } finally {
       this.server = undefined;
+      this.port = null;
       this.logger.debug('Claude Code Router stopped successfully');
     }
+  }
+
+  private findOpenPort(): Promise<number> {
+    return new Promise((resolve, reject) => {
+      const srv = net.createServer();
+      srv.on('error', (err) => {
+        reject(err);
+      });
+      srv.listen({ host: '127.0.0.1', port: 0 }, () => {
+        const address = srv.address();
+        if (address && typeof address === 'object') {
+          const selectedPort = address.port;
+          srv.close(() => resolve(selectedPort));
+        } else {
+          srv.close(() => reject(new Error('Unable to determine open port')));
+        }
+      });
+    });
   }
 }

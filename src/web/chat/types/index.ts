@@ -17,6 +17,7 @@ import type {
   FileSystemListQuery,
   FileSystemListResponse,
   CommandsResponse,
+  GeminiHealthResponse,
 } from '@/types';
 
 // Import ContentBlock from Anthropic SDK
@@ -40,9 +41,15 @@ export type {
   FileSystemListQuery,
   FileSystemListResponse,
   CommandsResponse,
+  GeminiHealthResponse,
 };
 
 // Chat-specific types
+export interface Command {
+  name: string;
+  type: 'builtin' | 'custom';
+  description?: string;
+}
 export interface ChatMessage {
   id: string; // Backend message ID (may not be unique, empty for pending user messages)
   messageId: string; // Client-side unique ID for React rendering

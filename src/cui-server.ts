@@ -19,6 +19,7 @@ import { ConversationStatusManager } from './services/conversation-status-manage
 import { WorkingDirectoriesService } from './services/working-directories-service.js';
 import { ToolMetricsService } from './services/ToolMetricsService.js';
 import { NotificationService } from './services/notification-service.js';
+import { WebPushService } from './services/web-push-service.js';
 import { geminiService } from './services/gemini-service.js';
 import { ClaudeRouterService } from './services/claude-router-service.js';
 import { 
@@ -36,6 +37,7 @@ import { createStreamingRoutes } from './routes/streaming.routes.js';
 import { createWorkingDirectoriesRoutes } from './routes/working-directories.routes.js';
 import { createConfigRoutes } from './routes/config.routes.js';
 import { createGeminiRoutes } from './routes/gemini.routes.js';
+import { createNotificationsRoutes } from './routes/notifications.routes.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { createCorsMiddleware } from './middleware/cors-setup.js';
@@ -64,6 +66,7 @@ export class CUIServer {
   private workingDirectoriesService: WorkingDirectoriesService;
   private toolMetricsService: ToolMetricsService;
   private notificationService: NotificationService;
+  private webPushService: WebPushService;
   private routerService?: ClaudeRouterService;
   private logger: Logger;
   private port: number;
@@ -106,6 +109,7 @@ export class CUIServer {
     this.mcpConfigGenerator = new MCPConfigGenerator(this.fileSystemService);
     this.workingDirectoriesService = new WorkingDirectoriesService(this.historyReader, this.logger);
     this.notificationService = new NotificationService();
+    this.webPushService = WebPushService.getInstance();
     
     // Wire up notification service
     this.processManager.setNotificationService(this.notificationService);
@@ -164,19 +168,7 @@ export class CUIServer {
       this.logger.debug('Gemini service initialized successfully');
 
       // Initialize router service if configured
-      if (config.router?.enabled) {
-        this.logger.debug('Router service is enabled, attempting to initialize...');
-        try {
-          this.routerService = new ClaudeRouterService(config.router);
-          await this.routerService.initialize();
-          this.processManager.setRouterService(this.routerService);
-          this.logger.info('Router service initialized');
-        } catch (error) {
-          this.logger.error('Router initialization failed, continuing without router', error);
-        }
-      } else {
-        this.logger.info('Router service is disabled');
-      }
+      await this.initializeOrReloadRouter(config);
 
       // Apply overrides if provided (for tests and CLI options)
       this.port = this.configOverrides?.port ?? config.server.port;
@@ -226,6 +218,15 @@ export class CUIServer {
         authToken: this.configOverrides?.token ?? config.authToken,
         skipAuthToken: this.configOverrides?.skipAuthToken,
         logger: this.logger
+      });
+
+      // Subscribe to configuration changes to hot-reload router when needed
+      this.configService.onChange(async (newConfig) => {
+        try {
+          await this.initializeOrReloadRouter(newConfig);
+        } catch (error) {
+          this.logger.error('Failed to reload router after config change', error);
+        }
       });
     } catch (error) {
       this.logger.error('Failed to initialize server:', error, {
@@ -456,6 +457,8 @@ export class CUIServer {
     
     // Permission routes - before auth (needed for MCP server communication)
     this.app.use('/api/permissions', createPermissionRoutes(this.permissionTracker));
+    // Notifications routes - before auth (needed for service worker subscription on first load)
+    this.app.use('/api/notifications', createNotificationsRoutes(this.webPushService));
     
     // Apply auth middleware to all other API routes unless skipAuthToken is set
     if (!this.configOverrides?.skipAuthToken) {
@@ -633,5 +636,38 @@ export class CUIServer {
     });
     
     this.logger.debug('PermissionTracker integration setup complete');
+  }
+
+  private async initializeOrReloadRouter(config: import('./types/config.js').CUIConfig): Promise<void> {
+    // If router is disabled, ensure it is stopped
+    if (!config.router?.enabled) {
+      if (this.routerService) {
+        this.logger.info('Router disabled in configuration, stopping router service');
+        await this.routerService.stop();
+        this.routerService = undefined;
+        this.processManager.setRouterService(undefined);
+      } else {
+        this.logger.info('Router service is disabled');
+      }
+      return;
+    }
+
+    // If router is enabled
+    try {
+      // If there is an existing router, stop it first
+      if (this.routerService) {
+        this.logger.info('Reloading router service due to configuration change...');
+        await this.routerService.stop();
+        this.routerService = undefined;
+      } else {
+        this.logger.debug('Router service is enabled, attempting to initialize...');
+      }
+      this.routerService = new ClaudeRouterService(config.router);
+      await this.routerService.initialize();
+      this.processManager.setRouterService(this.routerService);
+      this.logger.info('Router service initialized');
+    } catch (error) {
+      this.logger.error('Router initialization failed, continuing without router', error);
+    }
   }
 }
