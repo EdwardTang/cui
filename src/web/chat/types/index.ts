@@ -21,7 +21,10 @@ import type {
 } from '@/types';
 
 // Import ContentBlock from Anthropic SDK
-import type { ContentBlock, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages/messages';
+import type {
+  ContentBlock,
+  ContentBlockParam,
+} from '@anthropic-ai/sdk/resources/messages/messages';
 
 export type {
   ConversationSummary,
@@ -74,9 +77,9 @@ export interface ApiError {
 
 // Working directories types
 export interface WorkingDirectory {
-  path: string;              // Full absolute path
-  shortname: string;         // Smart suffix
-  lastDate: string;          // ISO timestamp
+  path: string; // Full absolute path
+  shortname: string; // Smart suffix
+  lastDate: string; // ISO timestamp
   conversationCount: number; // Total conversations
 }
 

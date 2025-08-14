@@ -62,4 +62,3 @@ describe('SessionInfoService with SQLite', () => {
     expect(stats.lastUpdated).toBeTypeOf('string');
   });
 });
-

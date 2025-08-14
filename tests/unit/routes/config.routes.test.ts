@@ -19,7 +19,7 @@ describe('Config Routes', () => {
       machine_id: 'id',
       authToken: 'token',
       server: { host: 'localhost', port: 3001 },
-      interface: { colorScheme: 'light', language: 'en' }
+      interface: { colorScheme: 'light', language: 'en' },
     };
     app.use('/api/config', createConfigRoutes(service));
   });

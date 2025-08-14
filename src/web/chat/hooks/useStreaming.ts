@@ -9,17 +9,14 @@ interface UseStreamingOptions {
   onDisconnect?: () => void;
 }
 
-export function useStreaming(
-  streamingId: string | null,
-  options: UseStreamingOptions
-) {
+export function useStreaming(streamingId: string | null, options: UseStreamingOptions) {
   const [isConnected, setIsConnected] = useState(false);
   const [shouldReconnect, setShouldReconnect] = useState(true);
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const optionsRef = useRef(options);
-  
+
   // Keep options ref up to date
   useEffect(() => {
     optionsRef.current = options;
@@ -27,12 +24,12 @@ export function useStreaming(
 
   const disconnect = useCallback(() => {
     setShouldReconnect(false); // Mark as intentional disconnect
-    
+
     if (readerRef.current) {
       readerRef.current.cancel().catch(() => {});
       readerRef.current = null;
     }
-    
+
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
@@ -56,16 +53,16 @@ export function useStreaming(
 
     try {
       abortControllerRef.current = new AbortController();
-      
+
       // Get auth token for Bearer authorization
       const authToken = getAuthToken();
       const headers: Record<string, string> = {};
-      
+
       // Add Bearer token if available
       if (authToken) {
         headers.Authorization = `Bearer ${authToken}`;
       }
-      
+
       const response = await fetch(`/api/stream/${streamingId}`, {
         signal: abortControllerRef.current.signal,
         headers,
@@ -93,7 +90,7 @@ export function useStreaming(
 
         const decoded = decoder.decode(value, { stream: true });
         buffer += decoded;
-        
+
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 
@@ -105,12 +102,12 @@ export function useStreaming(
               if (line.startsWith('data: ')) {
                 jsonLine = line.substring(6);
               }
-              
+
               // Skip SSE comments (lines starting with :)
               if (line.startsWith(':')) {
                 continue;
               }
-              
+
               const event = JSON.parse(jsonLine) as StreamEvent;
               optionsRef.current.onMessage(event);
             } catch (err) {
@@ -127,7 +124,7 @@ export function useStreaming(
     } finally {
       const wasIntentional = !shouldReconnect;
       disconnect();
-      
+
       // Auto-reconnect if unintentional and page visible
       if (!wasIntentional && document.visibilityState === 'visible' && streamingId) {
         reconnectTimeoutRef.current = setTimeout(() => {
@@ -153,15 +150,17 @@ export function useStreaming(
   // Handle visibility change for reconnection
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && 
-          !isConnected && 
-          shouldReconnect && 
-          streamingId) {
+      if (
+        document.visibilityState === 'visible' &&
+        !isConnected &&
+        shouldReconnect &&
+        streamingId
+      ) {
         clearTimeout(reconnectTimeoutRef.current);
         connect();
       }
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);

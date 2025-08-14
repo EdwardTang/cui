@@ -14,7 +14,7 @@ export interface GeminiConfig {
    * Can also be set via GOOGLE_API_KEY environment variable
    */
   apiKey?: string;
-  
+
   /**
    * Gemini model to use
    * Default: 'gemini-2.5-flash'
@@ -43,7 +43,7 @@ export interface CUIConfig {
    * Example: "wenbomacbook-a1b2c3d4e5f6g7h8"
    */
   machine_id: string;
-  
+
   /**
    * Server configuration
    */
@@ -77,10 +77,10 @@ export interface CUIConfig {
 export const DEFAULT_CONFIG: Omit<CUIConfig, 'machine_id' | 'authToken'> = {
   server: {
     host: 'localhost',
-    port: 3001
+    port: 3001,
   },
   interface: {
     colorScheme: 'system',
-    language: 'en'
-  }
+    language: 'en',
+  },
 };

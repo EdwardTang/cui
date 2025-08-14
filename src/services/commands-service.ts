@@ -17,11 +17,27 @@ const logger = createLogger('CommandsService');
 export function getBuiltinCommands(): Command[] {
   return [
     { name: '/add-dir', type: 'builtin', description: 'Add a new working directory' },
-    { name: '/clear', type: 'builtin', description: 'Clear conversation history and free up context' },
-    { name: '/compact', type: 'builtin', description: 'Clear conversation history but keep a summary in context' },
-    { name: '/init', type: 'builtin', description: 'Initialize a new CLAUDE.md file with codebase documentation' },
+    {
+      name: '/clear',
+      type: 'builtin',
+      description: 'Clear conversation history and free up context',
+    },
+    {
+      name: '/compact',
+      type: 'builtin',
+      description: 'Clear conversation history but keep a summary in context',
+    },
+    {
+      name: '/init',
+      type: 'builtin',
+      description: 'Initialize a new CLAUDE.md file with codebase documentation',
+    },
     { name: '/model', type: 'builtin', description: 'Set the AI model for Claude Code' },
-    { name: '/permissions', type: 'builtin', description: 'Manage allow & deny tool permission rules' }
+    {
+      name: '/permissions',
+      type: 'builtin',
+      description: 'Manage allow & deny tool permission rules',
+    },
   ];
 }
 
@@ -30,7 +46,7 @@ export function getBuiltinCommands(): Command[] {
  */
 export function getCustomCommands(workingDirectory?: string): Command[] {
   const commands: Map<string, Command> = new Map();
-  
+
   // Always check global directory
   const globalDir = path.join(os.homedir(), '.claude', 'commands');
   try {
@@ -44,12 +60,12 @@ export function getCustomCommands(workingDirectory?: string): Command[] {
       }
     }
   } catch (error) {
-    logger.warn('Failed to read global commands directory', { 
+    logger.warn('Failed to read global commands directory', {
       error: error instanceof Error ? error.message : String(error),
-      path: globalDir 
+      path: globalDir,
     });
   }
-  
+
   // Check local directory if provided
   if (workingDirectory) {
     const localDir = path.join(workingDirectory, '.claude', 'commands');
@@ -65,13 +81,13 @@ export function getCustomCommands(workingDirectory?: string): Command[] {
         }
       }
     } catch (error) {
-      logger.warn('Failed to read local commands directory', { 
+      logger.warn('Failed to read local commands directory', {
         error: error instanceof Error ? error.message : String(error),
-        path: localDir 
+        path: localDir,
       });
     }
   }
-  
+
   return Array.from(commands.values());
 }
 
@@ -81,7 +97,7 @@ export function getCustomCommands(workingDirectory?: string): Command[] {
 export function getAvailableCommands(workingDirectory?: string): Command[] {
   const builtin = getBuiltinCommands();
   const custom = getCustomCommands(workingDirectory);
-  
+
   // Merge arrays
   return [...builtin, ...custom];
 }

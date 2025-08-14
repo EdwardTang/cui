@@ -7,11 +7,7 @@ import { createLogger, type Logger } from './logger.js';
  */
 export class MessageFilter {
   private logger: Logger;
-  private filteredPrefixes: string[] = [
-    'Caveat: ',
-    '<command-name>',
-    '<local-command-stdout>'
-  ];
+  private filteredPrefixes: string[] = ['Caveat: ', '<command-name>', '<local-command-stdout>'];
 
   constructor() {
     this.logger = createLogger('MessageFilter');
@@ -21,7 +17,7 @@ export class MessageFilter {
    * Filter an array of conversation messages
    */
   filterMessages(messages: ConversationMessage[]): ConversationMessage[] {
-    return messages.filter(message => this.shouldKeepMessage(message));
+    return messages.filter((message) => this.shouldKeepMessage(message));
   }
 
   /**
@@ -39,8 +35,8 @@ export class MessageFilter {
     }
 
     // Check if the text starts with any filtered prefix
-    const shouldFilter = this.filteredPrefixes.some(prefix => 
-      textContent.trim().startsWith(prefix)
+    const shouldFilter = this.filteredPrefixes.some((prefix) =>
+      textContent.trim().startsWith(prefix),
     );
 
     return !shouldFilter;
@@ -49,7 +45,9 @@ export class MessageFilter {
   /**
    * Extract text content from Anthropic message object
    */
-  private extractTextContent(message: Anthropic.Message | Anthropic.MessageParam | string): string | null {
+  private extractTextContent(
+    message: Anthropic.Message | Anthropic.MessageParam | string,
+  ): string | null {
     if (typeof message === 'string') {
       return message;
     }

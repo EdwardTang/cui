@@ -1,5 +1,23 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { ChevronDown, Mic, Send, Loader2, Sparkles, Laptop, Square, Check, X, MicOff, Zap, Bot, Drone, Code2, Gauge, Rocket, FileText } from 'lucide-react';
+import {
+  ChevronDown,
+  Mic,
+  Send,
+  Loader2,
+  Sparkles,
+  Laptop,
+  Square,
+  Check,
+  X,
+  MicOff,
+  Zap,
+  Bot,
+  Drone,
+  Code2,
+  Gauge,
+  Rocket,
+  FileText,
+} from 'lucide-react';
 import { DropdownSelector, DropdownOption } from '../DropdownSelector';
 import { PermissionDialog } from '../PermissionDialog';
 import { WaveformVisualizer } from '../WaveformVisualizer';
@@ -10,7 +28,7 @@ import type { PermissionRequest, Command } from '../../types';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useAudioRecording } from '../../hooks/useAudioRecording';
 import { api } from '../../../chat/services/api';
-import { cn } from "../../lib/utils";
+import { cn } from '../../lib/utils';
 
 export interface FileSystemEntry {
   name: string;
@@ -31,7 +49,12 @@ export interface ComposerProps {
   // Core functionality
   value?: string;
   onChange?: (value: string) => void;
-  onSubmit: (message: string, workingDirectory?: string, model?: string, permissionMode?: string) => void;
+  onSubmit: (
+    message: string,
+    workingDirectory?: string,
+    model?: string,
+    permissionMode?: string,
+  ) => void;
   placeholder?: string;
   isLoading?: boolean;
   disabled?: boolean;
@@ -56,7 +79,11 @@ export interface ComposerProps {
 
   // Permission handling
   permissionRequest?: PermissionRequest | null;
-  onPermissionDecision?: (requestId: string, action: 'approve' | 'deny', denyReason?: string) => void;
+  onPermissionDecision?: (
+    requestId: string,
+    action: 'approve' | 'deny',
+    denyReason?: string,
+  ) => void;
 
   // Stop functionality
   onStop?: () => void;
@@ -80,10 +107,10 @@ interface DirectoryDropdownProps {
   onDirectorySelect: (directory: string) => void;
 }
 
-function DirectoryDropdown({ 
-  selectedDirectory, 
-  recentDirectories, 
-  onDirectorySelect 
+function DirectoryDropdown({
+  selectedDirectory,
+  recentDirectories,
+  onDirectorySelect,
 }: DirectoryDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -100,9 +127,12 @@ function DirectoryDropdown({
     });
 
   // Get shortname for display
-  const displayText = selectedDirectory === 'Select directory' 
-    ? selectedDirectory
-    : recentDirectories[selectedDirectory]?.shortname || selectedDirectory.split('/').pop() || selectedDirectory;
+  const displayText =
+    selectedDirectory === 'Select directory'
+      ? selectedDirectory
+      : recentDirectories[selectedDirectory]?.shortname ||
+        selectedDirectory.split('/').pop() ||
+        selectedDirectory;
 
   return (
     <DropdownSelector
@@ -136,7 +166,9 @@ function DirectoryDropdown({
         >
           <span className="flex items-center gap-1.5">
             <Laptop size={14} />
-            <span className="block max-w-[128px] overflow-hidden text-ellipsis whitespace-nowrap">{displayText}</span>
+            <span className="block max-w-[128px] overflow-hidden text-ellipsis whitespace-nowrap">
+              {displayText}
+            </span>
             <ChevronDown size={14} />
           </span>
         </Button>
@@ -151,11 +183,7 @@ interface ModelDropdownProps {
   onModelSelect: (model: string) => void;
 }
 
-function ModelDropdown({
-  selectedModel,
-  availableModels,
-  onModelSelect
-}: ModelDropdownProps) {
+function ModelDropdown({ selectedModel, availableModels, onModelSelect }: ModelDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Get icon for model
@@ -173,13 +201,16 @@ function ModelDropdown({
   };
 
   // Create options from available models
-  const options: DropdownOption<string>[] = availableModels.map(model => ({
+  const options: DropdownOption<string>[] = availableModels.map((model) => ({
     value: model,
     label: model === 'default' ? 'Default' : model.charAt(0).toUpperCase() + model.slice(1),
   }));
 
   // Get display text for the selected model
-  const displayText = selectedModel === 'default' ? 'Default' : selectedModel.charAt(0).toUpperCase() + selectedModel.slice(1);
+  const displayText =
+    selectedModel === 'default'
+      ? 'Default'
+      : selectedModel.charAt(0).toUpperCase() + selectedModel.slice(1);
 
   return (
     <DropdownSelector
@@ -209,7 +240,9 @@ function ModelDropdown({
         >
           <span className="flex items-center gap-1.5">
             {getModelIcon(selectedModel)}
-            <span className="block max-w-[128px] overflow-hidden text-ellipsis whitespace-nowrap">{displayText}</span>
+            <span className="block max-w-[128px] overflow-hidden text-ellipsis whitespace-nowrap">
+              {displayText}
+            </span>
             <ChevronDown size={14} />
           </span>
         </Button>
@@ -246,14 +279,14 @@ function AutocompleteDropdown({
         value: command.name,
         label: command.name,
         description: command.description,
-        disabled: false
+        disabled: false,
       };
     } else {
       const fileEntry = entry as FileSystemEntry;
       return {
         value: fileEntry.name,
         label: fileEntry.name,
-        disabled: false
+        disabled: false,
       };
     }
   });
@@ -273,17 +306,19 @@ function AutocompleteDropdown({
       focusedIndexControlled={focusedIndex}
       visualFocusOnly={true}
       onFocusReturn={onFocusReturn}
-      renderOption={type === 'command' ? (option) => (
-        <div className="flex flex-col items-start gap-0.5 w-full">
-          <span className="text-sm">{option.label}</span>
-          {option.description && (
-            <span className="text-xs text-muted-foreground/80">{option.description}</span>
-          )}
-        </div>
-      ) : undefined}
-      renderTrigger={() => (
-        <div className="w-0 h-0 pointer-events-none opacity-0" />
-      )}
+      renderOption={
+        type === 'command'
+          ? (option) => (
+              <div className="flex flex-col items-start gap-0.5 w-full">
+                <span className="text-sm">{option.label}</span>
+                {option.description && (
+                  <span className="text-xs text-muted-foreground/80">{option.description}</span>
+                )}
+              </div>
+            )
+          : undefined
+      }
+      renderTrigger={() => <div className="w-0 h-0 pointer-events-none opacity-0" />}
     />
   );
 }
@@ -293,33 +328,36 @@ interface ComposerCache {
   draft: string;
 }
 
-export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer({
-  value: controlledValue,
-  onChange: onControlledChange,
-  onSubmit,
-  placeholder = "Type a message...",
-  isLoading = false,
-  disabled = false,
-  showDirectorySelector = false,
-  showModelSelector = false,
-  enableFileAutocomplete = false,
-  showPermissionUI = false,
-  showStopButton = false,
-  workingDirectory = '',
-  onDirectoryChange,
-  recentDirectories = {},
-  getMostRecentWorkingDirectory,
-  model = 'default',
-  onModelChange,
-  availableModels = ['default', 'opus', 'sonnet'],
-  permissionRequest,
-  onPermissionDecision,
-  onStop,
-  fileSystemEntries = [],
-  onFetchFileSystem,
-  availableCommands = [],
-  onFetchCommands,
-}: ComposerProps, ref: React.Ref<ComposerRef>) {
+export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer(
+  {
+    value: controlledValue,
+    onChange: onControlledChange,
+    onSubmit,
+    placeholder = 'Type a message...',
+    isLoading = false,
+    disabled = false,
+    showDirectorySelector = false,
+    showModelSelector = false,
+    enableFileAutocomplete = false,
+    showPermissionUI = false,
+    showStopButton = false,
+    workingDirectory = '',
+    onDirectoryChange,
+    recentDirectories = {},
+    getMostRecentWorkingDirectory,
+    model = 'default',
+    onModelChange,
+    availableModels = ['default', 'opus', 'sonnet'],
+    permissionRequest,
+    onPermissionDecision,
+    onStop,
+    fileSystemEntries = [],
+    onFetchFileSystem,
+    availableCommands = [],
+    onFetchCommands,
+  }: ComposerProps,
+  ref: React.Ref<ComposerRef>,
+) {
   // Load cached state
   const [cachedState, setCachedState] = useLocalStorage<ComposerCache>('cui-composer', {
     selectedPermissionMode: 'default',
@@ -336,11 +374,16 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
     onControlledChange?.(newValue);
   };
 
-  const [selectedDirectory, setSelectedDirectory] = useState(workingDirectory || 'Select directory');
+  const [selectedDirectory, setSelectedDirectory] = useState(
+    workingDirectory || 'Select directory',
+  );
   const [selectedModel, setSelectedModel] = useState(model);
-  const [selectedPermissionMode, setSelectedPermissionMode] = useState<string>(cachedState.selectedPermissionMode);
+  const [selectedPermissionMode, setSelectedPermissionMode] = useState<string>(
+    cachedState.selectedPermissionMode,
+  );
   const [isPermissionDropdownOpen, setIsPermissionDropdownOpen] = useState(false);
-  const [localFileSystemEntries, setLocalFileSystemEntries] = useState<FileSystemEntry[]>(fileSystemEntries);
+  const [localFileSystemEntries, setLocalFileSystemEntries] =
+    useState<FileSystemEntry[]>(fileSystemEntries);
   const [localCommands, setLocalCommands] = useState<Command[]>(availableCommands);
   const [autocomplete, setAutocomplete] = useState<AutocompleteState>({
     isActive: false,
@@ -352,27 +395,31 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
   });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const composerRef = useRef<HTMLFormElement>(null);
-  
+
   // Audio recording state
-  const { 
-    state: audioState, 
-    startRecording, 
-    stopRecording, 
+  const {
+    state: audioState,
+    startRecording,
+    stopRecording,
     resetToIdle,
-    error: audioError, 
+    error: audioError,
     duration: recordingDuration,
     isSupported: isAudioSupported,
-    audioData
+    audioData,
   } = useAudioRecording();
 
   // Expose focusInput method via ref
-  useImperativeHandle(ref, () => ({
-    focusInput: () => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-      }
-    }
-  }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      focusInput: () => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      },
+    }),
+    [],
+  );
 
   // Update local state when props change
   useEffect(() => {
@@ -409,21 +456,35 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
 
   // Auto-select most recent directory on mount (for Home usage)
   useEffect(() => {
-    if (showDirectorySelector && (!workingDirectory || selectedDirectory === 'Select directory') && Object.keys(recentDirectories).length > 0 && getMostRecentWorkingDirectory) {
+    if (
+      showDirectorySelector &&
+      (!workingDirectory || selectedDirectory === 'Select directory') &&
+      Object.keys(recentDirectories).length > 0 &&
+      getMostRecentWorkingDirectory
+    ) {
       const mostRecent = getMostRecentWorkingDirectory();
       if (mostRecent) {
         setSelectedDirectory(mostRecent);
         onDirectoryChange?.(mostRecent);
-        
+
         // Fetch file system entries for the auto-selected directory
         if (enableFileAutocomplete && onFetchFileSystem) {
           onFetchFileSystem(mostRecent)
-            .then(entries => setLocalFileSystemEntries(entries))
-            .catch(error => console.error('Failed to fetch file system entries:', error));
+            .then((entries) => setLocalFileSystemEntries(entries))
+            .catch((error) => console.error('Failed to fetch file system entries:', error));
         }
       }
     }
-  }, [workingDirectory, selectedDirectory, recentDirectories, getMostRecentWorkingDirectory, showDirectorySelector, onDirectoryChange, enableFileAutocomplete, onFetchFileSystem]);
+  }, [
+    workingDirectory,
+    selectedDirectory,
+    recentDirectories,
+    getMostRecentWorkingDirectory,
+    showDirectorySelector,
+    onDirectoryChange,
+    enableFileAutocomplete,
+    onFetchFileSystem,
+  ]);
 
   // Fetch file system entries when composer is focused (for autocomplete)
   useEffect(() => {
@@ -454,7 +515,9 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
 
     const fetchCommands = async () => {
       try {
-        const commands = await onFetchCommands(selectedDirectory !== 'Select directory' ? selectedDirectory : undefined);
+        const commands = await onFetchCommands(
+          selectedDirectory !== 'Select directory' ? selectedDirectory : undefined,
+        );
         setLocalCommands(commands);
       } catch (error) {
         console.error('Failed to fetch commands:', error);
@@ -476,13 +539,13 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
     // Find the last @ before cursor
     const beforeCursor = value.substring(0, cursorPosition);
     const lastAtIndex = beforeCursor.lastIndexOf('@');
-    
+
     if (lastAtIndex === -1) return null;
-    
+
     // Check if there's a space or newline between @ and cursor
     const afterAt = beforeCursor.substring(lastAtIndex + 1);
     if (afterAt.includes(' ') || afterAt.includes('\n')) return null;
-    
+
     return {
       triggerIndex: lastAtIndex,
       query: afterAt,
@@ -494,17 +557,18 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
     // Find the last / before cursor
     const beforeCursor = value.substring(0, cursorPosition);
     const lastSlashIndex = beforeCursor.lastIndexOf('/');
-    
+
     if (lastSlashIndex === -1) return null;
-    
+
     // Check if the slash is at the beginning of the input or after whitespace/newline
     const beforeSlash = beforeCursor.substring(0, lastSlashIndex);
-    if (beforeSlash.trim() !== '' && !beforeSlash.endsWith('\n') && !beforeSlash.endsWith(' ')) return null;
-    
+    if (beforeSlash.trim() !== '' && !beforeSlash.endsWith('\n') && !beforeSlash.endsWith(' '))
+      return null;
+
     // Check if there's a space or newline between / and cursor
     const afterSlash = beforeCursor.substring(lastSlashIndex + 1);
     if (afterSlash.includes(' ') || afterSlash.includes('\n')) return null;
-    
+
     return {
       triggerIndex: lastSlashIndex,
       query: afterSlash,
@@ -515,20 +579,20 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
   const filterSuggestions = (query: string): FileSystemEntry[] => {
     if (!localFileSystemEntries) return []; // Return empty array if entries not loaded
     if (!query) return localFileSystemEntries.slice(0, 50); // Show first 50 entries when no query
-    
+
     const lowerQuery = query.toLowerCase();
     return localFileSystemEntries
-      .filter(entry => entry.name.toLowerCase().includes(lowerQuery))
+      .filter((entry) => entry.name.toLowerCase().includes(lowerQuery))
       .slice(0, 50); // Limit to 50 results
   };
 
   const filterCommandSuggestions = (query: string): Command[] => {
     if (!localCommands) return []; // Return empty array if commands not loaded
     if (!query) return localCommands.slice(0, 50); // Show first 50 commands when no query
-    
+
     const lowerQuery = query.toLowerCase();
     return localCommands
-      .filter(command => command.name.toLowerCase().includes(lowerQuery))
+      .filter((command) => command.name.toLowerCase().includes(lowerQuery))
       .slice(0, 50); // Limit to 50 results
   };
 
@@ -545,21 +609,31 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
 
   const getPermissionModeLabel = (mode: string): string => {
     switch (mode) {
-      case 'default': return 'Ask';
-      case 'acceptEdits': return 'Auto';
-      case 'bypassPermissions': return 'Yolo';
-      case 'plan': return 'Plan';
-      default: return 'Ask';
+      case 'default':
+        return 'Ask';
+      case 'acceptEdits':
+        return 'Auto';
+      case 'bypassPermissions':
+        return 'Yolo';
+      case 'plan':
+        return 'Plan';
+      default:
+        return 'Ask';
     }
   };
 
   const getPermissionModeTitle = (mode: string): string => {
     switch (mode) {
-      case 'default': return 'Ask - Ask for permissions as needed';
-      case 'acceptEdits': return 'Auto - Allow Claude to make changes directly';
-      case 'bypassPermissions': return 'Yolo - Skip all permission prompts';
-      case 'plan': return 'Plan - Create a plan without executing';
-      default: return 'Ask - Ask for permissions as needed';
+      case 'default':
+        return 'Ask - Ask for permissions as needed';
+      case 'acceptEdits':
+        return 'Auto - Allow Claude to make changes directly';
+      case 'bypassPermissions':
+        return 'Yolo - Skip all permission prompts';
+      case 'plan':
+        return 'Plan - Create a plan without executing';
+      default:
+        return 'Ask - Ask for permissions as needed';
     }
   };
 
@@ -580,17 +654,21 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
 
   const handleAutocompleteSelection = (selection: string) => {
     if (!textareaRef.current) return;
-    
+
     const cursorPos = textareaRef.current.selectionStart;
-    
+
     if (autocomplete.type === 'command') {
       // For commands, replace the entire trigger sequence (including the /) with the selected command
-      const newText = value.substring(0, autocomplete.triggerIndex) + selection + ' ' + value.substring(cursorPos);
+      const newText =
+        value.substring(0, autocomplete.triggerIndex) +
+        selection +
+        ' ' +
+        value.substring(cursorPos);
       setValue(newText);
-      
+
       // Reset autocomplete state immediately
       resetAutocomplete();
-      
+
       // Set cursor position after the inserted selection and adjust height
       setTimeout(() => {
         if (textareaRef.current) {
@@ -602,12 +680,16 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
       }, 0);
     } else {
       // For files, keep the existing behavior (append after the @ symbol)
-      const newText = value.substring(0, autocomplete.triggerIndex + 1) + selection + ' ' + value.substring(cursorPos);
+      const newText =
+        value.substring(0, autocomplete.triggerIndex + 1) +
+        selection +
+        ' ' +
+        value.substring(cursorPos);
       setValue(newText);
-      
+
       // Reset autocomplete state immediately
       resetAutocomplete();
-      
+
       // Set cursor position after the inserted selection and adjust height
       setTimeout(() => {
         if (textareaRef.current) {
@@ -624,46 +706,50 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
     const newValue = e.target.value;
     setValue(newValue);
     adjustTextareaHeight();
-    
+
     // Detect autocomplete triggers
     const cursorPos = e.target.selectionStart;
-    
+
     // Check for slash command autocomplete first (higher priority)
     const commandAutocompleteInfo = detectSlashCommandAutocomplete(newValue, cursorPos);
     if (commandAutocompleteInfo && onFetchCommands) {
       const suggestions = filterCommandSuggestions(commandAutocompleteInfo.query);
-      
-      setAutocomplete(prev => ({
+
+      setAutocomplete((prev) => ({
         isActive: true,
         triggerIndex: commandAutocompleteInfo.triggerIndex,
         query: commandAutocompleteInfo.query,
         suggestions,
         type: commandAutocompleteInfo.type,
         // Keep focusedIndex if it's still valid, otherwise reset to -1 (no selection)
-        focusedIndex: prev.focusedIndex >= 0 && prev.focusedIndex < suggestions.length ? prev.focusedIndex : -1,
+        focusedIndex:
+          prev.focusedIndex >= 0 && prev.focusedIndex < suggestions.length ? prev.focusedIndex : -1,
       }));
       return;
     }
-    
+
     // Check for file autocomplete if enabled
     if (enableFileAutocomplete) {
       const fileAutocompleteInfo = detectAutocomplete(newValue, cursorPos);
       if (fileAutocompleteInfo) {
         const suggestions = filterSuggestions(fileAutocompleteInfo.query);
-        
-        setAutocomplete(prev => ({
+
+        setAutocomplete((prev) => ({
           isActive: true,
           triggerIndex: fileAutocompleteInfo.triggerIndex,
           query: fileAutocompleteInfo.query,
           suggestions,
           type: fileAutocompleteInfo.type,
           // Keep focusedIndex if it's still valid, otherwise reset to -1 (no selection)
-          focusedIndex: prev.focusedIndex >= 0 && prev.focusedIndex < suggestions.length ? prev.focusedIndex : -1,
+          focusedIndex:
+            prev.focusedIndex >= 0 && prev.focusedIndex < suggestions.length
+              ? prev.focusedIndex
+              : -1,
         }));
         return;
       }
     }
-    
+
     // No autocomplete triggers found
     resetAutocomplete();
   };
@@ -679,9 +765,9 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
       trimmedValue,
       showDirectorySelector ? selectedDirectory : undefined,
       showModelSelector ? selectedModel : undefined,
-      permissionMode
+      permissionMode,
     );
-    
+
     setValue('');
     resetAutocomplete();
   };
@@ -692,22 +778,24 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
         case 'ArrowDown':
           e.preventDefault();
           if (autocomplete.suggestions.length > 0) {
-            setAutocomplete(prev => ({
+            setAutocomplete((prev) => ({
               ...prev,
-              focusedIndex: prev.focusedIndex < 0 ? 0 : (prev.focusedIndex + 1) % prev.suggestions.length
+              focusedIndex:
+                prev.focusedIndex < 0 ? 0 : (prev.focusedIndex + 1) % prev.suggestions.length,
             }));
           }
           break;
         case 'ArrowUp':
           e.preventDefault();
           if (autocomplete.suggestions.length > 0) {
-            setAutocomplete(prev => ({
+            setAutocomplete((prev) => ({
               ...prev,
-              focusedIndex: prev.focusedIndex < 0
-                ? prev.suggestions.length - 1
-                : prev.focusedIndex === 0
+              focusedIndex:
+                prev.focusedIndex < 0
                   ? prev.suggestions.length - 1
-                  : prev.focusedIndex - 1
+                  : prev.focusedIndex === 0
+                    ? prev.suggestions.length - 1
+                    : prev.focusedIndex - 1,
             }));
           }
           break;
@@ -719,9 +807,10 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
               // Select the currently focused suggestion, or first if none
               const targetIndex = autocomplete.focusedIndex >= 0 ? autocomplete.focusedIndex : 0;
               const suggestion = autocomplete.suggestions[targetIndex];
-              const suggestionName = autocomplete.type === 'command' 
-                ? (suggestion as Command).name 
-                : (suggestion as FileSystemEntry).name;
+              const suggestionName =
+                autocomplete.type === 'command'
+                  ? (suggestion as Command).name
+                  : (suggestion as FileSystemEntry).name;
               handleAutocompleteSelection(suggestionName);
             }
           }
@@ -791,7 +880,7 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
       if (result) {
         try {
           const transcription = await api.transcribeAudio(result.audioBase64, result.mimeType);
-          
+
           // Insert transcribed text at cursor position
           if (textareaRef.current && transcription.text.trim()) {
             const textarea = textareaRef.current;
@@ -799,14 +888,15 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
             const textBefore = value.substring(0, cursorPos);
             const textAfter = value.substring(cursorPos);
             const transcribedText = transcription.text.trim();
-            
+
             // Add space before if needed
-            const needsSpaceBefore = textBefore.length > 0 && !textBefore.endsWith(' ') && !textBefore.endsWith('\n');
+            const needsSpaceBefore =
+              textBefore.length > 0 && !textBefore.endsWith(' ') && !textBefore.endsWith('\n');
             const finalText = (needsSpaceBefore ? ' ' : '') + transcribedText;
-            
+
             const newText = textBefore + finalText + textAfter;
             setValue(newText);
-            
+
             // Set cursor position after inserted text
             setTimeout(() => {
               if (textareaRef.current) {
@@ -843,9 +933,9 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
   };
 
   return (
-    <form 
+    <form
       ref={composerRef}
-      className="w-full relative" 
+      className="w-full relative"
       onSubmit={(e) => {
         e.preventDefault();
         handleSubmit(selectedPermissionMode);
@@ -866,7 +956,11 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
               <Textarea
                 ref={textareaRef}
                 className="min-h-[80px] max-h-[80vh] pt-4 pr-[60px] pb-[50px] border-none bg-transparent text-foreground font-sans text-base leading-relaxed resize-none outline-none overflow-y-auto scrollbar-thin ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                placeholder={permissionRequest && showPermissionUI ? "Deny and tell Claude what to do" : placeholder}
+                placeholder={
+                  permissionRequest && showPermissionUI
+                    ? 'Deny and tell Claude what to do'
+                    : placeholder
+                }
                 value={value}
                 onChange={handleTextChange}
                 onKeyDown={handleKeyDown}
@@ -874,7 +968,7 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
                 disabled={(isLoading || disabled) && !(permissionRequest && showPermissionUI)}
               />
             )}
-            
+
             {/* Hidden textarea during processing for text insertion */}
             {audioState === 'processing' && (
               <textarea
@@ -886,7 +980,6 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
                 disabled
               />
             )}
-            
           </div>
 
           {(showDirectorySelector || showModelSelector) && audioState === 'idle' && (
@@ -974,8 +1067,9 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "h-8 px-2 text-muted-foreground hover:bg-muted/50 rounded-full",
-                          audioError && "bg-red-300 text-red-900 hover:bg-red-400 hover:text-red-950"
+                          'h-8 px-2 text-muted-foreground hover:bg-muted/50 rounded-full',
+                          audioError &&
+                            'bg-red-300 text-red-900 hover:bg-red-400 hover:text-red-950',
                         )}
                         onClick={handleMicClick}
                         disabled={disabled}
@@ -990,7 +1084,7 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
                 </TooltipProvider>
               )
             )}
-            
+
             {permissionRequest && showPermissionUI ? (
               <div className="flex gap-2">
                 <Button
@@ -1032,73 +1126,108 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-            ) : audioState === 'idle' && (
-              <div className="flex items-center gap-2">
-                {/* Combined Permission Mode Button with Dropdown */}
-                <div className={`flex items-center rounded-full overflow-hidden ${
-                  (!value.trim() || isLoading || disabled || (showDirectorySelector && selectedDirectory === 'Select directory'))
-                    ? 'bg-foreground/5 text-foreground/50'
-                    : 'bg-foreground text-background'
-                }`}>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+            ) : (
+              audioState === 'idle' && (
+                <div className="flex items-center gap-2">
+                  {/* Combined Permission Mode Button with Dropdown */}
+                  <div
+                    className={`flex items-center rounded-full overflow-hidden ${
+                      !value.trim() ||
+                      isLoading ||
+                      disabled ||
+                      (showDirectorySelector && selectedDirectory === 'Select directory')
+                        ? 'bg-foreground/5 text-foreground/50'
+                        : 'bg-foreground text-background'
+                    }`}
+                  >
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            className="h-8 min-w-[48px] w-[48px] px-3 py-0.5 bg-transparent text-inherit hover:bg-white/10 border-0 shadow-none"
+                            disabled={
+                              !value.trim() ||
+                              isLoading ||
+                              disabled ||
+                              (showDirectorySelector && selectedDirectory === 'Select directory')
+                            }
+                            onClick={() => handleSubmit(selectedPermissionMode)}
+                          >
+                            {isLoading ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              getPermissionModeLabel(selectedPermissionMode)
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{getPermissionModeTitle(selectedPermissionMode)}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <DropdownSelector
+                      options={[
+                        {
+                          value: 'default',
+                          label: 'Ask',
+                          description: 'Ask before making changes',
+                        },
+                        {
+                          value: 'acceptEdits',
+                          label: 'Auto',
+                          description: 'Apply edits automatically',
+                        },
+                        {
+                          value: 'bypassPermissions',
+                          label: 'Yolo',
+                          description: 'No permission prompts',
+                        },
+                        { value: 'plan', label: 'Plan', description: 'Planning mode only' },
+                      ]}
+                      value={selectedPermissionMode}
+                      onChange={setSelectedPermissionMode}
+                      isOpen={isPermissionDropdownOpen}
+                      onOpenChange={setIsPermissionDropdownOpen}
+                      showFilterInput={false}
+                      renderOption={(option) => (
+                        <div className="flex flex-col items-start gap-0.5 w-full">
+                          <div className="flex items-center gap-2">
+                            {getPermissionModeIcon(option.value)}
+                            <span className="text-sm font-medium">{option.label}</span>
+                          </div>
+                          {option.description && (
+                            <span className="text-xs text-muted-foreground/80 pl-[22px]">
+                              {option.description}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      renderTrigger={({ onClick }) => (
                         <Button
                           type="button"
-                          className="h-8 min-w-[48px] w-[48px] px-3 py-0.5 bg-transparent text-inherit hover:bg-white/10 border-0 shadow-none"
-                          disabled={!value.trim() || isLoading || disabled || (showDirectorySelector && selectedDirectory === 'Select directory')}
-                          onClick={() => handleSubmit(selectedPermissionMode)}
+                          className="w-8 h-8 bg-transparent text-inherit border-l border-white/20 opacity-80 hover:opacity-100 hover:bg-white/10 border-0 shadow-none rounded-none flex items-center justify-center p-0"
+                          onClick={onClick}
+                          disabled={
+                            !value.trim() ||
+                            isLoading ||
+                            disabled ||
+                            (showDirectorySelector && selectedDirectory === 'Select directory')
+                          }
+                          aria-label="Select permission mode"
                         >
-                          {isLoading ? <Loader2 size={14} className="animate-spin" /> : getPermissionModeLabel(selectedPermissionMode)}
+                          <ChevronDown size={14} />
                         </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{getPermissionModeTitle(selectedPermissionMode)}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <DropdownSelector
-                    options={[
-                      { value: 'default', label: 'Ask', description: 'Ask before making changes' },
-                      { value: 'acceptEdits', label: 'Auto', description: 'Apply edits automatically' },
-                      { value: 'bypassPermissions', label: 'Yolo', description: 'No permission prompts' },
-                      { value: 'plan', label: 'Plan', description: 'Planning mode only' },
-                    ]}
-                    value={selectedPermissionMode}
-                    onChange={setSelectedPermissionMode}
-                    isOpen={isPermissionDropdownOpen}
-                    onOpenChange={setIsPermissionDropdownOpen}
-                    showFilterInput={false}
-                    renderOption={(option) => (
-                      <div className="flex flex-col items-start gap-0.5 w-full">
-                        <div className="flex items-center gap-2">
-                          {getPermissionModeIcon(option.value)}
-                          <span className="text-sm font-medium">{option.label}</span>
-                        </div>
-                        {option.description && (
-                          <span className="text-xs text-muted-foreground/80 pl-[22px]">{option.description}</span>
-                        )}
-                      </div>
-                    )}
-                    renderTrigger={({ onClick }) => (
-                      <Button
-                        type="button"
-                        className="w-8 h-8 bg-transparent text-inherit border-l border-white/20 opacity-80 hover:opacity-100 hover:bg-white/10 border-0 shadow-none rounded-none flex items-center justify-center p-0"
-                        onClick={onClick}
-                        disabled={!value.trim() || isLoading || disabled || (showDirectorySelector && selectedDirectory === 'Select directory')}
-                        aria-label="Select permission mode"
-                      >
-                        <ChevronDown size={14} />
-                      </Button>
-                    )}
-                  />
+                      )}
+                    />
+                  </div>
                 </div>
-              </div>
+              )
             )}
           </div>
         </div>
       </div>
-      
+
       {/* Autocomplete Dropdown */}
       {(enableFileAutocomplete || onFetchCommands) && (
         <AutocompleteDropdown
@@ -1111,13 +1240,10 @@ export const Composer = forwardRef<ComposerRef, ComposerProps>(function Composer
           onFocusReturn={() => textareaRef.current?.focus()}
         />
       )}
-      
+
       {/* Permission Dialog */}
       {permissionRequest && showPermissionUI && (
-        <PermissionDialog 
-          permissionRequest={permissionRequest}
-          isVisible={true}
-        />
+        <PermissionDialog permissionRequest={permissionRequest} isVisible={true} />
       )}
     </form>
   );

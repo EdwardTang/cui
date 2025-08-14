@@ -16,15 +16,18 @@ export function createConfigRoutes(service: ConfigService): Router {
     }
   });
 
-  router.put('/', async (req: Request<Record<string, never>, unknown, Partial<CUIConfig>>, res, next) => {
-    try {
-      await service.updateConfig(req.body);
-      res.json(service.getConfig());
-    } catch (error) {
-      logger.error('Failed to update config', error);
-      next(error);
-    }
-  });
+  router.put(
+    '/',
+    async (req: Request<Record<string, never>, unknown, Partial<CUIConfig>>, res, next) => {
+      try {
+        await service.updateConfig(req.body);
+        res.json(service.getConfig());
+      } catch (error) {
+        logger.error('Failed to update config', error);
+        next(error);
+      }
+    },
+  );
 
   return router;
 }

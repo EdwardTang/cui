@@ -76,7 +76,7 @@ export class SessionInfoService {
     this.logger.debug('Initializing paths', {
       homedir: os.homedir(),
       configDir: this.configDir,
-      dbPath: this.dbPath
+      dbPath: this.dbPath,
     });
   }
 
@@ -118,7 +118,9 @@ export class SessionInfoService {
       this.isInitialized = true;
     } catch (error) {
       this.logger.error('Failed to initialize session info database', error);
-      throw new Error(`Session info database initialization failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Session info database initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -164,8 +166,12 @@ export class SessionInfoService {
     this.deleteSessionStmt = this.db.prepare('DELETE FROM sessions WHERE session_id = ?');
     this.getAllStmt = this.db.prepare('SELECT * FROM sessions');
     this.countStmt = this.db.prepare('SELECT COUNT(*) as count FROM sessions');
-    this.archiveAllStmt = this.db.prepare('UPDATE sessions SET archived=1, updated_at=@updated_at WHERE archived=0');
-    this.setMetadataStmt = this.db.prepare('INSERT INTO metadata (key, value) VALUES (@key, @value) ON CONFLICT(key) DO UPDATE SET value=excluded.value');
+    this.archiveAllStmt = this.db.prepare(
+      'UPDATE sessions SET archived=1, updated_at=@updated_at WHERE archived=0',
+    );
+    this.setMetadataStmt = this.db.prepare(
+      'INSERT INTO metadata (key, value) VALUES (@key, @value) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
+    );
     this.getMetadataStmt = this.db.prepare('SELECT value FROM metadata WHERE key = ?');
   }
 
@@ -189,7 +195,7 @@ export class SessionInfoService {
       archived: !!row.archived,
       continuation_session_id: row.continuation_session_id,
       initial_commit_head: row.initial_commit_head,
-      permission_mode: row.permission_mode
+      permission_mode: row.permission_mode,
     };
   }
 
@@ -210,7 +216,7 @@ export class SessionInfoService {
         archived: false,
         continuation_session_id: '',
         initial_commit_head: '',
-        permission_mode: 'default'
+        permission_mode: 'default',
       };
       this.insertSessionStmt.run({
         session_id: sessionId,
@@ -222,7 +228,7 @@ export class SessionInfoService {
         archived: 0,
         continuation_session_id: '',
         initial_commit_head: '',
-        permission_mode: 'default'
+        permission_mode: 'default',
       });
       this.setMetadataStmt.run({ key: 'last_updated', value: now });
       return defaultSession;
@@ -238,7 +244,7 @@ export class SessionInfoService {
         archived: false,
         continuation_session_id: '',
         initial_commit_head: '',
-        permission_mode: 'default'
+        permission_mode: 'default',
       };
     }
   }
@@ -251,7 +257,7 @@ export class SessionInfoService {
         const updatedSession: SessionInfo = {
           ...this.mapRow(existingRow),
           ...updates,
-          updated_at: now
+          updated_at: now,
         };
         this.updateSessionStmt.run({
           session_id: sessionId,
@@ -262,7 +268,7 @@ export class SessionInfoService {
           continuation_session_id: updatedSession.continuation_session_id,
           initial_commit_head: updatedSession.initial_commit_head,
           permission_mode: updatedSession.permission_mode,
-          version: updatedSession.version
+          version: updatedSession.version,
         });
         this.setMetadataStmt.run({ key: 'last_updated', value: now });
         return updatedSession;
@@ -277,7 +283,7 @@ export class SessionInfoService {
           continuation_session_id: '',
           initial_commit_head: '',
           permission_mode: 'default',
-          ...updates
+          ...updates,
         };
         this.insertSessionStmt.run({
           session_id: sessionId,
@@ -289,14 +295,16 @@ export class SessionInfoService {
           archived: newSession.archived ? 1 : 0,
           continuation_session_id: newSession.continuation_session_id,
           initial_commit_head: newSession.initial_commit_head,
-          permission_mode: newSession.permission_mode
+          permission_mode: newSession.permission_mode,
         });
         this.setMetadataStmt.run({ key: 'last_updated', value: now });
         return newSession;
       }
     } catch (error) {
       this.logger.error('Failed to update session info', { sessionId, updates, error });
-      throw new Error(`Failed to update session info: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to update session info: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -317,7 +325,9 @@ export class SessionInfoService {
       }
     } catch (error) {
       this.logger.error('Failed to delete session info', { sessionId, error });
-      throw new Error(`Failed to delete session info: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to delete session info: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -348,18 +358,20 @@ export class SessionInfoService {
           dbSize = 0;
         }
       }
-      const lastUpdatedRow = this.getMetadataStmt.get('last_updated') as { value?: string } | undefined;
+      const lastUpdatedRow = this.getMetadataStmt.get('last_updated') as
+        | { value?: string }
+        | undefined;
       return {
         sessionCount: countRow.count,
         dbSize,
-        lastUpdated: lastUpdatedRow?.value || new Date().toISOString()
+        lastUpdated: lastUpdatedRow?.value || new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error('Failed to get database stats', error);
       return {
         sessionCount: 0,
         dbSize: 0,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       };
     }
   }
@@ -392,7 +404,9 @@ export class SessionInfoService {
       return archivedCount;
     } catch (error) {
       this.logger.error('Failed to archive all sessions', error);
-      throw new Error(`Failed to archive all sessions: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to archive all sessions: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -438,8 +452,9 @@ export class SessionInfoService {
       return transaction(sessionIds);
     } catch (error) {
       this.logger.error('Failed to sync missing sessions', error);
-      throw new Error(`Failed to sync missing sessions: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to sync missing sessions: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 }
-

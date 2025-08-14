@@ -1,15 +1,17 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './styles/index.css'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './styles/index.css';
 
 // Set initial theme before React mounts to avoid FOUC
 (() => {
   try {
     const storageKey = 'cui-theme';
     const stored = localStorage.getItem(storageKey);
-    const colorScheme = (stored === 'light' || stored === 'dark' || stored === 'system') ? stored : 'system';
-    const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const colorScheme =
+      stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+    const systemDark =
+      window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     const mode = colorScheme === 'system' ? (systemDark ? 'dark' : 'light') : colorScheme;
     document.documentElement.setAttribute('data-theme', mode);
     if (mode === 'dark') {
@@ -48,7 +50,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
-)
+);
 
 // Register Service Worker for PWA & Push
 if ('serviceWorker' in navigator) {

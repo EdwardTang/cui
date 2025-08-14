@@ -9,16 +9,16 @@ import { TaskList } from './TaskList';
 
 export function Home() {
   const navigate = useNavigate();
-  const { 
-    conversations, 
-    loading, 
-    loadingMore, 
-    hasMore, 
-    error, 
-    loadConversations, 
+  const {
+    conversations,
+    loading,
+    loadingMore,
+    hasMore,
+    error,
+    loadConversations,
     loadMoreConversations,
     recentDirectories,
-    getMostRecentWorkingDirectory 
+    getMostRecentWorkingDirectory,
   } = useConversations();
   const [activeTab, setActiveTab] = useState<'tasks' | 'history' | 'archive'>('tasks');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,20 +50,20 @@ export function Home() {
     if (conversationCountRef.current > 0) {
       loadConversations(conversationCountRef.current, getFiltersForTab(activeTab));
     }
-    
+
     // Focus the input after a brief delay to ensure DOM is ready
     const timer = setTimeout(() => {
       composerRef.current?.focusInput();
     }, 100);
-    
+
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array means this runs only on mount
 
   // Reload conversations when tab changes
   useEffect(() => {
     loadConversations(undefined, getFiltersForTab(activeTab));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   // Auto-refresh on focus
@@ -93,13 +93,17 @@ export function Home() {
   }, [loadConversations, activeTab]);
 
   // Get the most recent working directory from conversations
-  const recentWorkingDirectory = conversations.length > 0 
-    ? conversations[0].projectPath 
-    : undefined;
+  const recentWorkingDirectory =
+    conversations.length > 0 ? conversations[0].projectPath : undefined;
 
-  const handleComposerSubmit = async (text: string, workingDirectory: string, model: string, permissionMode: string) => {
+  const handleComposerSubmit = async (
+    text: string,
+    workingDirectory: string,
+    model: string,
+    permissionMode: string,
+  ) => {
     setIsSubmitting(true);
-    
+
     try {
       const response = await api.startConversation({
         workingDirectory,
@@ -107,13 +111,15 @@ export function Home() {
         model: model === 'default' ? undefined : model,
         permissionMode: permissionMode === 'default' ? undefined : permissionMode,
       });
-      
+
       // Navigate to the conversation page
       navigate(`/c/${response.sessionId}`);
     } catch (error) {
       console.error('Failed to start conversation:', error);
       // You might want to show an error message to the user here
-      alert(`Failed to start conversation: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      alert(
+        `Failed to start conversation: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       setIsSubmitting(false);
     }
   };
@@ -140,11 +146,13 @@ export function Home() {
                     </svg>
                   </div>
                 </div>
-                <h1 className="text-2xl font-semibold font-sans text-foreground">What is the next task?</h1>
+                <h1 className="text-2xl font-semibold font-sans text-foreground">
+                  What is the next task?
+                </h1>
               </div>
-              
+
               <div className="w-full">
-                <Composer 
+                <Composer
                   ref={composerRef}
                   workingDirectory={recentWorkingDirectory}
                   onSubmit={handleComposerSubmit}
@@ -182,13 +190,10 @@ export function Home() {
                 />
               </div>
 
-              <TaskTabs 
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-              />
+              <TaskTabs activeTab={activeTab} onTabChange={setActiveTab} />
             </div>
 
-            <TaskList 
+            <TaskList
               conversations={conversations}
               loading={loading}
               loadingMore={loadingMore}

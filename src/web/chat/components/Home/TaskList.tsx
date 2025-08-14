@@ -19,14 +19,14 @@ interface TaskListProps {
   }) => void;
 }
 
-export function TaskList({ 
-  conversations, 
-  loading, 
-  loadingMore, 
-  hasMore, 
-  error, 
-  activeTab, 
-  onLoadMore 
+export function TaskList({
+  conversations,
+  loading,
+  loadingMore,
+  hasMore,
+  error,
+  activeTab,
+  onLoadMore,
 }: TaskListProps) {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -67,11 +67,11 @@ export function TaskList({
     if (element) {
       element.style.display = 'none';
     }
-    
+
     try {
       // Call the API to persist the change
       await api.updateSession(sessionId, { archived: true });
-      
+
       // Refresh the conversations list to ensure consistency
       loadConversations(undefined, getFiltersForTab(activeTab));
     } catch (error) {
@@ -89,11 +89,11 @@ export function TaskList({
     if (element) {
       element.style.display = 'none';
     }
-    
+
     try {
       // Call the API to persist the change
       await api.updateSession(sessionId, { archived: false });
-      
+
       // Refresh the conversations list to ensure consistency
       loadConversations(undefined, getFiltersForTab(activeTab));
     } catch (error) {
@@ -129,7 +129,7 @@ export function TaskList({
     // Pinned items come first
     if (a.sessionInfo.pinned && !b.sessionInfo.pinned) return -1;
     if (!a.sessionInfo.pinned && b.sessionInfo.pinned) return 1;
-    
+
     // Then sort by updatedAt (most recent first)
     return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
   });
@@ -142,7 +142,7 @@ export function TaskList({
         onLoadMore(getFiltersForTab(activeTab));
       }
     },
-    [hasMore, loadingMore, loading, onLoadMore, activeTab]
+    [hasMore, loadingMore, loading, onLoadMore, activeTab],
   );
 
   useEffect(() => {
@@ -167,7 +167,9 @@ export function TaskList({
   if (loading && conversations.length === 0) {
     return (
       <div className="flex flex-col w-full flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-border scrollbar-track-transparent">
-        <div className="flex items-center justify-center w-full py-12 px-4 text-muted-foreground text-sm text-center bg-background">Loading tasks...</div>
+        <div className="flex items-center justify-center w-full py-12 px-4 text-muted-foreground text-sm text-center bg-background">
+          Loading tasks...
+        </div>
       </div>
     );
   }
@@ -175,7 +177,9 @@ export function TaskList({
   if (error) {
     return (
       <div className="flex flex-col w-full flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-border scrollbar-track-transparent">
-        <div className="flex items-center justify-center w-full py-12 px-4 text-destructive text-sm text-center bg-background">{error}</div>
+        <div className="flex items-center justify-center w-full py-12 px-4 text-destructive text-sm text-center bg-background">
+          {error}
+        </div>
       </div>
     );
   }
@@ -184,14 +188,21 @@ export function TaskList({
     return (
       <div className="flex flex-col w-full flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-border scrollbar-track-transparent">
         <div className="flex items-center justify-center w-full py-12 px-4 text-muted-foreground text-sm text-center bg-background">
-          {activeTab === 'tasks' ? 'No active tasks.' : activeTab === 'history' ? 'No history tasks.' : 'No archived tasks.'}
+          {activeTab === 'tasks'
+            ? 'No active tasks.'
+            : activeTab === 'history'
+              ? 'No history tasks.'
+              : 'No archived tasks.'}
         </div>
       </div>
     );
   }
 
   return (
-    <div ref={scrollRef} className="flex flex-col w-full flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-border scrollbar-track-transparent">
+    <div
+      ref={scrollRef}
+      className="flex flex-col w-full flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-border scrollbar-track-transparent"
+    >
       {sortedConversations.map((conversation) => (
         <div key={conversation.sessionId} data-session-id={conversation.sessionId}>
           <TaskItem
@@ -208,7 +219,7 @@ export function TaskList({
             isPinned={conversation.sessionInfo.pinned}
             onClick={() => handleTaskClick(conversation.sessionId)}
             onCancel={
-              conversation.status === 'ongoing' 
+              conversation.status === 'ongoing'
                 ? () => handleCancelTask(conversation.sessionId)
                 : undefined
             }
@@ -230,7 +241,7 @@ export function TaskList({
           />
         </div>
       ))}
-      
+
       {/* Loading indicator for infinite scroll */}
       {hasMore && (
         <div ref={loadingRef} className="flex items-center justify-center w-full p-4 min-h-[60px]">
@@ -241,7 +252,7 @@ export function TaskList({
           )}
         </div>
       )}
-      
+
       {/* End of list message */}
       {!hasMore && conversations.length > 0 && (
         <div className="flex items-center justify-center w-full p-4 text-muted-foreground/70 text-xs text-center">

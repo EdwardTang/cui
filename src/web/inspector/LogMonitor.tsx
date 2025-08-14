@@ -37,7 +37,6 @@ function LogMonitor({ isVisible, onToggle }: LogMonitorProps) {
     };
   }, [isVisible]);
 
-
   const connectToLogStream = async () => {
     try {
       // First get recent logs
@@ -69,7 +68,7 @@ function LogMonitor({ isVisible, onToggle }: LogMonitorProps) {
 
         const chunk = decoder.decode(value, { stream: true });
         buffer += chunk;
-        
+
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 
@@ -78,7 +77,7 @@ function LogMonitor({ isVisible, onToggle }: LogMonitorProps) {
             // Handle SSE format
             if (line.startsWith('data: ')) {
               const data = line.substring(6);
-              setLogs(prev => [...prev, data]);
+              setLogs((prev) => [...prev, data]);
             }
           }
         }
@@ -98,20 +97,20 @@ function LogMonitor({ isVisible, onToggle }: LogMonitorProps) {
     try {
       // Try to parse as JSON
       const parsed: LogEntry = JSON.parse(line);
-      
+
       // Extract relevant fields, hide redundant ones
       const { level, time, component, msg, pid, hostname, requestId, ...rest } = parsed;
-      
+
       // Format timestamp
       const timestamp = time ? new Date(time).toLocaleTimeString() : '';
-      
+
       // Determine color based on log level
       const levelColors: Record<string, string> = {
-        'debug': 'text-neutral-500',
-        'info': 'text-green-400',
-        'warn': 'text-yellow-300',
-        'error': 'text-red-400',
-        'fatal': 'text-red-600'
+        debug: 'text-neutral-500',
+        info: 'text-green-400',
+        warn: 'text-yellow-300',
+        error: 'text-red-400',
+        fatal: 'text-red-600',
       };
       const levelColorClass = levelColors[level] || 'text-neutral-300';
 
@@ -119,7 +118,9 @@ function LogMonitor({ isVisible, onToggle }: LogMonitorProps) {
       const formatted = (
         <div className="flex items-baseline gap-2 py-0.5 border-b border-neutral-700">
           <span className="text-neutral-500 text-[11px]">{timestamp}</span>
-          <span className={cn("font-bold text-[11px]", levelColorClass)}>[{level?.toUpperCase() || 'LOG'}]</span>
+          <span className={cn('font-bold text-[11px]', levelColorClass)}>
+            [{level?.toUpperCase() || 'LOG'}]
+          </span>
           {component && <span className="text-blue-400 text-[11px]">[{component}]</span>}
           <span className="flex-1 text-neutral-300">{msg}</span>
           {requestId && <span className="text-neutral-500 text-[11px]"> (req: {requestId})</span>}
@@ -149,15 +150,17 @@ function LogMonitor({ isVisible, onToggle }: LogMonitorProps) {
     .filter(Boolean);
 
   return (
-    <div className={cn(
-      "flex flex-col border-t-2 border-neutral-300 bg-neutral-900",
-      isVisible ? "absolute top-0 left-0 right-0 bottom-0 h-full z-[100]" : "h-10"
-    )}>
+    <div
+      className={cn(
+        'flex flex-col border-t-2 border-neutral-300 bg-neutral-900',
+        isVisible ? 'absolute top-0 left-0 right-0 bottom-0 h-full z-[100]' : 'h-10',
+      )}
+    >
       <div className="flex items-center p-2.5 bg-neutral-800 border-b border-neutral-600 gap-2.5">
-        <Button 
+        <Button
           className="bg-neutral-700 hover:bg-neutral-600 text-white border-0 py-1 px-4 text-xs rounded h-auto"
           onClick={onToggle}
-          aria-label={isVisible ? "Collapse log monitor" : "Expand log monitor"}
+          aria-label={isVisible ? 'Collapse log monitor' : 'Expand log monitor'}
         >
           {isVisible ? '▼' : '▲'} Logs
         </Button>
@@ -170,7 +173,7 @@ function LogMonitor({ isVisible, onToggle }: LogMonitorProps) {
           disabled={!isVisible}
           aria-label="Filter log entries"
         />
-        <Button 
+        <Button
           className="bg-neutral-700 hover:bg-neutral-600 text-white border-0 py-1 px-4 text-xs rounded h-auto disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => setLogs([])}
           disabled={!isVisible}
@@ -178,19 +181,18 @@ function LogMonitor({ isVisible, onToggle }: LogMonitorProps) {
         >
           Clear
         </Button>
-        <span className={cn(
-          "text-xs",
-          isConnected ? "text-green-400" : "text-neutral-500"
-        )}>
+        <span className={cn('text-xs', isConnected ? 'text-green-400' : 'text-neutral-500')}>
           {isConnected ? '● Connected' : '○ Disconnected'}
         </span>
       </div>
       {isVisible && (
-        <div 
+        <div
           className="flex-1 overflow-y-auto p-2.5 bg-neutral-900 text-neutral-300 font-mono text-xs leading-relaxed min-h-0"
           ref={logContainerRef}
         >
-          {filteredLogs.length > 0 ? filteredLogs : (
+          {filteredLogs.length > 0 ? (
+            filteredLogs
+          ) : (
             <div className="text-neutral-500 text-center py-5">No logs to display</div>
           )}
         </div>

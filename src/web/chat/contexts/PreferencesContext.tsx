@@ -20,12 +20,15 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const [error, setError] = useState<Error | null>(null);
 
   const getSystemTheme = (): 'light' | 'dark' => {
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
   };
 
   const [theme, setTheme] = useState<Theme>(() => {
     const stored = localStorage.getItem(THEME_KEY);
-    const colorScheme = (stored === 'light' || stored === 'dark' || stored === 'system') ? stored : 'system';
+    const colorScheme =
+      stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
     const mode = colorScheme === 'system' ? getSystemTheme() : colorScheme;
     return { mode, colorScheme, toggle: () => {} };
   });
@@ -37,9 +40,12 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
         setIsLoading(true);
         const config = await api.getConfig();
         setPreferences(config.interface);
-        
-        const mode = config.interface.colorScheme === 'system' ? getSystemTheme() : config.interface.colorScheme;
-        setTheme(prev => ({ ...prev, colorScheme: config.interface.colorScheme, mode }));
+
+        const mode =
+          config.interface.colorScheme === 'system'
+            ? getSystemTheme()
+            : config.interface.colorScheme;
+        setTheme((prev) => ({ ...prev, colorScheme: config.interface.colorScheme, mode }));
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to load preferences'));
       } finally {
@@ -65,10 +71,10 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   // Listen for system theme changes
   useEffect(() => {
     if (theme.colorScheme !== 'system') return;
-    
+
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e: MediaQueryListEvent) => {
-      setTheme(prev => ({ ...prev, mode: e.matches ? 'dark' : 'light' }));
+      setTheme((prev) => ({ ...prev, mode: e.matches ? 'dark' : 'light' }));
     };
 
     mediaQuery.addEventListener('change', handleChange);
@@ -79,10 +85,10 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     try {
       const updatedConfig = await api.updateConfig({ interface: updates });
       setPreferences(updatedConfig.interface);
-      
+
       if (updates.colorScheme) {
         const mode = updates.colorScheme === 'system' ? getSystemTheme() : updates.colorScheme;
-        setTheme(prev => ({ ...prev, colorScheme: updates.colorScheme!, mode }));
+        setTheme((prev) => ({ ...prev, colorScheme: updates.colorScheme!, mode }));
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to update preferences'));
@@ -100,23 +106,25 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     } else {
       newColorScheme = 'light';
     }
-    
+
     await updatePreferences({ colorScheme: newColorScheme });
   }, [theme.colorScheme, updatePreferences]);
 
   const themeWithToggle: Theme = {
     ...theme,
-    toggle
+    toggle,
   };
 
   return (
-    <PreferencesContext.Provider value={{ 
-      preferences, 
-      theme: themeWithToggle, 
-      updatePreferences, 
-      isLoading, 
-      error 
-    }}>
+    <PreferencesContext.Provider
+      value={{
+        preferences,
+        theme: themeWithToggle,
+        updatePreferences,
+        isLoading,
+        error,
+      }}
+    >
       {children}
     </PreferencesContext.Provider>
   );

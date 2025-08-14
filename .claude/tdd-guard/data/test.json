@@ -1,5 +1,1861 @@
 {
-  "testModules": [],
+  "testModules": [
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/integration/streaming-integration.test.ts",
+      "tests": [
+        {
+          "name": "should handle complete streaming lifecycle",
+          "fullName": "Streaming Integration > End-to-End Streaming > should handle complete streaming lifecycle",
+          "state": "passed"
+        },
+        {
+          "name": "should handle client disconnection without stopping Claude process",
+          "fullName": "Streaming Integration > End-to-End Streaming > should handle client disconnection without stopping Claude process",
+          "state": "passed"
+        },
+        {
+          "name": "should support multiple clients for same session",
+          "fullName": "Streaming Integration > End-to-End Streaming > should support multiple clients for same session",
+          "state": "passed"
+        },
+        {
+          "name": "should send proper SSE headers and format",
+          "fullName": "Streaming Integration > SSE Protocol Compliance > should send proper SSE headers and format",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/integration/conversation-status-integration.test.ts",
+      "tests": [
+        {
+          "name": "should include streamingId for ongoing conversations when messages are processed",
+          "fullName": "Conversation Status Integration > Conversation Status and StreamingId > should include streamingId for ongoing conversations when messages are processed",
+          "state": "passed"
+        },
+        {
+          "name": "should verify streamingId field structure in conversation responses",
+          "fullName": "Conversation Status Integration > Conversation Status and StreamingId > should verify streamingId field structure in conversation responses",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/claude-process-manager.test.ts",
+      "tests": [
+        {
+          "name": "should initialize",
+          "fullName": "ClaudeProcessManager > constructor > should initialize",
+          "state": "passed"
+        },
+        {
+          "name": "should build correct arguments with all options",
+          "fullName": "ClaudeProcessManager > buildStartArgs > should build correct arguments with all options",
+          "state": "passed"
+        },
+        {
+          "name": "should start a conversation and return streaming ID",
+          "fullName": "ClaudeProcessManager > startConversation > should start a conversation and return streaming ID",
+          "state": "passed"
+        },
+        {
+          "name": "should emit claude-message events",
+          "fullName": "ClaudeProcessManager > startConversation > should emit claude-message events",
+          "state": "passed"
+        },
+        {
+          "name": "should handle invalid working directory",
+          "fullName": "ClaudeProcessManager > startConversation > should handle invalid working directory",
+          "state": "passed"
+        },
+        {
+          "name": "should stop active conversation",
+          "fullName": "ClaudeProcessManager > stopConversation > should stop active conversation",
+          "state": "passed"
+        },
+        {
+          "name": "should return false if session not found",
+          "fullName": "ClaudeProcessManager > stopConversation > should return false if session not found",
+          "state": "passed"
+        },
+        {
+          "name": "should emit process-closed event",
+          "fullName": "ClaudeProcessManager > stopConversation > should emit process-closed event",
+          "state": "passed"
+        },
+        {
+          "name": "should set PWD and INIT_CWD to match working directory",
+          "fullName": "ClaudeProcessManager > environment variables > should set PWD and INIT_CWD to match working directory",
+          "state": "passed"
+        },
+        {
+          "name": "should set PWD and INIT_CWD for resumed conversations",
+          "fullName": "ClaudeProcessManager > environment variables > should set PWD and INIT_CWD for resumed conversations",
+          "state": "passed"
+        },
+        {
+          "name": "should track multiple active sessions",
+          "fullName": "ClaudeProcessManager > session management > should track multiple active sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should return empty array when no sessions",
+          "fullName": "ClaudeProcessManager > session management > should return empty array when no sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should correctly report session status",
+          "fullName": "ClaudeProcessManager > session management > should correctly report session status",
+          "state": "passed"
+        },
+        {
+          "name": "should throw error for invalid working directory",
+          "fullName": "ClaudeProcessManager > error handling > should throw error for invalid working directory",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/cui-server.test.ts",
+      "tests": [
+        {
+          "name": "should initialize with provided configuration",
+          "fullName": "CUIServer > constructor > should initialize with provided configuration",
+          "state": "passed"
+        },
+        {
+          "name": "should initialize with default values when options not provided",
+          "fullName": "CUIServer > constructor > should initialize with default values when options not provided",
+          "state": "passed"
+        },
+        {
+          "name": "should set up event handlers during construction",
+          "fullName": "CUIServer > constructor > should set up event handlers during construction",
+          "state": "passed"
+        },
+        {
+          "name": "should initialize components with test configuration",
+          "fullName": "CUIServer > constructor > should initialize components with test configuration",
+          "state": "passed"
+        },
+        {
+          "name": "should reject request without workingDirectory",
+          "fullName": "CUIServer > request validation > POST /api/conversations/start validation > should reject request without workingDirectory",
+          "state": "passed"
+        },
+        {
+          "name": "should reject request without initialPrompt",
+          "fullName": "CUIServer > request validation > POST /api/conversations/start validation > should reject request without initialPrompt",
+          "state": "passed"
+        },
+        {
+          "name": "should accept valid request with all required fields",
+          "fullName": "CUIServer > request validation > POST /api/conversations/start validation > should accept valid request with all required fields",
+          "state": "passed"
+        },
+        {
+          "name": "should accept request with optional fields",
+          "fullName": "CUIServer > request validation > POST /api/conversations/start validation > should accept request with optional fields",
+          "state": "passed"
+        },
+        {
+          "name": "should handle empty string values as invalid",
+          "fullName": "CUIServer > request validation > POST /api/conversations/start validation > should handle empty string values as invalid",
+          "state": "passed"
+        },
+        {
+          "name": "should handle claude-message events correctly",
+          "fullName": "CUIServer > event handling integration > should handle claude-message events correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should handle process-closed events correctly",
+          "fullName": "CUIServer > event handling integration > should handle process-closed events correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should handle process-error events correctly",
+          "fullName": "CUIServer > event handling integration > should handle process-error events correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should handle CUIError instances correctly",
+          "fullName": "CUIServer > error handling > should handle CUIError instances correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should handle generic errors correctly",
+          "fullName": "CUIServer > error handling > should handle generic errors correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should start successfully with all components",
+          "fullName": "CUIServer > server lifecycle methods > start() > should start successfully with all components",
+          "state": "passed"
+        },
+        {
+          "name": "should handle HTTP server binding error",
+          "fullName": "CUIServer > server lifecycle methods > start() > should handle HTTP server binding error",
+          "state": "passed"
+        },
+        {
+          "name": "should stop gracefully with no active sessions",
+          "fullName": "CUIServer > server lifecycle methods > stop() > should stop gracefully with no active sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should stop all active sessions during shutdown",
+          "fullName": "CUIServer > server lifecycle methods > stop() > should stop all active sessions during shutdown",
+          "state": "passed"
+        },
+        {
+          "name": "should handle errors during session cleanup",
+          "fullName": "CUIServer > server lifecycle methods > stop() > should handle errors during session cleanup",
+          "state": "passed"
+        },
+        {
+          "name": "should return system status successfully",
+          "fullName": "CUIServer > route handlers > GET /api/system/status > should return system status successfully",
+          "state": "passed"
+        },
+        {
+          "name": "should handle system status error",
+          "fullName": "CUIServer > route handlers > GET /api/system/status > should handle system status error",
+          "state": "passed"
+        },
+        {
+          "name": "should return conversation details successfully",
+          "fullName": "CUIServer > route handlers > GET /api/conversations/:sessionId > should return conversation details successfully",
+          "state": "passed"
+        },
+        {
+          "name": "should return 404 for non-existent conversation",
+          "fullName": "CUIServer > route handlers > GET /api/conversations/:sessionId > should return 404 for non-existent conversation",
+          "state": "passed"
+        },
+        {
+          "name": "should handle history reader errors",
+          "fullName": "CUIServer > route handlers > GET /api/conversations/:sessionId > should handle history reader errors",
+          "state": "passed"
+        },
+        {
+          "name": "should return optimistic response for active session not in history",
+          "fullName": "CUIServer > route handlers > GET /api/conversations/:sessionId > should return optimistic response for active session not in history",
+          "state": "passed"
+        },
+        {
+          "name": "should return 404 for non-existent session that is also not active",
+          "fullName": "CUIServer > route handlers > GET /api/conversations/:sessionId > should return 404 for non-existent session that is also not active",
+          "state": "passed"
+        },
+        {
+          "name": "should return conversation list with status based on active streams",
+          "fullName": "CUIServer > route handlers > GET /api/conversations > should return conversation list with status based on active streams",
+          "state": "passed"
+        },
+        {
+          "name": "should handle empty conversation list",
+          "fullName": "CUIServer > route handlers > GET /api/conversations > should handle empty conversation list",
+          "state": "passed"
+        },
+        {
+          "name": "should handle history reader errors",
+          "fullName": "CUIServer > route handlers > GET /api/conversations > should handle history reader errors",
+          "state": "passed"
+        },
+        {
+          "name": "should stop conversation successfully",
+          "fullName": "CUIServer > route handlers > POST /api/conversations/:streamingId/stop > should stop conversation successfully",
+          "state": "passed"
+        },
+        {
+          "name": "should handle non-existent session",
+          "fullName": "CUIServer > route handlers > POST /api/conversations/:streamingId/stop > should handle non-existent session",
+          "state": "passed"
+        },
+        {
+          "name": "should handle stop conversation error",
+          "fullName": "CUIServer > route handlers > POST /api/conversations/:streamingId/stop > should handle stop conversation error",
+          "state": "passed"
+        },
+        {
+          "name": "should set up streaming connection",
+          "fullName": "CUIServer > route handlers > GET /api/stream/:streamingId > should set up streaming connection",
+          "state": "passed"
+        },
+        {
+          "name": "should start conversation successfully",
+          "fullName": "CUIServer > route handlers > POST /api/conversations/start > should start conversation successfully",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/middleware/auth.test.ts",
+      "tests": [
+        {
+          "name": "should skip auth in test environment by default",
+          "fullName": "Auth Middleware > authMiddleware > should skip auth in test environment by default",
+          "state": "passed"
+        },
+        {
+          "name": "should enforce auth in test environment when ENABLE_AUTH_IN_TESTS is set",
+          "fullName": "Auth Middleware > authMiddleware > should enforce auth in test environment when ENABLE_AUTH_IN_TESTS is set",
+          "state": "passed"
+        },
+        {
+          "name": "should reject request without Authorization header",
+          "fullName": "Auth Middleware > authMiddleware > should reject request without Authorization header",
+          "state": "passed"
+        },
+        {
+          "name": "should reject request with invalid Authorization header format",
+          "fullName": "Auth Middleware > authMiddleware > should reject request with invalid Authorization header format",
+          "state": "passed"
+        },
+        {
+          "name": "should reject request with wrong token",
+          "fullName": "Auth Middleware > authMiddleware > should reject request with wrong token",
+          "state": "passed"
+        },
+        {
+          "name": "should accept request with valid token",
+          "fullName": "Auth Middleware > authMiddleware > should accept request with valid token",
+          "state": "passed"
+        },
+        {
+          "name": "should handle missing IP address gracefully",
+          "fullName": "Auth Middleware > authMiddleware > should handle missing IP address gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should handle authentication error",
+          "fullName": "Auth Middleware > authMiddleware > should handle authentication error",
+          "state": "passed"
+        },
+        {
+          "name": "should use override token when provided",
+          "fullName": "Auth Middleware > createAuthMiddleware > should use override token when provided",
+          "state": "passed"
+        },
+        {
+          "name": "should reject wrong token with override",
+          "fullName": "Auth Middleware > createAuthMiddleware > should reject wrong token with override",
+          "state": "passed"
+        },
+        {
+          "name": "should use config token when override not provided",
+          "fullName": "Auth Middleware > createAuthMiddleware > should use config token when override not provided",
+          "state": "passed"
+        },
+        {
+          "name": "should rate limit after multiple failed attempts",
+          "fullName": "Auth Middleware > Rate Limiting > should rate limit after multiple failed attempts",
+          "state": "passed"
+        },
+        {
+          "name": "should track attempts per IP",
+          "fullName": "Auth Middleware > Rate Limiting > should track attempts per IP",
+          "state": "passed"
+        },
+        {
+          "name": "should reset rate limit after time window",
+          "fullName": "Auth Middleware > Rate Limiting > should reset rate limit after time window",
+          "state": "passed"
+        },
+        {
+          "name": "should clear rate limit store",
+          "fullName": "Auth Middleware > Rate Limiting > should clear rate limit store",
+          "state": "passed"
+        },
+        {
+          "name": "should handle missing authorization header for rate limiting",
+          "fullName": "Auth Middleware > Rate Limiting > should handle missing authorization header for rate limiting",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/claude-process-long-running.test.ts",
+      "tests": [
+        {
+          "name": "should handle long-running process with proper event handling",
+          "fullName": "ClaudeProcessManager - Long Running Process > long-running process handling > should handle long-running process with proper event handling",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/services/conversation-cache.test.ts",
+      "tests": [
+        {
+          "name": "should cache individual file entries and avoid re-parsing unchanged files",
+          "fullName": "ConversationCache - File Level Caching > file-level caching > should cache individual file entries and avoid re-parsing unchanged files",
+          "state": "passed"
+        },
+        {
+          "name": "should re-parse only modified files when file modification times change",
+          "fullName": "ConversationCache - File Level Caching > file-level caching > should re-parse only modified files when file modification times change",
+          "state": "passed"
+        },
+        {
+          "name": "should handle new files being added",
+          "fullName": "ConversationCache - File Level Caching > file-level caching > should handle new files being added",
+          "state": "passed"
+        },
+        {
+          "name": "should handle file deletion by removing cached entries",
+          "fullName": "ConversationCache - File Level Caching > file-level caching > should handle file deletion by removing cached entries",
+          "state": "passed"
+        },
+        {
+          "name": "should handle file parsing errors gracefully",
+          "fullName": "ConversationCache - File Level Caching > file-level caching > should handle file parsing errors gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should handle multiple concurrent requests without duplicate parsing",
+          "fullName": "ConversationCache - File Level Caching > concurrent request handling > should handle multiple concurrent requests without duplicate parsing",
+          "state": "passed"
+        },
+        {
+          "name": "should provide detailed file cache statistics",
+          "fullName": "ConversationCache - File Level Caching > cache statistics > should provide detailed file cache statistics",
+          "state": "passed"
+        },
+        {
+          "name": "should include parsing status in statistics",
+          "fullName": "ConversationCache - File Level Caching > cache statistics > should include parsing status in statistics",
+          "state": "passed"
+        },
+        {
+          "name": "should clear all cache data when clear() is called",
+          "fullName": "ConversationCache - File Level Caching > cache management > should clear all cache data when clear() is called",
+          "state": "passed"
+        },
+        {
+          "name": "should verify file cache validity correctly",
+          "fullName": "ConversationCache - File Level Caching > cache management > should verify file cache validity correctly",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/services/config-watch.test.ts",
+      "tests": [
+        {
+          "name": "reloads valid external changes and emits change event",
+          "fullName": "ConfigService file watch and external reload > reloads valid external changes and emits change event",
+          "state": "passed"
+        },
+        {
+          "name": "ignores invalid JSON external changes",
+          "fullName": "ConfigService file watch and external reload > ignores invalid JSON external changes",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/claude-history-reader.test.ts",
+      "tests": [
+        {
+          "name": "should use default home directory",
+          "fullName": "ClaudeHistoryReader > constructor > should use default home directory",
+          "state": "passed"
+        },
+        {
+          "name": "should return empty result when projects directory does not exist",
+          "fullName": "ClaudeHistoryReader > listConversations > should return empty result when projects directory does not exist",
+          "state": "passed"
+        },
+        {
+          "name": "should handle filesystem errors gracefully",
+          "fullName": "ClaudeHistoryReader > listConversations > should handle filesystem errors gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should process project directories and conversations correctly",
+          "fullName": "ClaudeHistoryReader > listConversations > should process project directories and conversations correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should apply filters correctly",
+          "fullName": "ClaudeHistoryReader > listConversations > should apply filters correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should apply pagination correctly",
+          "fullName": "ClaudeHistoryReader > listConversations > should apply pagination correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should sort conversations correctly",
+          "fullName": "ClaudeHistoryReader > listConversations > should sort conversations correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should filter by archived status",
+          "fullName": "ClaudeHistoryReader > listConversations > should filter by archived status",
+          "state": "passed"
+        },
+        {
+          "name": "should filter by continuation session status",
+          "fullName": "ClaudeHistoryReader > listConversations > should filter by continuation session status",
+          "state": "passed"
+        },
+        {
+          "name": "should filter by pinned status",
+          "fullName": "ClaudeHistoryReader > listConversations > should filter by pinned status",
+          "state": "passed"
+        },
+        {
+          "name": "should throw error if conversation not found",
+          "fullName": "ClaudeHistoryReader > fetchConversation > should throw error if conversation not found",
+          "state": "passed"
+        },
+        {
+          "name": "should parse JSONL file correctly",
+          "fullName": "ClaudeHistoryReader > fetchConversation > should parse JSONL file correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should handle malformed JSON lines gracefully",
+          "fullName": "ClaudeHistoryReader > fetchConversation > should handle malformed JSON lines gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should parse single line JSONL with complex content and maintain tool use input properties",
+          "fullName": "ClaudeHistoryReader > fetchConversation > should parse single line JSONL with complex content and maintain tool use input properties",
+          "state": "passed"
+        },
+        {
+          "name": "should handle file read errors",
+          "fullName": "ClaudeHistoryReader > fetchConversation > should handle file read errors",
+          "state": "passed"
+        },
+        {
+          "name": "should extract metadata from conversation file",
+          "fullName": "ClaudeHistoryReader > getConversationMetadata > should extract metadata from conversation file",
+          "state": "passed"
+        },
+        {
+          "name": "should return null for non-existent conversation",
+          "fullName": "ClaudeHistoryReader > getConversationMetadata > should return null for non-existent conversation",
+          "state": "passed"
+        },
+        {
+          "name": "should decode project path correctly",
+          "fullName": "ClaudeHistoryReader > private methods > decodeProjectPath > should decode project path correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should handle paths without dashes",
+          "fullName": "ClaudeHistoryReader > private methods > decodeProjectPath > should handle paths without dashes",
+          "state": "passed"
+        },
+        {
+          "name": "should handle complex paths with multiple segments",
+          "fullName": "ClaudeHistoryReader > private methods > decodeProjectPath > should handle complex paths with multiple segments",
+          "state": "passed"
+        },
+        {
+          "name": "should handle null/undefined filters",
+          "fullName": "ClaudeHistoryReader > filter and pagination utilities > should handle null/undefined filters",
+          "state": "passed"
+        },
+        {
+          "name": "should handle default pagination values",
+          "fullName": "ClaudeHistoryReader > filter and pagination utilities > should handle default pagination values",
+          "state": "passed"
+        },
+        {
+          "name": "should handle sort by updated date",
+          "fullName": "ClaudeHistoryReader > filter and pagination utilities > should handle sort by updated date",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/integration/config-integration.test.ts",
+      "tests": [
+        {
+          "name": "should create config directory and file on first initialization",
+          "fullName": "Configuration System Basic Integration > Configuration File Creation > should create config directory and file on first initialization",
+          "state": "passed"
+        },
+        {
+          "name": "should load existing config file if it exists",
+          "fullName": "Configuration System Basic Integration > Configuration File Creation > should load existing config file if it exists",
+          "state": "passed"
+        },
+        {
+          "name": "should generate consistent machine ID format",
+          "fullName": "Configuration System Basic Integration > Machine ID Generation > should generate consistent machine ID format",
+          "state": "passed"
+        },
+        {
+          "name": "should generate the same machine ID on multiple calls",
+          "fullName": "Configuration System Basic Integration > Machine ID Generation > should generate the same machine ID on multiple calls",
+          "state": "passed"
+        },
+        {
+          "name": "should persist machine ID across config service restarts",
+          "fullName": "Configuration System Basic Integration > Machine ID Generation > should persist machine ID across config service restarts",
+          "state": "passed"
+        },
+        {
+          "name": "should return the same instance across multiple calls",
+          "fullName": "Configuration System Basic Integration > ConfigService Singleton Behavior > should return the same instance across multiple calls",
+          "state": "passed"
+        },
+        {
+          "name": "should throw error when accessing config before initialization",
+          "fullName": "Configuration System Basic Integration > ConfigService Singleton Behavior > should throw error when accessing config before initialization",
+          "state": "passed"
+        },
+        {
+          "name": "should prevent multiple initializations",
+          "fullName": "Configuration System Basic Integration > ConfigService Singleton Behavior > should prevent multiple initializations",
+          "state": "passed"
+        },
+        {
+          "name": "should fail startup on malformed config file",
+          "fullName": "Configuration System Basic Integration > Error Handling > should fail startup on malformed config file",
+          "state": "passed"
+        },
+        {
+          "name": "should allow missing fields and fill defaults",
+          "fullName": "Configuration System Basic Integration > Error Handling > should allow missing fields and fill defaults",
+          "state": "passed"
+        },
+        {
+          "name": "should create config with correct default values",
+          "fullName": "Configuration System Basic Integration > Default Configuration Values > should create config with correct default values",
+          "state": "passed"
+        },
+        {
+          "name": "should generate machine ID with correct hostname prefix",
+          "fullName": "Configuration System Basic Integration > Default Configuration Values > should generate machine ID with correct hostname prefix",
+          "state": "passed"
+        },
+        {
+          "name": "should preserve optional fields like router on initialization and not remove them when rewriting",
+          "fullName": "Configuration System Basic Integration > Preservation and Deep-Merge Behavior > should preserve optional fields like router on initialization and not remove them when rewriting",
+          "state": "passed"
+        },
+        {
+          "name": "should deep-merge partial interface updates and not reset unrelated options",
+          "fullName": "Configuration System Basic Integration > Preservation and Deep-Merge Behavior > should deep-merge partial interface updates and not reset unrelated options",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/file-system-service.test.ts",
+      "tests": [
+        {
+          "name": "should reject relative paths",
+          "fullName": "FileSystemService > Path validation > should reject relative paths",
+          "state": "passed"
+        },
+        {
+          "name": "should reject paths with traversal attempts",
+          "fullName": "FileSystemService > Path validation > should reject paths with traversal attempts",
+          "state": "passed"
+        },
+        {
+          "name": "should reject paths with null bytes",
+          "fullName": "FileSystemService > Path validation > should reject paths with null bytes",
+          "state": "passed"
+        },
+        {
+          "name": "should reject paths with invalid characters",
+          "fullName": "FileSystemService > Path validation > should reject paths with invalid characters",
+          "state": "passed"
+        },
+        {
+          "name": "should reject paths with hidden directories",
+          "fullName": "FileSystemService > Path validation > should reject paths with hidden directories",
+          "state": "passed"
+        },
+        {
+          "name": "should accept valid absolute paths",
+          "fullName": "FileSystemService > Path validation > should accept valid absolute paths",
+          "state": "passed"
+        },
+        {
+          "name": "should respect custom max file size",
+          "fullName": "FileSystemService > File size validation > should respect custom max file size",
+          "state": "passed"
+        },
+        {
+          "name": "should restrict access to allowed paths only",
+          "fullName": "FileSystemService > Allowed base paths > should restrict access to allowed paths only",
+          "state": "passed"
+        },
+        {
+          "name": "should allow access within allowed paths",
+          "fullName": "FileSystemService > Allowed base paths > should allow access within allowed paths",
+          "state": "passed"
+        },
+        {
+          "name": "should list directory non-recursively by default",
+          "fullName": "FileSystemService > Recursive directory listing > should list directory non-recursively by default",
+          "state": "passed"
+        },
+        {
+          "name": "should list directory recursively when requested",
+          "fullName": "FileSystemService > Recursive directory listing > should list directory recursively when requested",
+          "state": "passed"
+        },
+        {
+          "name": "should respect gitignore patterns when requested",
+          "fullName": "FileSystemService > Gitignore support > should respect gitignore patterns when requested",
+          "state": "passed"
+        },
+        {
+          "name": "should include ignored files when gitignore is not respected",
+          "fullName": "FileSystemService > Gitignore support > should include ignored files when gitignore is not respected",
+          "state": "passed"
+        },
+        {
+          "name": "should respect gitignore with recursive listing",
+          "fullName": "FileSystemService > Gitignore support > should respect gitignore with recursive listing",
+          "state": "passed"
+        },
+        {
+          "name": "should detect non-git directories",
+          "fullName": "FileSystemService > Git operations > should detect non-git directories",
+          "state": "passed"
+        },
+        {
+          "name": "should return null for git HEAD in non-git directory",
+          "fullName": "FileSystemService > Git operations > should return null for git HEAD in non-git directory",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/integration/log-endpoints.test.ts",
+      "tests": [
+        {
+          "name": "should return empty logs when buffer is empty",
+          "fullName": "Log Endpoints Integration > GET /api/logs/recent > should return empty logs when buffer is empty",
+          "state": "passed"
+        },
+        {
+          "name": "should return recent logs when buffer has entries",
+          "fullName": "Log Endpoints Integration > GET /api/logs/recent > should return recent logs when buffer has entries",
+          "state": "passed"
+        },
+        {
+          "name": "should respect limit parameter",
+          "fullName": "Log Endpoints Integration > GET /api/logs/recent > should respect limit parameter",
+          "state": "passed"
+        },
+        {
+          "name": "should use default limit when not specified",
+          "fullName": "Log Endpoints Integration > GET /api/logs/recent > should use default limit when not specified",
+          "state": "passed"
+        },
+        {
+          "name": "should handle invalid limit parameter gracefully",
+          "fullName": "Log Endpoints Integration > GET /api/logs/recent > should handle invalid limit parameter gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should handle zero limit parameter",
+          "fullName": "Log Endpoints Integration > GET /api/logs/recent > should handle zero limit parameter",
+          "state": "passed"
+        },
+        {
+          "name": "should include request logging in response",
+          "fullName": "Log Endpoints Integration > GET /api/logs/recent > should include request logging in response",
+          "state": "passed"
+        },
+        {
+          "name": "should establish SSE connection with correct headers",
+          "fullName": "Log Endpoints Integration > GET /api/logs/stream > should establish SSE connection with correct headers",
+          "state": "passed"
+        },
+        {
+          "name": "should handle basic streaming functionality",
+          "fullName": "Log Endpoints Integration > GET /api/logs/stream > should handle basic streaming functionality",
+          "state": "passed"
+        },
+        {
+          "name": "should work with manual log buffer entries",
+          "fullName": "Log Endpoints Integration > Logger Integration > should work with manual log buffer entries",
+          "state": "passed"
+        },
+        {
+          "name": "should handle log streaming errors gracefully",
+          "fullName": "Log Endpoints Integration > Error Handling > should handle log streaming errors gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should return 500 on internal server errors",
+          "fullName": "Log Endpoints Integration > Error Handling > should return 500 on internal server errors",
+          "state": "passed"
+        },
+        {
+          "name": "should include CORS headers for log endpoints",
+          "fullName": "Log Endpoints Integration > CORS and Headers > should include CORS headers for log endpoints",
+          "state": "passed"
+        },
+        {
+          "name": "should set proper content type for log streaming",
+          "fullName": "Log Endpoints Integration > CORS and Headers > should set proper content type for log streaming",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/stream-manager.test.ts",
+      "tests": [
+        {
+          "name": "should add client and configure headers",
+          "fullName": "StreamManager > addClient > should add client and configure headers",
+          "state": "passed"
+        },
+        {
+          "name": "should send connection confirmation",
+          "fullName": "StreamManager > addClient > should send connection confirmation",
+          "state": "passed"
+        },
+        {
+          "name": "should track client count",
+          "fullName": "StreamManager > addClient > should track client count",
+          "state": "passed"
+        },
+        {
+          "name": "should handle multiple clients for same session",
+          "fullName": "StreamManager > addClient > should handle multiple clients for same session",
+          "state": "passed"
+        },
+        {
+          "name": "should auto-remove client on close event",
+          "fullName": "StreamManager > addClient > should auto-remove client on close event",
+          "state": "passed"
+        },
+        {
+          "name": "should auto-remove client on error event",
+          "fullName": "StreamManager > addClient > should auto-remove client on error event",
+          "state": "passed"
+        },
+        {
+          "name": "should remove specific client",
+          "fullName": "StreamManager > removeClient > should remove specific client",
+          "state": "passed"
+        },
+        {
+          "name": "should remove session when no clients remain",
+          "fullName": "StreamManager > removeClient > should remove session when no clients remain",
+          "state": "passed"
+        },
+        {
+          "name": "should emit client-disconnected event",
+          "fullName": "StreamManager > removeClient > should emit client-disconnected event",
+          "state": "passed"
+        },
+        {
+          "name": "should send event to all clients in session",
+          "fullName": "StreamManager > broadcast > should send event to all clients in session",
+          "state": "passed"
+        },
+        {
+          "name": "should handle non-existent session gracefully",
+          "fullName": "StreamManager > broadcast > should handle non-existent session gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should clean up dead clients during broadcast",
+          "fullName": "StreamManager > broadcast > should clean up dead clients during broadcast",
+          "state": "passed"
+        },
+        {
+          "name": "should handle writableEnded responses",
+          "fullName": "StreamManager > broadcast > should handle writableEnded responses",
+          "state": "passed"
+        },
+        {
+          "name": "should send close event to all clients",
+          "fullName": "StreamManager > closeSession > should send close event to all clients",
+          "state": "passed"
+        },
+        {
+          "name": "should end all client connections",
+          "fullName": "StreamManager > closeSession > should end all client connections",
+          "state": "passed"
+        },
+        {
+          "name": "should remove session from active sessions",
+          "fullName": "StreamManager > closeSession > should remove session from active sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should handle errors during client close gracefully",
+          "fullName": "StreamManager > closeSession > should handle errors during client close gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should return empty array when no sessions",
+          "fullName": "StreamManager > getActiveSessions > should return empty array when no sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should return active session IDs",
+          "fullName": "StreamManager > getActiveSessions > should return active session IDs",
+          "state": "passed"
+        },
+        {
+          "name": "should return 0 when no clients",
+          "fullName": "StreamManager > getTotalClientCount > should return 0 when no clients",
+          "state": "passed"
+        },
+        {
+          "name": "should return total client count across all sessions",
+          "fullName": "StreamManager > getTotalClientCount > should return total client count across all sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should handle destroyed response objects",
+          "fullName": "StreamManager > edge cases > should handle destroyed response objects",
+          "state": "passed"
+        },
+        {
+          "name": "should handle large event payloads",
+          "fullName": "StreamManager > edge cases > should handle large event payloads",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/routes/conversation.routes.test.ts",
+      "tests": [
+        {
+          "name": "should start new conversation without resumedSessionId",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should start new conversation without resumedSessionId",
+          "state": "passed"
+        },
+        {
+          "name": "should handle resume with resumedSessionId and set continuation_session_id",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should handle resume with resumedSessionId and set continuation_session_id",
+          "state": "passed"
+        },
+        {
+          "name": "should handle missing workingDirectory validation",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should handle missing workingDirectory validation",
+          "state": "passed"
+        },
+        {
+          "name": "should handle missing initialPrompt validation",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should handle missing initialPrompt validation",
+          "state": "passed"
+        },
+        {
+          "name": "should inherit permission mode from original session when resuming",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should inherit permission mode from original session when resuming",
+          "state": "passed"
+        },
+        {
+          "name": "should archive all sessions successfully",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should archive all sessions successfully",
+          "state": "passed"
+        },
+        {
+          "name": "should handle archiving zero sessions",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should handle archiving zero sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should handle archiving one session with singular message",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should handle archiving one session with singular message",
+          "state": "passed"
+        },
+        {
+          "name": "should handle service errors",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should handle service errors",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/routes/permission.routes.test.ts",
+      "tests": [
+        {
+          "name": "should approve a permission request",
+          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should approve a permission request",
+          "state": "passed"
+        },
+        {
+          "name": "should deny a permission request",
+          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should deny a permission request",
+          "state": "passed"
+        },
+        {
+          "name": "should return 400 for invalid action",
+          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should return 400 for invalid action",
+          "state": "passed"
+        },
+        {
+          "name": "should return 404 for non-existent permission request",
+          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should return 404 for non-existent permission request",
+          "state": "passed"
+        },
+        {
+          "name": "should return 404 for already processed permission request",
+          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should return 404 for already processed permission request",
+          "state": "passed"
+        },
+        {
+          "name": "should create a new permission request",
+          "fullName": "Permission Routes > POST /api/permissions/notify > should create a new permission request",
+          "state": "passed"
+        },
+        {
+          "name": "should return 400 if toolName is missing",
+          "fullName": "Permission Routes > POST /api/permissions/notify > should return 400 if toolName is missing",
+          "state": "passed"
+        },
+        {
+          "name": "should list all permissions",
+          "fullName": "Permission Routes > GET /api/permissions > should list all permissions",
+          "state": "passed"
+        },
+        {
+          "name": "should filter permissions by streamingId",
+          "fullName": "Permission Routes > GET /api/permissions > should filter permissions by streamingId",
+          "state": "passed"
+        },
+        {
+          "name": "should filter permissions by status",
+          "fullName": "Permission Routes > GET /api/permissions > should filter permissions by status",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/services/config-service.test.ts",
+      "tests": [
+        {
+          "name": "creates default interface section",
+          "fullName": "ConfigService interface > creates default interface section",
+          "state": "passed"
+        },
+        {
+          "name": "updates interface settings via updateConfig",
+          "fullName": "ConfigService interface > updates interface settings via updateConfig",
+          "state": "passed"
+        },
+        {
+          "name": "emits change event on internal update",
+          "fullName": "ConfigService interface > emits change event on internal update",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/json-lines-parser.test.ts",
+      "tests": [
+        {
+          "name": "should parse single line JSON",
+          "fullName": "JsonLinesParser > parsing valid JSONL > should parse single line JSON",
+          "state": "passed"
+        },
+        {
+          "name": "should parse multiple lines of JSON",
+          "fullName": "JsonLinesParser > parsing valid JSONL > should parse multiple lines of JSON",
+          "state": "passed"
+        },
+        {
+          "name": "should handle incomplete lines across chunks",
+          "fullName": "JsonLinesParser > parsing valid JSONL > should handle incomplete lines across chunks",
+          "state": "passed"
+        },
+        {
+          "name": "should skip empty lines",
+          "fullName": "JsonLinesParser > parsing valid JSONL > should skip empty lines",
+          "state": "passed"
+        },
+        {
+          "name": "should handle data without trailing newline in flush",
+          "fullName": "JsonLinesParser > parsing valid JSONL > should handle data without trailing newline in flush",
+          "state": "passed"
+        },
+        {
+          "name": "should emit error for invalid JSON",
+          "fullName": "JsonLinesParser > error handling > should emit error for invalid JSON",
+          "state": "passed"
+        },
+        {
+          "name": "should continue parsing after invalid line",
+          "fullName": "JsonLinesParser > error handling > should continue parsing after invalid line",
+          "state": "passed"
+        },
+        {
+          "name": "should emit error for invalid JSON in flush",
+          "fullName": "JsonLinesParser > error handling > should emit error for invalid JSON in flush",
+          "state": "passed"
+        },
+        {
+          "name": "should work with readable streams",
+          "fullName": "JsonLinesParser > stream integration > should work with readable streams",
+          "state": "passed"
+        },
+        {
+          "name": "should reset buffer state",
+          "fullName": "JsonLinesParser > utility methods > should reset buffer state",
+          "state": "passed"
+        },
+        {
+          "name": "should return current buffer content",
+          "fullName": "JsonLinesParser > utility methods > should return current buffer content",
+          "state": "passed"
+        },
+        {
+          "name": "should handle very large JSON objects",
+          "fullName": "JsonLinesParser > edge cases > should handle very large JSON objects",
+          "state": "passed"
+        },
+        {
+          "name": "should handle Unicode characters correctly",
+          "fullName": "JsonLinesParser > edge cases > should handle Unicode characters correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should handle escaped characters in JSON",
+          "fullName": "JsonLinesParser > edge cases > should handle escaped characters in JSON",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/services/WorkingDirectoriesService.test.ts",
+      "tests": [
+        {
+          "name": "should return empty array when no conversations exist",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should return empty array when no conversations exist",
+          "state": "passed"
+        },
+        {
+          "name": "should aggregate directories from conversations",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should aggregate directories from conversations",
+          "state": "passed"
+        },
+        {
+          "name": "should sort directories by lastDate descending",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should sort directories by lastDate descending",
+          "state": "passed"
+        },
+        {
+          "name": "should compute simple shortnames for unique directories",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should compute simple shortnames for unique directories",
+          "state": "passed"
+        },
+        {
+          "name": "should compute smart suffixes for conflicting directories",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should compute smart suffixes for conflicting directories",
+          "state": "passed"
+        },
+        {
+          "name": "should handle single directory",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should handle single directory",
+          "state": "passed"
+        },
+        {
+          "name": "should handle conversations without projectPath",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should handle conversations without projectPath",
+          "state": "passed"
+        },
+        {
+          "name": "should handle error from history reader",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should handle error from history reader",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/claunch-service.test.ts",
+      "tests": [
+        {
+          "name": "should initialize with default configuration",
+          "fullName": "ClaunchService > constructor > should initialize with default configuration",
+          "state": "passed"
+        },
+        {
+          "name": "should accept custom configuration",
+          "fullName": "ClaunchService > constructor > should accept custom configuration",
+          "state": "passed"
+        },
+        {
+          "name": "should start monitoring a session",
+          "fullName": "ClaunchService > startMonitoring > should start monitoring a session",
+          "state": "passed"
+        },
+        {
+          "name": "should not start monitoring when disabled",
+          "fullName": "ClaunchService > startMonitoring > should not start monitoring when disabled",
+          "state": "passed"
+        },
+        {
+          "name": "should not duplicate monitoring for same session",
+          "fullName": "ClaunchService > startMonitoring > should not duplicate monitoring for same session",
+          "state": "passed"
+        },
+        {
+          "name": "should stop monitoring a session",
+          "fullName": "ClaunchService > stopMonitoring > should stop monitoring a session",
+          "state": "passed"
+        },
+        {
+          "name": "should handle stopping non-existent session gracefully",
+          "fullName": "ClaunchService > stopMonitoring > should handle stopping non-existent session gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should update session activity timestamp",
+          "fullName": "ClaunchService > updateActivity > should update session activity timestamp",
+          "state": "passed"
+        },
+        {
+          "name": "should mark session as active when updating activity",
+          "fullName": "ClaunchService > updateActivity > should mark session as active when updating activity",
+          "state": "passed"
+        },
+        {
+          "name": "should update configuration",
+          "fullName": "ClaunchService > updateConfig > should update configuration",
+          "state": "passed"
+        },
+        {
+          "name": "should return complete status information",
+          "fullName": "ClaunchService > getStatus > should return complete status information",
+          "state": "passed"
+        },
+        {
+          "name": "should clean up all resources",
+          "fullName": "ClaunchService > destroy > should clean up all resources",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/permission-tracker.test.ts",
+      "tests": [
+        {
+          "name": "should add a new permission request",
+          "fullName": "PermissionTracker > addPermissionRequest > should add a new permission request",
+          "state": "passed"
+        },
+        {
+          "name": "should use unknown streamingId when not provided",
+          "fullName": "PermissionTracker > addPermissionRequest > should use unknown streamingId when not provided",
+          "state": "passed"
+        },
+        {
+          "name": "should emit permission_request event",
+          "fullName": "PermissionTracker > addPermissionRequest > should emit permission_request event",
+          "state": "passed"
+        },
+        {
+          "name": "should return all permission requests",
+          "fullName": "PermissionTracker > getAllPermissionRequests > should return all permission requests",
+          "state": "passed"
+        },
+        {
+          "name": "should return empty array when no requests",
+          "fullName": "PermissionTracker > getAllPermissionRequests > should return empty array when no requests",
+          "state": "passed"
+        },
+        {
+          "name": "should filter by streamingId",
+          "fullName": "PermissionTracker > getPermissionRequests > should filter by streamingId",
+          "state": "passed"
+        },
+        {
+          "name": "should filter by status",
+          "fullName": "PermissionTracker > getPermissionRequests > should filter by status",
+          "state": "passed"
+        },
+        {
+          "name": "should filter by both streamingId and status",
+          "fullName": "PermissionTracker > getPermissionRequests > should filter by both streamingId and status",
+          "state": "passed"
+        },
+        {
+          "name": "should return specific permission request by ID",
+          "fullName": "PermissionTracker > getPermissionRequest > should return specific permission request by ID",
+          "state": "passed"
+        },
+        {
+          "name": "should return undefined for non-existent ID",
+          "fullName": "PermissionTracker > getPermissionRequest > should return undefined for non-existent ID",
+          "state": "passed"
+        },
+        {
+          "name": "should update permission status to approved",
+          "fullName": "PermissionTracker > updatePermissionStatus > should update permission status to approved",
+          "state": "passed"
+        },
+        {
+          "name": "should update permission status to denied with reason",
+          "fullName": "PermissionTracker > updatePermissionStatus > should update permission status to denied with reason",
+          "state": "passed"
+        },
+        {
+          "name": "should update with modified input when approved",
+          "fullName": "PermissionTracker > updatePermissionStatus > should update with modified input when approved",
+          "state": "passed"
+        },
+        {
+          "name": "should return false for non-existent request",
+          "fullName": "PermissionTracker > updatePermissionStatus > should return false for non-existent request",
+          "state": "passed"
+        },
+        {
+          "name": "should emit permission_updated event",
+          "fullName": "PermissionTracker > updatePermissionStatus > should emit permission_updated event",
+          "state": "passed"
+        },
+        {
+          "name": "should clear all permission requests",
+          "fullName": "PermissionTracker > clear > should clear all permission requests",
+          "state": "passed"
+        },
+        {
+          "name": "should return the number of permission requests",
+          "fullName": "PermissionTracker > size > should return the number of permission requests",
+          "state": "passed"
+        },
+        {
+          "name": "should remove all permissions for a specific streaming ID",
+          "fullName": "PermissionTracker > removePermissionsByStreamingId > should remove all permissions for a specific streaming ID",
+          "state": "passed"
+        },
+        {
+          "name": "should return 0 when no permissions match the streaming ID",
+          "fullName": "PermissionTracker > removePermissionsByStreamingId > should return 0 when no permissions match the streaming ID",
+          "state": "passed"
+        },
+        {
+          "name": "should handle removing permissions from empty tracker",
+          "fullName": "PermissionTracker > removePermissionsByStreamingId > should handle removing permissions from empty tracker",
+          "state": "passed"
+        },
+        {
+          "name": "should remove all permissions when all have same streaming ID",
+          "fullName": "PermissionTracker > removePermissionsByStreamingId > should remove all permissions when all have same streaming ID",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/server-args.test.ts",
+      "tests": [
+        {
+          "name": "should use default port when no overrides provided",
+          "fullName": "Server Command Line Arguments > should use default port when no overrides provided",
+          "state": "passed"
+        },
+        {
+          "name": "should use overridden port when provided",
+          "fullName": "Server Command Line Arguments > should use overridden port when provided",
+          "state": "passed"
+        },
+        {
+          "name": "should use overridden host when provided",
+          "fullName": "Server Command Line Arguments > should use overridden host when provided",
+          "state": "passed"
+        },
+        {
+          "name": "should use both overridden port and host when provided",
+          "fullName": "Server Command Line Arguments > should use both overridden port and host when provided",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/services/ToolMetricsService.test.ts",
+      "tests": [
+        {
+          "name": "should start listening to claude-message events",
+          "fullName": "ToolMetricsService > listenToClaudeMessages > should start listening to claude-message events",
+          "state": "passed"
+        },
+        {
+          "name": "should return undefined for unknown session",
+          "fullName": "ToolMetricsService > getMetrics > should return undefined for unknown session",
+          "state": "passed"
+        },
+        {
+          "name": "should return metrics after processing tool use",
+          "fullName": "ToolMetricsService > getMetrics > should return metrics after processing tool use",
+          "state": "passed"
+        },
+        {
+          "name": "should process Edit tool with lines added",
+          "fullName": "ToolMetricsService > tool processing > should process Edit tool with lines added",
+          "state": "passed"
+        },
+        {
+          "name": "should process Edit tool with lines removed",
+          "fullName": "ToolMetricsService > tool processing > should process Edit tool with lines removed",
+          "state": "passed"
+        },
+        {
+          "name": "should process Write tool",
+          "fullName": "ToolMetricsService > tool processing > should process Write tool",
+          "state": "passed"
+        },
+        {
+          "name": "should process MultiEdit tool",
+          "fullName": "ToolMetricsService > tool processing > should process MultiEdit tool",
+          "state": "passed"
+        },
+        {
+          "name": "should accumulate metrics across multiple tool uses",
+          "fullName": "ToolMetricsService > tool processing > should accumulate metrics across multiple tool uses",
+          "state": "passed"
+        },
+        {
+          "name": "should handle empty content gracefully",
+          "fullName": "ToolMetricsService > tool processing > should handle empty content gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should ignore non-tool-use content blocks",
+          "fullName": "ToolMetricsService > tool processing > should ignore non-tool-use content blocks",
+          "state": "passed"
+        },
+        {
+          "name": "should ignore non-assistant messages",
+          "fullName": "ToolMetricsService > tool processing > should ignore non-assistant messages",
+          "state": "passed"
+        },
+        {
+          "name": "should calculate metrics from historical messages",
+          "fullName": "ToolMetricsService > calculateMetricsFromMessages > should calculate metrics from historical messages",
+          "state": "passed"
+        },
+        {
+          "name": "should handle messages without content",
+          "fullName": "ToolMetricsService > calculateMetricsFromMessages > should handle messages without content",
+          "state": "passed"
+        },
+        {
+          "name": "should handle empty message array",
+          "fullName": "ToolMetricsService > calculateMetricsFromMessages > should handle empty message array",
+          "state": "passed"
+        },
+        {
+          "name": "should count lines correctly with trailing newline",
+          "fullName": "ToolMetricsService > line counting > should count lines correctly with trailing newline",
+          "state": "passed"
+        },
+        {
+          "name": "should handle single line without newline",
+          "fullName": "ToolMetricsService > line counting > should handle single line without newline",
+          "state": "passed"
+        },
+        {
+          "name": "should handle edit with no net line change but content change",
+          "fullName": "ToolMetricsService > line counting > should handle edit with no net line change but content change",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/services/session-info-service.test.ts",
+      "tests": [
+        {
+          "name": "should create and retrieve session info",
+          "fullName": "SessionInfoService with SQLite > should create and retrieve session info",
+          "state": "passed"
+        },
+        {
+          "name": "should update session fields",
+          "fullName": "SessionInfoService with SQLite > should update session fields",
+          "state": "passed"
+        },
+        {
+          "name": "should delete session",
+          "fullName": "SessionInfoService with SQLite > should delete session",
+          "state": "passed"
+        },
+        {
+          "name": "should return all sessions",
+          "fullName": "SessionInfoService with SQLite > should return all sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should archive all sessions",
+          "fullName": "SessionInfoService with SQLite > should archive all sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should sync missing sessions",
+          "fullName": "SessionInfoService with SQLite > should sync missing sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should provide stats",
+          "fullName": "SessionInfoService with SQLite > should provide stats",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/conversation-status-manager.test.ts",
+      "tests": [
+        {
+          "name": "should register active session",
+          "fullName": "ConversationStatusManager > session registration > should register active session",
+          "state": "passed"
+        },
+        {
+          "name": "should emit session-started event when registering",
+          "fullName": "ConversationStatusManager > session registration > should emit session-started event when registering",
+          "state": "passed"
+        },
+        {
+          "name": "should replace existing mapping for Claude session when re-registering",
+          "fullName": "ConversationStatusManager > session registration > should replace existing mapping for Claude session when re-registering",
+          "state": "passed"
+        },
+        {
+          "name": "should unregister active session",
+          "fullName": "ConversationStatusManager > session unregistration > should unregister active session",
+          "state": "passed"
+        },
+        {
+          "name": "should emit session-ended event when unregistering",
+          "fullName": "ConversationStatusManager > session unregistration > should emit session-ended event when unregistering",
+          "state": "passed"
+        },
+        {
+          "name": "should handle unregistering unknown streaming ID gracefully",
+          "fullName": "ConversationStatusManager > session unregistration > should handle unregistering unknown streaming ID gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should return correct conversation status for active session",
+          "fullName": "ConversationStatusManager > status queries > should return correct conversation status for active session",
+          "state": "passed"
+        },
+        {
+          "name": "should return completed status for unknown session",
+          "fullName": "ConversationStatusManager > status queries > should return completed status for unknown session",
+          "state": "passed"
+        },
+        {
+          "name": "should check session active status correctly",
+          "fullName": "ConversationStatusManager > status queries > should check session active status correctly",
+          "state": "passed"
+        },
+        {
+          "name": "should get all active session IDs",
+          "fullName": "ConversationStatusManager > bulk operations > should get all active session IDs",
+          "state": "passed"
+        },
+        {
+          "name": "should get all active streaming IDs",
+          "fullName": "ConversationStatusManager > bulk operations > should get all active streaming IDs",
+          "state": "passed"
+        },
+        {
+          "name": "should clear all mappings",
+          "fullName": "ConversationStatusManager > bulk operations > should clear all mappings",
+          "state": "passed"
+        },
+        {
+          "name": "should provide correct statistics",
+          "fullName": "ConversationStatusManager > statistics > should provide correct statistics",
+          "state": "passed"
+        },
+        {
+          "name": "should provide empty statistics when no sessions are active",
+          "fullName": "ConversationStatusManager > statistics > should provide empty statistics when no sessions are active",
+          "state": "passed"
+        },
+        {
+          "name": "should provide correct status and streamingId for conversation list",
+          "fullName": "ConversationStatusManager > conversation list API integration > should provide correct status and streamingId for conversation list",
+          "state": "passed"
+        },
+        {
+          "name": "should handle case where getStreamingId returns undefined for ongoing status",
+          "fullName": "ConversationStatusManager > conversation list API integration > should handle case where getStreamingId returns undefined for ongoing status",
+          "state": "passed"
+        },
+        {
+          "name": "should handle multiple registrations of same streaming ID with different Claude sessions",
+          "fullName": "ConversationStatusManager > edge cases > should handle multiple registrations of same streaming ID with different Claude sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should return undefined for non-existent lookups",
+          "fullName": "ConversationStatusManager > edge cases > should return undefined for non-existent lookups",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/routes/config.routes.test.ts",
+      "tests": [
+        {
+          "name": "GET / should return full config",
+          "fullName": "Config Routes > GET / should return full config",
+          "state": "passed"
+        },
+        {
+          "name": "PUT / should update config including interface",
+          "fullName": "Config Routes > PUT / should update config including interface",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/services/log-stream-buffer.test.ts",
+      "tests": [
+        {
+          "name": "should initialize with default buffer size",
+          "fullName": "LogStreamBuffer > constructor > should initialize with default buffer size",
+          "state": "passed"
+        },
+        {
+          "name": "should initialize with custom buffer size",
+          "fullName": "LogStreamBuffer > constructor > should initialize with custom buffer size",
+          "state": "passed"
+        },
+        {
+          "name": "should add log entries to buffer",
+          "fullName": "LogStreamBuffer > addLog > should add log entries to buffer",
+          "state": "passed"
+        },
+        {
+          "name": "should emit log event when adding entries",
+          "fullName": "LogStreamBuffer > addLog > should emit log event when adding entries",
+          "state": "passed"
+        },
+        {
+          "name": "should maintain buffer size limit",
+          "fullName": "LogStreamBuffer > addLog > should maintain buffer size limit",
+          "state": "passed"
+        },
+        {
+          "name": "should handle JSONL log entries",
+          "fullName": "LogStreamBuffer > addLog > should handle JSONL log entries",
+          "state": "passed"
+        },
+        {
+          "name": "should return all logs when no limit specified",
+          "fullName": "LogStreamBuffer > getRecentLogs > should return all logs when no limit specified",
+          "state": "passed"
+        },
+        {
+          "name": "should return limited number of logs",
+          "fullName": "LogStreamBuffer > getRecentLogs > should return limited number of logs",
+          "state": "passed"
+        },
+        {
+          "name": "should return all logs when limit is larger than buffer",
+          "fullName": "LogStreamBuffer > getRecentLogs > should return all logs when limit is larger than buffer",
+          "state": "passed"
+        },
+        {
+          "name": "should return empty array when buffer is empty",
+          "fullName": "LogStreamBuffer > getRecentLogs > should return empty array when buffer is empty",
+          "state": "passed"
+        },
+        {
+          "name": "should return copy of logs (not reference)",
+          "fullName": "LogStreamBuffer > getRecentLogs > should return copy of logs (not reference)",
+          "state": "passed"
+        },
+        {
+          "name": "should clear all logs from buffer",
+          "fullName": "LogStreamBuffer > clear > should clear all logs from buffer",
+          "state": "passed"
+        },
+        {
+          "name": "should allow adding logs after clearing",
+          "fullName": "LogStreamBuffer > clear > should allow adding logs after clearing",
+          "state": "passed"
+        },
+        {
+          "name": "should support multiple event listeners",
+          "fullName": "LogStreamBuffer > event handling > should support multiple event listeners",
+          "state": "passed"
+        },
+        {
+          "name": "should handle event listener removal",
+          "fullName": "LogStreamBuffer > event handling > should handle event listener removal",
+          "state": "passed"
+        },
+        {
+          "name": "should maintain most recent logs when buffer overflows",
+          "fullName": "LogStreamBuffer > buffer overflow behavior > should maintain most recent logs when buffer overflows",
+          "state": "passed"
+        },
+        {
+          "name": "should continue emitting events during overflow",
+          "fullName": "LogStreamBuffer > buffer overflow behavior > should continue emitting events during overflow",
+          "state": "passed"
+        },
+        {
+          "name": "should handle rapid log additions",
+          "fullName": "LogStreamBuffer > concurrent access > should handle rapid log additions",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/mcp-config-generator.test.ts",
+      "tests": [
+        {
+          "name": "should generate MCP config file with correct structure",
+          "fullName": "MCPConfigGenerator > generateConfig > should generate MCP config file with correct structure",
+          "state": "passed"
+        },
+        {
+          "name": "should generate unique config file paths",
+          "fullName": "MCPConfigGenerator > generateConfig > should generate unique config file paths",
+          "state": "passed"
+        },
+        {
+          "name": "should use provided port in environment variables",
+          "fullName": "MCPConfigGenerator > generateConfig > should use provided port in environment variables",
+          "state": "passed"
+        },
+        {
+          "name": "should return the generated config path",
+          "fullName": "MCPConfigGenerator > getConfigPath > should return the generated config path",
+          "state": "passed"
+        },
+        {
+          "name": "should remove the generated config file",
+          "fullName": "MCPConfigGenerator > cleanup > should remove the generated config file",
+          "state": "passed"
+        },
+        {
+          "name": "should handle cleanup when file does not exist",
+          "fullName": "MCPConfigGenerator > cleanup > should handle cleanup when file does not exist",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/mcp-server/polling.test.ts",
+      "tests": [
+        {
+          "name": "should handle approved permission flow",
+          "fullName": "MCP Server Permission Polling Logic > should handle approved permission flow",
+          "state": "passed"
+        },
+        {
+          "name": "should handle denied permission flow",
+          "fullName": "MCP Server Permission Polling Logic > should handle denied permission flow",
+          "state": "passed"
+        },
+        {
+          "name": "should handle timeout scenario",
+          "fullName": "MCP Server Permission Polling Logic > should handle timeout scenario",
+          "state": "passed"
+        },
+        {
+          "name": "should handle notification error",
+          "fullName": "MCP Server Permission Polling Logic > should handle notification error",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/middleware/query-parser.test.ts",
+      "tests": [
+        {
+          "name": "should convert string numbers to numbers",
+          "fullName": "queryParser middleware > should convert string numbers to numbers",
+          "state": "passed"
+        },
+        {
+          "name": "should convert boolean strings to booleans",
+          "fullName": "queryParser middleware > should convert boolean strings to booleans",
+          "state": "passed"
+        },
+        {
+          "name": "should preserve non-convertible strings",
+          "fullName": "queryParser middleware > should preserve non-convertible strings",
+          "state": "passed"
+        },
+        {
+          "name": "should handle empty strings",
+          "fullName": "queryParser middleware > should handle empty strings",
+          "state": "passed"
+        },
+        {
+          "name": "should handle array values",
+          "fullName": "queryParser middleware > should handle array values",
+          "state": "passed"
+        },
+        {
+          "name": "should handle mixed types",
+          "fullName": "queryParser middleware > should handle mixed types",
+          "state": "passed"
+        },
+        {
+          "name": "should handle negative numbers",
+          "fullName": "queryParser middleware > should handle negative numbers",
+          "state": "passed"
+        },
+        {
+          "name": "should not convert invalid numbers",
+          "fullName": "queryParser middleware > should not convert invalid numbers",
+          "state": "passed"
+        },
+        {
+          "name": "should handle undefined query object",
+          "fullName": "queryParser middleware > should handle undefined query object",
+          "state": "passed"
+        },
+        {
+          "name": "should handle non-string values in query",
+          "fullName": "queryParser middleware > should handle non-string values in query",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/claude-process-manager-git.test.ts",
+      "tests": [
+        {
+          "name": "should set initial_commit_head when in git repo",
+          "fullName": "ClaudeProcessManager - Git Integration > executeConversationFlow git integration > should set initial_commit_head when in git repo",
+          "state": "passed"
+        },
+        {
+          "name": "should not set initial_commit_head when not in git repo",
+          "fullName": "ClaudeProcessManager - Git Integration > executeConversationFlow git integration > should not set initial_commit_head when not in git repo",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/claude-router-service.test.ts",
+      "tests": [
+        {
+          "name": "should initialize when enabled",
+          "fullName": "ClaudeRouterService > should initialize when enabled",
+          "state": "passed"
+        },
+        {
+          "name": "should not initialize when disabled",
+          "fullName": "ClaudeRouterService > should not initialize when disabled",
+          "state": "passed"
+        }
+      ]
+    }
+  ],
   "unhandledErrors": [],
-  "reason": "failed"
+  "reason": "passed"
 }

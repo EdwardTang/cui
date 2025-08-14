@@ -3,24 +3,29 @@ import { Settings } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { PreferencesModal } from '../PreferencesModal/PreferencesModal';
 import { Button } from '@/web/chat/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/web/chat/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/web/chat/components/ui/tooltip';
 
 export function Header() {
   const theme = useTheme();
   const [showPrefs, setShowPrefs] = useState(false);
-  
+
   console.log('Header rendering, showPrefs:', showPrefs);
-  
+
   const handleOpenSettings = () => {
     console.log('Header handleOpenSettings called');
     setShowPrefs(true);
   };
-  
+
   const handleCloseSettings = () => {
     console.log('Header handleCloseSettings called');
     setShowPrefs(false);
   };
-  
+
   useEffect(() => {
     console.log('Header useEffect - showPrefs changed to:', showPrefs);
   }, [showPrefs]);

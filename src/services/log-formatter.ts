@@ -28,7 +28,11 @@ export class LogFormatter extends Transform {
   constructor() {
     super({
       writableObjectMode: true,
-      transform(chunk: unknown, _encoding: string, callback: (error?: Error | null, data?: unknown) => void) {
+      transform(
+        chunk: unknown,
+        _encoding: string,
+        callback: (error?: Error | null, data?: unknown) => void,
+      ) {
         try {
           const logLine = String(chunk).trim();
           if (!logLine) {
@@ -43,7 +47,7 @@ export class LogFormatter extends Transform {
           // If we can't parse it, pass it through as-is
           callback(null, chunk);
         }
-      }
+      },
     });
   }
 }
@@ -71,18 +75,24 @@ function formatLog(log: LogObject): string {
 
   // Add context fields (filter out only pino internals)
   const excludedFields = ['level', 'time', 'msg', 'component', 'pid', 'hostname', 'v'];
-  const contextFields = Object.keys(log)
-    .filter(key => !excludedFields.includes(key) && log[key] !== undefined && log[key] !== null);
+  const contextFields = Object.keys(log).filter(
+    (key) => !excludedFields.includes(key) && log[key] !== undefined && log[key] !== null,
+  );
 
   if (contextFields.length > 0) {
-    const contextPairs = contextFields.map(key => {
+    const contextPairs = contextFields.map((key) => {
       const value = log[key];
-      
+
       // Special handling for error objects
-      if ((key === 'err' || key === 'error') && typeof value === 'object' && value !== null && 'message' in value) {
+      if (
+        (key === 'err' || key === 'error') &&
+        typeof value === 'object' &&
+        value !== null &&
+        'message' in value
+      ) {
         return `${key}="${(value as { message: string }).message}"`;
       }
-      
+
       // Format based on value type
       if (typeof value === 'string') {
         return `${key}="${value}"`;
@@ -93,7 +103,7 @@ function formatLog(log: LogObject): string {
         return `${key}=${JSON.stringify(value)}`;
       }
     });
-    
+
     formatted += ` ${GRAY}${contextPairs.join(' ')}${RESET}`;
   }
 

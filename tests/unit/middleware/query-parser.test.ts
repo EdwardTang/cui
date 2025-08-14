@@ -17,7 +17,7 @@ describe('queryParser middleware', () => {
     req.query = {
       limit: '10',
       offset: '20',
-      price: '99.99'
+      price: '99.99',
     };
 
     queryParser(req as Request, res as Response, next);
@@ -25,7 +25,7 @@ describe('queryParser middleware', () => {
     expect(req.query).toEqual({
       limit: 10,
       offset: 20,
-      price: 99.99
+      price: 99.99,
     });
     expect(next).toHaveBeenCalled();
   });
@@ -35,7 +35,7 @@ describe('queryParser middleware', () => {
       archived: 'true',
       pinned: 'false',
       hasContinuation: 'TRUE',
-      active: 'FALSE'
+      active: 'FALSE',
     };
 
     queryParser(req as Request, res as Response, next);
@@ -44,7 +44,7 @@ describe('queryParser middleware', () => {
       archived: true,
       pinned: false,
       hasContinuation: true,
-      active: false
+      active: false,
     });
     expect(next).toHaveBeenCalled();
   });
@@ -53,7 +53,7 @@ describe('queryParser middleware', () => {
     req.query = {
       name: 'test',
       projectPath: '/path/to/project',
-      sortBy: 'created'
+      sortBy: 'created',
     };
 
     queryParser(req as Request, res as Response, next);
@@ -61,7 +61,7 @@ describe('queryParser middleware', () => {
     expect(req.query).toEqual({
       name: 'test',
       projectPath: '/path/to/project',
-      sortBy: 'created'
+      sortBy: 'created',
     });
     expect(next).toHaveBeenCalled();
   });
@@ -69,14 +69,14 @@ describe('queryParser middleware', () => {
   it('should handle empty strings', () => {
     req.query = {
       empty: '',
-      notEmpty: 'value'
+      notEmpty: 'value',
     };
 
     queryParser(req as Request, res as Response, next);
 
     expect(req.query).toEqual({
       empty: '',
-      notEmpty: 'value'
+      notEmpty: 'value',
     });
     expect(next).toHaveBeenCalled();
   });
@@ -84,14 +84,14 @@ describe('queryParser middleware', () => {
   it('should handle array values', () => {
     req.query = {
       ids: ['1', '2', '3'],
-      flags: ['true', 'false', 'maybe']
+      flags: ['true', 'false', 'maybe'],
     };
 
     queryParser(req as Request, res as Response, next);
 
     expect(req.query).toEqual({
       ids: [1, 2, 3],
-      flags: [true, false, 'maybe']
+      flags: [true, false, 'maybe'],
     });
     expect(next).toHaveBeenCalled();
   });
@@ -102,7 +102,7 @@ describe('queryParser middleware', () => {
       archived: 'true',
       projectPath: '/test',
       offset: '0',
-      name: 'My Session'
+      name: 'My Session',
     };
 
     queryParser(req as Request, res as Response, next);
@@ -112,7 +112,7 @@ describe('queryParser middleware', () => {
       archived: true,
       projectPath: '/test',
       offset: 0,
-      name: 'My Session'
+      name: 'My Session',
     });
     expect(next).toHaveBeenCalled();
   });
@@ -120,14 +120,14 @@ describe('queryParser middleware', () => {
   it('should handle negative numbers', () => {
     req.query = {
       temperature: '-10.5',
-      depth: '-100'
+      depth: '-100',
     };
 
     queryParser(req as Request, res as Response, next);
 
     expect(req.query).toEqual({
       temperature: -10.5,
-      depth: -100
+      depth: -100,
     });
     expect(next).toHaveBeenCalled();
   });
@@ -136,7 +136,7 @@ describe('queryParser middleware', () => {
     req.query = {
       notANumber: '123abc',
       partial: '12.34.56',
-      infinity: 'Infinity'
+      infinity: 'Infinity',
     };
 
     queryParser(req as Request, res as Response, next);
@@ -144,7 +144,7 @@ describe('queryParser middleware', () => {
     expect(req.query).toEqual({
       notANumber: '123abc',
       partial: '12.34.56',
-      infinity: 'Infinity'
+      infinity: 'Infinity',
     });
     expect(next).toHaveBeenCalled();
   });
@@ -163,7 +163,7 @@ describe('queryParser middleware', () => {
       alreadyNumber: 42 as any,
       alreadyBoolean: true as any,
       nullValue: null as any,
-      undefinedValue: undefined as any
+      undefinedValue: undefined as any,
     };
 
     queryParser(req as Request, res as Response, next);
@@ -172,7 +172,7 @@ describe('queryParser middleware', () => {
       alreadyNumber: 42,
       alreadyBoolean: true,
       nullValue: null,
-      undefinedValue: undefined
+      undefinedValue: undefined,
     });
     expect(next).toHaveBeenCalled();
   });

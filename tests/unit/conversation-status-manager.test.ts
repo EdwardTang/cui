@@ -29,11 +29,14 @@ describe('ConversationStatusManager', () => {
         const streamingId = 'streaming-123';
         const claudeSessionId = 'claude-session-456';
 
-        tracker.on('session-started', ({ streamingId: emittedStreamingId, claudeSessionId: emittedClaudeSessionId }) => {
-          expect(emittedStreamingId).toBe(streamingId);
-          expect(emittedClaudeSessionId).toBe(claudeSessionId);
-          resolve();
-        });
+        tracker.on(
+          'session-started',
+          ({ streamingId: emittedStreamingId, claudeSessionId: emittedClaudeSessionId }) => {
+            expect(emittedStreamingId).toBe(streamingId);
+            expect(emittedClaudeSessionId).toBe(claudeSessionId);
+            resolve();
+          },
+        );
 
         tracker.registerActiveSession(streamingId, claudeSessionId);
       });
@@ -78,11 +81,14 @@ describe('ConversationStatusManager', () => {
 
         tracker.registerActiveSession(streamingId, claudeSessionId);
 
-        tracker.on('session-ended', ({ streamingId: emittedStreamingId, claudeSessionId: emittedClaudeSessionId }) => {
-          expect(emittedStreamingId).toBe(streamingId);
-          expect(emittedClaudeSessionId).toBe(claudeSessionId);
-          resolve();
-        });
+        tracker.on(
+          'session-ended',
+          ({ streamingId: emittedStreamingId, claudeSessionId: emittedClaudeSessionId }) => {
+            expect(emittedStreamingId).toBe(streamingId);
+            expect(emittedClaudeSessionId).toBe(claudeSessionId);
+            resolve();
+          },
+        );
 
         tracker.unregisterActiveSession(streamingId);
       });
@@ -90,10 +96,10 @@ describe('ConversationStatusManager', () => {
 
     it('should handle unregistering unknown streaming ID gracefully', () => {
       const unknownStreamingId = 'unknown-streaming-id';
-      
+
       // Should not throw error
       tracker.unregisterActiveSession(unknownStreamingId);
-      
+
       // No sessions should be affected
       expect(tracker.getActiveSessionIds()).toHaveLength(0);
       expect(tracker.getActiveStreamingIds()).toHaveLength(0);
@@ -140,7 +146,7 @@ describe('ConversationStatusManager', () => {
       const sessions = [
         { streamingId: 'streaming-1', claudeSessionId: 'claude-1' },
         { streamingId: 'streaming-2', claudeSessionId: 'claude-2' },
-        { streamingId: 'streaming-3', claudeSessionId: 'claude-3' }
+        { streamingId: 'streaming-3', claudeSessionId: 'claude-3' },
       ];
 
       sessions.forEach(({ streamingId, claudeSessionId }) => {
@@ -149,14 +155,16 @@ describe('ConversationStatusManager', () => {
 
       const activeSessionIds = tracker.getActiveSessionIds();
       expect(activeSessionIds).toHaveLength(3);
-      expect(activeSessionIds).toEqual(expect.arrayContaining(['claude-1', 'claude-2', 'claude-3']));
+      expect(activeSessionIds).toEqual(
+        expect.arrayContaining(['claude-1', 'claude-2', 'claude-3']),
+      );
     });
 
     it('should get all active streaming IDs', () => {
       const sessions = [
         { streamingId: 'streaming-1', claudeSessionId: 'claude-1' },
         { streamingId: 'streaming-2', claudeSessionId: 'claude-2' },
-        { streamingId: 'streaming-3', claudeSessionId: 'claude-3' }
+        { streamingId: 'streaming-3', claudeSessionId: 'claude-3' },
       ];
 
       sessions.forEach(({ streamingId, claudeSessionId }) => {
@@ -165,13 +173,15 @@ describe('ConversationStatusManager', () => {
 
       const activeStreamingIds = tracker.getActiveStreamingIds();
       expect(activeStreamingIds).toHaveLength(3);
-      expect(activeStreamingIds).toEqual(expect.arrayContaining(['streaming-1', 'streaming-2', 'streaming-3']));
+      expect(activeStreamingIds).toEqual(
+        expect.arrayContaining(['streaming-1', 'streaming-2', 'streaming-3']),
+      );
     });
 
     it('should clear all mappings', () => {
       const sessions = [
         { streamingId: 'streaming-1', claudeSessionId: 'claude-1' },
-        { streamingId: 'streaming-2', claudeSessionId: 'claude-2' }
+        { streamingId: 'streaming-2', claudeSessionId: 'claude-2' },
       ];
 
       sessions.forEach(({ streamingId, claudeSessionId }) => {
@@ -193,7 +203,7 @@ describe('ConversationStatusManager', () => {
     it('should provide correct statistics', () => {
       const sessions = [
         { streamingId: 'streaming-1', claudeSessionId: 'claude-1' },
-        { streamingId: 'streaming-2', claudeSessionId: 'claude-2' }
+        { streamingId: 'streaming-2', claudeSessionId: 'claude-2' },
       ];
 
       sessions.forEach(({ streamingId, claudeSessionId }) => {
@@ -205,10 +215,12 @@ describe('ConversationStatusManager', () => {
       expect(stats.activeSessionsCount).toBe(2);
       expect(stats.activeStreamingIdsCount).toBe(2);
       expect(stats.activeSessions).toHaveLength(2);
-      expect(stats.activeSessions).toEqual(expect.arrayContaining([
-        { claudeSessionId: 'claude-1', streamingId: 'streaming-1' },
-        { claudeSessionId: 'claude-2', streamingId: 'streaming-2' }
-      ]));
+      expect(stats.activeSessions).toEqual(
+        expect.arrayContaining([
+          { claudeSessionId: 'claude-1', streamingId: 'streaming-1' },
+          { claudeSessionId: 'claude-2', streamingId: 'streaming-2' },
+        ]),
+      );
     });
 
     it('should provide empty statistics when no sessions are active', () => {
@@ -225,18 +237,18 @@ describe('ConversationStatusManager', () => {
       const mockConversations = [
         { sessionId: 'claude-session-1', summary: 'First conversation' },
         { sessionId: 'claude-session-2', summary: 'Second conversation' },
-        { sessionId: 'claude-session-3', summary: 'Third conversation' }
+        { sessionId: 'claude-session-3', summary: 'Third conversation' },
       ];
 
       // Register one active session
       tracker.registerActiveSession('streaming-123', 'claude-session-2');
 
       // Simulate how the conversation list endpoint would process conversations
-      const conversationsWithStatus = mockConversations.map(conversation => {
+      const conversationsWithStatus = mockConversations.map((conversation) => {
         const status = tracker.getConversationStatus(conversation.sessionId);
         const baseConversation = {
           ...conversation,
-          status
+          status,
         };
 
         // Add streamingId if conversation is ongoing
@@ -252,12 +264,12 @@ describe('ConversationStatusManager', () => {
 
       // Verify results
       expect(conversationsWithStatus).toHaveLength(3);
-      
+
       // First conversation should be completed (no streamingId)
       expect(conversationsWithStatus[0]).toEqual({
         sessionId: 'claude-session-1',
         summary: 'First conversation',
-        status: 'completed'
+        status: 'completed',
       });
 
       // Second conversation should be ongoing with streamingId
@@ -265,52 +277,52 @@ describe('ConversationStatusManager', () => {
         sessionId: 'claude-session-2',
         summary: 'Second conversation',
         status: 'ongoing',
-        streamingId: 'streaming-123'
+        streamingId: 'streaming-123',
       });
 
       // Third conversation should be completed (no streamingId)
       expect(conversationsWithStatus[2]).toEqual({
         sessionId: 'claude-session-3',
         summary: 'Third conversation',
-        status: 'completed'
+        status: 'completed',
       });
     });
 
     it('should handle case where getStreamingId returns undefined for ongoing status', () => {
       const mockConversation = { sessionId: 'claude-session-1', summary: 'Test conversation' };
-      
+
       // Mock the case where status is ongoing but getStreamingId returns undefined
       // This could happen in edge cases or race conditions
       tracker.registerActiveSession('streaming-123', 'claude-session-1');
       tracker.unregisterActiveSession('streaming-123');
-      
+
       // Force register session without proper cleanup (simulating race condition)
       (tracker as any).sessionToStreaming.set('claude-session-1', 'invalid-streaming-id');
-      
+
       const status = tracker.getConversationStatus(mockConversation.sessionId);
       const streamingId = tracker.getStreamingId(mockConversation.sessionId);
-      
+
       // Should be ongoing but streamingId should be invalid
       expect(status).toBe('ongoing');
       expect(streamingId).toBe('invalid-streaming-id');
-      
+
       // The API logic should handle this gracefully
       const baseConversation = { ...mockConversation, status };
       let result: any = baseConversation;
-      
+
       if (status === 'ongoing') {
         const actualStreamingId = tracker.getStreamingId(mockConversation.sessionId);
         if (actualStreamingId) {
           result = { ...baseConversation, streamingId: actualStreamingId };
         }
       }
-      
+
       // Should include the invalid streamingId (real implementation would handle this)
       expect(result).toEqual({
         sessionId: 'claude-session-1',
         summary: 'Test conversation',
         status: 'ongoing',
-        streamingId: 'invalid-streaming-id'
+        streamingId: 'invalid-streaming-id',
       });
     });
   });

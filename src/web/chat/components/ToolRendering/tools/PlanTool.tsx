@@ -19,12 +19,24 @@ export function PlanTool({ input, result }: PlanToolProps) {
             ul: ({ children }) => <ul className="my-2 pl-6 first:mt-0 last:mb-0">{children}</ul>,
             ol: ({ children }) => <ol className="my-2 pl-6 first:mt-0 last:mb-0">{children}</ol>,
             li: ({ children }) => <li className="my-1">{children}</li>,
-            h1: ({ children }) => <h1 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h1>,
-            h2: ({ children }) => <h2 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h2>,
-            h3: ({ children }) => <h3 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h3>,
-            h4: ({ children }) => <h4 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h4>,
-            h5: ({ children }) => <h5 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h5>,
-            h6: ({ children }) => <h6 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h6>,
+            h1: ({ children }) => (
+              <h1 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h1>
+            ),
+            h2: ({ children }) => (
+              <h2 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h3>
+            ),
+            h4: ({ children }) => (
+              <h4 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h4>
+            ),
+            h5: ({ children }) => (
+              <h5 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h5>
+            ),
+            h6: ({ children }) => (
+              <h6 className="mt-4 mb-2 first:mt-0 font-semibold">{children}</h6>
+            ),
           }}
         >
           {planContent}

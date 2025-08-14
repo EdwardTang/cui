@@ -54,7 +54,7 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
   const handleWebPushToggle = async () => {
     setWebPushLoading(true);
     setWebPushError('');
-    
+
     try {
       if (webPushSubscription) {
         // Unsubscribe
@@ -71,35 +71,42 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
         }
 
         const registration = await navigator.serviceWorker.ready;
-        
+
         if (!webPushStatus?.publicKey) {
           throw new Error('Server VAPID public key not available');
         }
 
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: webPushStatus.publicKey
+          applicationServerKey: webPushStatus.publicKey,
         });
 
         await api.registerWebPush(subscription);
         setWebPushSubscription(subscription);
       }
-      
+
       await checkWebPushStatus();
     } catch (error: any) {
       console.error('Web push toggle error:', error);
-      
+
       // Provide helpful error messages
       if (error.message?.includes('Service Worker not supported')) {
         setWebPushError('Service Worker not supported. Ensure you are using HTTPS or localhost.');
       } else if (error.message?.includes('Push notifications not supported')) {
         setWebPushError('Push notifications not supported in this browser.');
       } else if (error.name === 'NotAllowedError' || error.message?.includes('permission')) {
-        setWebPushError('Notification permission denied. Please allow notifications in browser settings.');
+        setWebPushError(
+          'Notification permission denied. Please allow notifications in browser settings.',
+        );
       } else if (error.message?.includes('VAPID')) {
         setWebPushError('Server configuration issue. Please check server logs.');
-      } else if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-        setWebPushError('Web Push requires HTTPS or localhost. For Safari, you also need to install as PWA.');
+      } else if (
+        window.location.protocol !== 'https:' &&
+        window.location.hostname !== 'localhost'
+      ) {
+        setWebPushError(
+          'Web Push requires HTTPS or localhost. For Safari, you also need to install as PWA.',
+        );
       } else {
         setWebPushError(error.message || 'Failed to enable web push notifications');
       }
@@ -127,7 +134,10 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
       <div className="py-4 border-b border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center justify-between min-h-[60px] py-2">
           <div className="flex-1 flex flex-col gap-1 mr-4">
-            <Label htmlFor="notifications-switch" className="text-sm text-neutral-900 dark:text-neutral-100 font-normal">
+            <Label
+              htmlFor="notifications-switch"
+              className="text-sm text-neutral-900 dark:text-neutral-100 font-normal"
+            >
               Enable Push Notifications
             </Label>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
@@ -137,12 +147,14 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
           <Switch
             id="notifications-switch"
             checked={prefs.notifications?.enabled || false}
-            onCheckedChange={(checked) => onUpdate({
-              notifications: {
-                ...prefs.notifications,
-                enabled: checked
-              }
-            })}
+            onCheckedChange={(checked) =>
+              onUpdate({
+                notifications: {
+                  ...prefs.notifications,
+                  enabled: checked,
+                },
+              })
+            }
             aria-label="Toggle push notifications"
           />
         </div>
@@ -152,19 +164,34 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
       <div className="py-4 border-b border-neutral-200 dark:border-neutral-800">
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Ntfy</h3>
         <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-          Ntfy works out of the box but opens notifications in the ntfy app. To receive push notifications, subscribe to the following <a href="https://ntfy.sh/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">ntfy topic</a>:
+          Ntfy works out of the box but opens notifications in the ntfy app. To receive push
+          notifications, subscribe to the following{' '}
+          <a
+            href="https://ntfy.sh/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline"
+          >
+            ntfy topic
+          </a>
+          :
         </p>
-        
+
         <div className="space-y-4">
           <div>
-            <Label className="text-xs text-neutral-600 dark:text-neutral-400 mb-2 block">Ntfy Topic</Label>
+            <Label className="text-xs text-neutral-600 dark:text-neutral-400 mb-2 block">
+              Ntfy Topic
+            </Label>
             <div className="bg-neutral-100 dark:bg-neutral-800 p-3 rounded-md font-mono text-sm border border-neutral-200 dark:border-neutral-700">
               {machineId ? `cui-${machineId}` : 'Loading...'}
             </div>
           </div>
 
           <div>
-            <Label htmlFor="ntfy-url" className="text-xs text-neutral-600 dark:text-neutral-400 mb-2 block">
+            <Label
+              htmlFor="ntfy-url"
+              className="text-xs text-neutral-600 dark:text-neutral-400 mb-2 block"
+            >
               Ntfy Server URL (Optional)
             </Label>
             <Input
@@ -173,13 +200,15 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
               className="bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 focus:border-blue-500 dark:focus:border-blue-400"
               value={prefs.notifications?.ntfyUrl || ''}
               placeholder="https://ntfy.sh"
-              onChange={(e) => onUpdate({
-                notifications: {
-                  ...prefs.notifications,
-                  enabled: prefs.notifications?.enabled || false,
-                  ntfyUrl: e.target.value || undefined
-                }
-              })}
+              onChange={(e) =>
+                onUpdate({
+                  notifications: {
+                    ...prefs.notifications,
+                    enabled: prefs.notifications?.enabled || false,
+                    ntfyUrl: e.target.value || undefined,
+                  },
+                })
+              }
               aria-label="Ntfy server URL"
             />
           </div>
@@ -188,12 +217,14 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
 
       {/* Web Push Section */}
       <div className="py-4">
-        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Web Push</h3>
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
+          Web Push
+        </h3>
         <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
           Web Push requires HTTPS hosting. See setup instructions at{' '}
-          <a 
-            href="https://github.com/wbopan/cui?tab=readme-ov-file#notifications" 
-            target="_blank" 
+          <a
+            href="https://github.com/wbopan/cui?tab=readme-ov-file#notifications"
+            target="_blank"
             rel="noopener noreferrer"
             className="text-blue-500 hover:underline"
           >
@@ -257,7 +288,7 @@ export function NotificationTab({ prefs, machineId, onUpdate }: Props) {
               <div className="text-sm text-red-600 dark:text-red-400">
                 <p className="font-medium mb-1">Failed to enable Web Push</p>
                 <p>{webPushError}</p>
-                
+
                 {/* Helpful troubleshooting tips */}
                 {webPushError.includes('HTTPS') && (
                   <ul className="mt-2 space-y-1 text-xs">

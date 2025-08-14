@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-// import { VitestReporter } from 'tdd-guard-vitest';
+import { VitestReporter } from 'tdd-guard-vitest';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,10 +12,10 @@ export default defineConfig({
     root: '.',
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     exclude: ['node_modules', 'dist'],
-    // reporters: [
-    //   'default',
-    //   new VitestReporter(process.cwd())
-    // ],
+    reporters: [
+      'default',
+      new VitestReporter(process.cwd())
+    ],
     coverage: {
       enabled: false,
       provider: 'v8',

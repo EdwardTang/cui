@@ -34,17 +34,24 @@ jobs:
           npm ci
           npm install -D lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu
 
+      - name: Run TDD Guard checks
+        run: npx tdd-guard check || echo "⚠️  TDD Guard check failed, continuing with build..."
+        continue-on-error: true
+
+      - name: Check code formatting
+        run: npm run format:check
+
       - name: Run linting
         run: npm run lint
 
       - name: Run type checking
         run: npm run typecheck
 
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
       - name: Build project
         run: npm run build
-
-      - name: Run tests
-        run: npm test
 
       - name: Upload build artifact (dist)
         if: ${{ inputs.upload-artifact }}

@@ -7,7 +7,7 @@ describe('MCPConfigGenerator', () => {
 
   beforeEach(() => {
     // MCPConfigGenerator no longer uses ConfigService
-    
+
     generator = new MCPConfigGenerator();
   });
 
@@ -31,17 +31,17 @@ describe('MCPConfigGenerator', () => {
       // Verify structure
       expect(config).toHaveProperty('mcpServers');
       expect(config.mcpServers).toHaveProperty('cui-permissions');
-      
+
       const serverConfig = config.mcpServers['cui-permissions'];
       expect(serverConfig.command).toBe('node');
       expect(serverConfig.args).toHaveLength(1);
       expect(serverConfig.args[0]).toContain('mcp-server/index.js');
-      
+
       // Check environment variables
       expect(serverConfig.env).toEqual({
         CUI_SERVER_URL: `http://localhost:${port}`,
         CUI_SERVER_PORT: String(port),
-        LOG_LEVEL: expect.any(String)
+        LOG_LEVEL: expect.any(String),
       });
     });
 
@@ -66,7 +66,9 @@ describe('MCPConfigGenerator', () => {
       const configContent = readFileSync(configPath, 'utf-8');
       const config = JSON.parse(configContent);
 
-      expect(config.mcpServers['cui-permissions'].env.CUI_SERVER_URL).toBe(`http://localhost:${port}`);
+      expect(config.mcpServers['cui-permissions'].env.CUI_SERVER_URL).toBe(
+        `http://localhost:${port}`,
+      );
       expect(config.mcpServers['cui-permissions'].env.CUI_SERVER_PORT).toBe('4567');
     });
   });
@@ -84,7 +86,7 @@ describe('MCPConfigGenerator', () => {
   describe('cleanup', () => {
     it('should remove the generated config file', async () => {
       const configPath = await generator.generateConfig(3001);
-      
+
       expect(existsSync(configPath)).toBe(true);
 
       generator.cleanup();
@@ -96,7 +98,7 @@ describe('MCPConfigGenerator', () => {
       // Get path without generating file
       await generator.generateConfig(3001);
       const configPath = generator.getConfigPath();
-      
+
       // Manually remove file
       generator.cleanup();
 

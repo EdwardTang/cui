@@ -11,12 +11,12 @@ const extensionToLanguage: Record<string, string> = {
   '.tsx': 'tsx',
   '.mjs': 'javascript',
   '.cjs': 'javascript',
-  
+
   // Python
   '.py': 'python',
   '.pyw': 'python',
   '.pyi': 'python',
-  
+
   // Web
   '.html': 'html',
   '.htm': 'html',
@@ -25,20 +25,20 @@ const extensionToLanguage: Record<string, string> = {
   '.scss': 'scss',
   '.sass': 'sass',
   '.less': 'less',
-  
+
   // Data formats
   '.json': 'json',
   '.yaml': 'yaml',
   '.yml': 'yaml',
   '.toml': 'toml',
   '.ini': 'ini',
-  
+
   // Shell/Bash
   '.sh': 'bash',
   '.bash': 'bash',
   '.zsh': 'bash',
   '.fish': 'bash',
-  
+
   // C/C++
   '.c': 'c',
   '.h': 'c',
@@ -47,216 +47,216 @@ const extensionToLanguage: Record<string, string> = {
   '.cxx': 'cpp',
   '.hpp': 'cpp',
   '.hxx': 'cpp',
-  
+
   // Java/Kotlin
   '.java': 'java',
   '.kt': 'kotlin',
   '.kts': 'kotlin',
-  
+
   // Go
   '.go': 'go',
-  
+
   // Rust
   '.rs': 'rust',
-  
+
   // Ruby
   '.rb': 'ruby',
   '.rake': 'ruby',
-  
+
   // PHP
   '.php': 'php',
   '.phtml': 'php',
-  
+
   // Swift
   '.swift': 'swift',
-  
+
   // Objective-C
   '.mm': 'objectivec',
-  
+
   // C#
   '.cs': 'csharp',
-  
+
   // SQL
   '.sql': 'sql',
-  
+
   // Markdown
   '.md': 'markdown',
   '.markdown': 'markdown',
-  
+
   // Docker
   '.dockerfile': 'dockerfile',
-  
+
   // Make
   '.makefile': 'makefile',
   '.mk': 'makefile',
-  
+
   // Vim
   '.vim': 'vim',
   '.vimrc': 'vim',
-  
+
   // Lua
   '.lua': 'lua',
-  
+
   // R
   '.r': 'r',
   '.R': 'r',
-  
+
   // Scala
   '.scala': 'scala',
   '.sc': 'scala',
-  
+
   // Clojure
   '.clj': 'clojure',
   '.cljs': 'clojure',
   '.cljc': 'clojure',
-  
+
   // Haskell
   '.hs': 'haskell',
   '.lhs': 'haskell',
-  
+
   // Elixir
   '.ex': 'elixir',
   '.exs': 'elixir',
-  
+
   // Erlang
   '.erl': 'erlang',
   '.hrl': 'erlang',
-  
+
   // OCaml
   '.ml': 'ocaml',
   '.mli': 'ocaml',
-  
+
   // F#
   '.fs': 'fsharp',
   '.fsi': 'fsharp',
   '.fsx': 'fsharp',
-  
+
   // Dart
   '.dart': 'dart',
-  
+
   // Perl
   '.pl': 'perl',
   '.pm': 'perl',
-  
+
   // Groovy
   '.groovy': 'groovy',
   '.gradle': 'groovy',
-  
+
   // LaTeX
   '.tex': 'latex',
   '.latex': 'latex',
-  
+
   // MATLAB
   '.m': 'matlab',
   '.mat': 'matlab',
-  
+
   // Powershell
   '.ps1': 'powershell',
   '.psm1': 'powershell',
   '.psd1': 'powershell',
-  
+
   // Assembly
   '.asm': 'asm',
   '.s': 'asm',
-  
+
   // GLSL
   '.glsl': 'glsl',
   '.vert': 'glsl',
   '.frag': 'glsl',
-  
+
   // GraphQL
   '.graphql': 'graphql',
   '.gql': 'graphql',
-  
+
   // Prisma
   '.prisma': 'prisma',
-  
+
   // Solidity
   '.sol': 'solidity',
-  
+
   // Vue
   '.vue': 'vue',
-  
+
   // Svelte
   '.svelte': 'svelte',
-  
+
   // Nix
   '.nix': 'nix',
-  
+
   // Julia
   '.jl': 'julia',
-  
+
   // Zig
   '.zig': 'zig',
-  
+
   // V
   '.vsh': 'v',
-  
+
   // Crystal
   '.cr': 'crystal',
-  
+
   // Nim
   '.nim': 'nim',
   '.nims': 'nim',
-  
+
   // D
   '.d': 'd',
   '.di': 'd',
-  
+
   // Pascal
   '.pas': 'pascal',
   '.pp': 'pascal',
   '.inc': 'pascal',
-  
+
   // Fortran
   '.f': 'fortran',
   '.for': 'fortran',
   '.f90': 'fortran',
   '.f95': 'fortran',
-  
+
   // COBOL
   '.cob': 'cobol',
   '.cbl': 'cobol',
-  
+
   // Ada
   '.ada': 'ada',
   '.adb': 'ada',
   '.ads': 'ada',
-  
+
   // Prolog
   '.pro': 'prolog',
   '.P': 'prolog',
-  
+
   // Scheme
   '.scm': 'scheme',
   '.ss': 'scheme',
-  
+
   // Racket
   '.rkt': 'racket',
-  
+
   // Common Lisp
   '.lisp': 'lisp',
   '.lsp': 'lisp',
   '.cl': 'lisp',
-  
+
   // Tcl
   '.tcl': 'tcl',
-  
+
   // AWK
   '.awk': 'awk',
-  
+
   // SAS
   '.sas': 'sas',
-  
+
   // VHDL
   '.vhd': 'vhdl',
   '.vhdl': 'vhdl',
-  
+
   // Verilog
   '.v': 'verilog',
   '.vh': 'verilog',
   '.sv': 'verilog',
-  
+
   // WebAssembly
   '.wat': 'wasm',
   '.wast': 'wasm',
@@ -264,10 +264,10 @@ const extensionToLanguage: Record<string, string> = {
 
 // Map of filenames to languages (for files without extensions)
 const filenameToLanguage: Record<string, string> = {
-  'Dockerfile': 'dockerfile',
-  'Makefile': 'makefile',
-  'Rakefile': 'ruby',
-  'Gemfile': 'ruby',
+  Dockerfile: 'dockerfile',
+  Makefile: 'makefile',
+  Rakefile: 'ruby',
+  Gemfile: 'ruby',
   '.gitignore': 'gitignore',
   '.gitattributes': 'gitignore',
   '.npmignore': 'gitignore',
@@ -295,21 +295,21 @@ export function detectLanguageFromPath(filePath: string): string {
   // Extract filename from path
   const pathParts = filePath.split('/');
   const filename = pathParts[pathParts.length - 1];
-  
+
   // Check if it's a known filename
   if (filenameToLanguage[filename]) {
     return filenameToLanguage[filename];
   }
-  
+
   // Extract extension
   const lastDotIndex = filename.lastIndexOf('.');
   if (lastDotIndex === -1 || lastDotIndex === 0) {
     // No extension or hidden file without extension
     return 'text';
   }
-  
+
   const extension = filename.slice(lastDotIndex).toLowerCase();
-  
+
   // Look up language by extension
   return extensionToLanguage[extension] || 'text';
 }
@@ -403,6 +403,6 @@ export function getLanguageDisplayName(language: string): string {
     gitignore: 'Git Ignore',
     text: 'Plain Text',
   };
-  
+
   return displayNames[language] || language.charAt(0).toUpperCase() + language.slice(1);
 }

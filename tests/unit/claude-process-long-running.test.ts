@@ -32,22 +32,22 @@ describe('ClaudeProcessManager - Long Running Process', () => {
         }
       }
     }
-    
+
     // Extra time for cleanup
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 200));
   });
 
   beforeEach(async () => {
     const mockClaudePath = getMockClaudeExecutablePath();
-    
+
     // Create a mock history reader
     mockHistoryReader = new ClaudeHistoryReader();
     // Mock the getConversationWorkingDirectory method
     vi.spyOn(mockHistoryReader, 'getConversationWorkingDirectory').mockResolvedValue(process.cwd());
-    
+
     // Create a mock status tracker
     mockStatusTracker = new ConversationStatusManager();
-    
+
     manager = new ClaudeProcessManager(mockHistoryReader, mockStatusTracker, mockClaudePath);
   });
 
@@ -61,17 +61,16 @@ describe('ClaudeProcessManager - Long Running Process', () => {
         console.warn(`Failed to stop conversation ${streamingId}:`, error);
       }
     }
-    
+
     // Give processes time to clean up
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   });
 
   describe('long-running process handling', () => {
     it('should handle long-running process with proper event handling', async () => {
-
       const config: ConversationConfig = {
         workingDirectory: process.cwd(),
-        initialPrompt: 'Hello Claude! Please respond with just "Hello" and nothing else.'
+        initialPrompt: 'Hello Claude! Please respond with just "Hello" and nothing else.',
       };
 
       // Event tracking
@@ -102,11 +101,10 @@ describe('ClaudeProcessManager - Long Running Process', () => {
 
       // Start conversation
       const { streamingId } = await manager.startConversation(config);
-      
+
       expect(streamingId).toBeDefined();
       expect(typeof streamingId).toBe('string');
       expect(manager.isSessionActive(streamingId)).toBe(true);
-
 
       // Wait for the conversation to complete naturally
       // Use a polling approach to check if process is still active
@@ -115,9 +113,9 @@ describe('ClaudeProcessManager - Long Running Process', () => {
       let elapsedTime = 0;
 
       while (!conversationCompleted && elapsedTime < maxWaitTime) {
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
         elapsedTime += pollInterval;
-        
+
         // Check if session is still active
         if (!manager.isSessionActive(streamingId)) {
           conversationCompleted = true;
@@ -126,15 +124,13 @@ describe('ClaudeProcessManager - Long Running Process', () => {
       }
 
       // Give a bit more time for final events to be processed
-      await new Promise(resolve => setTimeout(resolve, 100));
-
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify we received the expected events
       expect(outputEventCount).toBeGreaterThanOrEqual(1); // At least 1 output event
       expect(errorEventCount).toBeLessThanOrEqual(0); // At least 0 error events (stderr may not always occur)
       expect(processClosedReceived).toBe(true); // Process should have closed naturally
       expect(manager.isSessionActive(streamingId)).toBe(false); // Session should be inactive
-
     }, 25000); // 25 second timeout to allow for natural completion
   });
 });

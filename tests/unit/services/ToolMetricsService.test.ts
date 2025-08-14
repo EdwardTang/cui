@@ -21,7 +21,7 @@ describe('ToolMetricsService', () => {
   describe('listenToClaudeMessages', () => {
     it('should start listening to claude-message events', () => {
       service.listenToClaudeMessages(mockProcessManager);
-      
+
       // Verify listener is attached
       expect(mockProcessManager.listenerCount('claude-message')).toBe(1);
     });
@@ -51,9 +51,9 @@ describe('ToolMetricsService', () => {
               input: {
                 file_path: '/test.txt',
                 old_string: 'line1\nline2\nline3',
-                new_string: 'line1\nline2\nline3\nline4\nline5'
-              }
-            }
+                new_string: 'line1\nline2\nline3\nline4\nline5',
+              },
+            },
           ],
           model: 'claude-3',
           stop_reason: null,
@@ -64,9 +64,9 @@ describe('ToolMetricsService', () => {
             cache_creation_input_tokens: 0,
             cache_read_input_tokens: 0,
             server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-        }
+            service_tier: 'standard' as const,
+          },
+        },
       };
 
       mockProcessManager.emit('claude-message', { streamingId: 'stream-1', message: editMessage });
@@ -76,11 +76,10 @@ describe('ToolMetricsService', () => {
         linesAdded: 3,
         linesRemoved: 1,
         editCount: 1,
-        writeCount: 0
+        writeCount: 0,
       });
     });
   });
-
 
   describe('tool processing', () => {
     beforeEach(() => {
@@ -103,9 +102,9 @@ describe('ToolMetricsService', () => {
               input: {
                 file_path: '/test.txt',
                 old_string: 'hello',
-                new_string: 'hello\nworld\ntest'
-              }
-            }
+                new_string: 'hello\nworld\ntest',
+              },
+            },
           ],
           model: 'claude-3',
           stop_reason: null,
@@ -116,9 +115,9 @@ describe('ToolMetricsService', () => {
             cache_creation_input_tokens: 0,
             cache_read_input_tokens: 0,
             server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-        }
+            service_tier: 'standard' as const,
+          },
+        },
       };
 
       mockProcessManager.emit('claude-message', { streamingId: 'stream-1', message: editMessage });
@@ -128,7 +127,7 @@ describe('ToolMetricsService', () => {
         linesAdded: 3,
         linesRemoved: 1,
         editCount: 1,
-        writeCount: 0
+        writeCount: 0,
       });
     });
 
@@ -148,9 +147,9 @@ describe('ToolMetricsService', () => {
               input: {
                 file_path: '/test.txt',
                 old_string: 'line1\nline2\nline3\nline4',
-                new_string: 'line1\nline4'
-              }
-            }
+                new_string: 'line1\nline4',
+              },
+            },
           ],
           model: 'claude-3',
           stop_reason: null,
@@ -161,9 +160,9 @@ describe('ToolMetricsService', () => {
             cache_creation_input_tokens: 0,
             cache_read_input_tokens: 0,
             server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-        }
+            service_tier: 'standard' as const,
+          },
+        },
       };
 
       mockProcessManager.emit('claude-message', { streamingId: 'stream-1', message: editMessage });
@@ -173,7 +172,7 @@ describe('ToolMetricsService', () => {
         linesAdded: 0,
         linesRemoved: 2,
         editCount: 1,
-        writeCount: 0
+        writeCount: 0,
       });
     });
 
@@ -192,9 +191,9 @@ describe('ToolMetricsService', () => {
               name: 'Write',
               input: {
                 file_path: '/test.txt',
-                content: 'line1\nline2\nline3\nline4\nline5'
-              }
-            }
+                content: 'line1\nline2\nline3\nline4\nline5',
+              },
+            },
           ],
           model: 'claude-3',
           stop_reason: null,
@@ -205,9 +204,9 @@ describe('ToolMetricsService', () => {
             cache_creation_input_tokens: 0,
             cache_read_input_tokens: 0,
             server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-        }
+            service_tier: 'standard' as const,
+          },
+        },
       };
 
       mockProcessManager.emit('claude-message', { streamingId: 'stream-1', message: writeMessage });
@@ -217,7 +216,7 @@ describe('ToolMetricsService', () => {
         linesAdded: 5,
         linesRemoved: 0,
         editCount: 0,
-        writeCount: 1
+        writeCount: 1,
       });
     });
 
@@ -239,15 +238,15 @@ describe('ToolMetricsService', () => {
                 edits: [
                   {
                     old_string: 'foo',
-                    new_string: 'foo\nbar'
+                    new_string: 'foo\nbar',
                   },
                   {
                     old_string: 'baz\nqux',
-                    new_string: 'baz'
-                  }
-                ]
-              }
-            }
+                    new_string: 'baz',
+                  },
+                ],
+              },
+            },
           ],
           model: 'claude-3',
           stop_reason: null,
@@ -258,19 +257,22 @@ describe('ToolMetricsService', () => {
             cache_creation_input_tokens: 0,
             cache_read_input_tokens: 0,
             server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-        }
+            service_tier: 'standard' as const,
+          },
+        },
       };
 
-      mockProcessManager.emit('claude-message', { streamingId: 'stream-1', message: multiEditMessage });
+      mockProcessManager.emit('claude-message', {
+        streamingId: 'stream-1',
+        message: multiEditMessage,
+      });
 
       const metrics = service.getMetrics('test-session');
       expect(metrics).toEqual({
         linesAdded: 3,
         linesRemoved: 3,
         editCount: 2,
-        writeCount: 0
+        writeCount: 0,
       });
     });
 
@@ -294,23 +296,23 @@ describe('ToolMetricsService', () => {
                 name: 'Write',
                 input: {
                   file_path: '/file1.txt',
-                  content: 'line1\nline2'
-                }
-              }
+                  content: 'line1\nline2',
+                },
+              },
             ],
             model: 'claude-3',
             stop_reason: null,
             stop_sequence: null,
             usage: {
-            input_tokens: 10,
-            output_tokens: 20,
-            cache_creation_input_tokens: 0,
-            cache_read_input_tokens: 0,
-            server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-          }
-        } as AssistantStreamMessage
+              input_tokens: 10,
+              output_tokens: 20,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0,
+              server_tool_use: { web_search_requests: 0 },
+              service_tier: 'standard' as const,
+            },
+          },
+        } as AssistantStreamMessage,
       });
 
       // Second edit
@@ -331,23 +333,23 @@ describe('ToolMetricsService', () => {
                 input: {
                   file_path: '/file2.txt',
                   old_string: 'old',
-                  new_string: 'new\nline'
-                }
-              }
+                  new_string: 'new\nline',
+                },
+              },
             ],
             model: 'claude-3',
             stop_reason: null,
             stop_sequence: null,
             usage: {
-            input_tokens: 10,
-            output_tokens: 20,
-            cache_creation_input_tokens: 0,
-            cache_read_input_tokens: 0,
-            server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-          }
-        } as AssistantStreamMessage
+              input_tokens: 10,
+              output_tokens: 20,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0,
+              server_tool_use: { web_search_requests: 0 },
+              service_tier: 'standard' as const,
+            },
+          },
+        } as AssistantStreamMessage,
       });
 
       const metrics = service.getMetrics(session);
@@ -355,7 +357,7 @@ describe('ToolMetricsService', () => {
         linesAdded: 4, // 2 from Write + 2 from Edit
         linesRemoved: 1, // 1 from Edit
         editCount: 1,
-        writeCount: 1
+        writeCount: 1,
       });
     });
 
@@ -374,9 +376,9 @@ describe('ToolMetricsService', () => {
               name: 'Write',
               input: {
                 file_path: '/empty.txt',
-                content: ''
-              }
-            }
+                content: '',
+              },
+            },
           ],
           model: 'claude-3',
           stop_reason: null,
@@ -387,9 +389,9 @@ describe('ToolMetricsService', () => {
             cache_creation_input_tokens: 0,
             cache_read_input_tokens: 0,
             server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-        }
+            service_tier: 'standard' as const,
+          },
+        },
       };
 
       mockProcessManager.emit('claude-message', { streamingId: 'stream-1', message: writeMessage });
@@ -399,7 +401,7 @@ describe('ToolMetricsService', () => {
         linesAdded: 0,
         linesRemoved: 0,
         editCount: 0,
-        writeCount: 1
+        writeCount: 1,
       });
     });
 
@@ -415,8 +417,8 @@ describe('ToolMetricsService', () => {
             {
               type: 'text',
               text: 'I will help you with that.',
-              citations: null
-            }
+              citations: null,
+            },
           ],
           model: 'claude-3',
           stop_reason: null,
@@ -427,9 +429,9 @@ describe('ToolMetricsService', () => {
             cache_creation_input_tokens: 0,
             cache_read_input_tokens: 0,
             server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-        }
+            service_tier: 'standard' as const,
+          },
+        },
       };
 
       mockProcessManager.emit('claude-message', { streamingId: 'stream-1', message: message });
@@ -444,8 +446,8 @@ describe('ToolMetricsService', () => {
         session_id: 'test-session',
         message: {
           role: 'user',
-          content: 'Please help me'
-        }
+          content: 'Please help me',
+        },
       };
 
       mockProcessManager.emit('claude-message', { streamingId: 'stream-1', message: userMessage });
@@ -471,22 +473,22 @@ describe('ToolMetricsService', () => {
                 name: 'Write',
                 input: {
                   file_path: '/file1.txt',
-                  content: 'line1\nline2\nline3'
-                }
-              }
+                  content: 'line1\nline2\nline3',
+                },
+              },
             ],
             model: 'claude-3',
             stop_reason: null,
             stop_sequence: null,
             usage: {
-            input_tokens: 10,
-            output_tokens: 20,
-            cache_creation_input_tokens: 0,
-            cache_read_input_tokens: 0,
-            server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-          } as Anthropic.Message
+              input_tokens: 10,
+              output_tokens: 20,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0,
+              server_tool_use: { web_search_requests: 0 },
+              service_tier: 'standard' as const,
+            },
+          } as Anthropic.Message,
         },
         {
           type: 'assistant',
@@ -502,23 +504,23 @@ describe('ToolMetricsService', () => {
                 input: {
                   file_path: '/file2.txt',
                   old_string: 'old\nline',
-                  new_string: 'new'
-                }
-              }
+                  new_string: 'new',
+                },
+              },
             ],
             model: 'claude-3',
             stop_reason: null,
             stop_sequence: null,
             usage: {
-            input_tokens: 10,
-            output_tokens: 20,
-            cache_creation_input_tokens: 0,
-            cache_read_input_tokens: 0,
-            server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-          } as Anthropic.Message
-        }
+              input_tokens: 10,
+              output_tokens: 20,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0,
+              server_tool_use: { web_search_requests: 0 },
+              service_tier: 'standard' as const,
+            },
+          } as Anthropic.Message,
+        },
       ];
 
       const metrics = service.calculateMetricsFromMessages(messages);
@@ -526,7 +528,7 @@ describe('ToolMetricsService', () => {
         linesAdded: 4,
         linesRemoved: 2,
         editCount: 1,
-        writeCount: 1
+        writeCount: 1,
       });
     });
 
@@ -543,15 +545,15 @@ describe('ToolMetricsService', () => {
             stop_reason: null,
             stop_sequence: null,
             usage: {
-            input_tokens: 10,
-            output_tokens: 20,
-            cache_creation_input_tokens: 0,
-            cache_read_input_tokens: 0,
-            server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-          } as any // This is intentionally invalid to test error handling
-        }
+              input_tokens: 10,
+              output_tokens: 20,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0,
+              server_tool_use: { web_search_requests: 0 },
+              service_tier: 'standard' as const,
+            },
+          } as any, // This is intentionally invalid to test error handling
+        },
       ];
 
       const metrics = service.calculateMetricsFromMessages(messages);
@@ -559,7 +561,7 @@ describe('ToolMetricsService', () => {
         linesAdded: 0,
         linesRemoved: 0,
         editCount: 0,
-        writeCount: 0
+        writeCount: 0,
       });
     });
 
@@ -569,7 +571,7 @@ describe('ToolMetricsService', () => {
         linesAdded: 0,
         linesRemoved: 0,
         editCount: 0,
-        writeCount: 0
+        writeCount: 0,
       });
     });
   });
@@ -592,9 +594,9 @@ describe('ToolMetricsService', () => {
               name: 'Write',
               input: {
                 file_path: '/test.txt',
-                content: 'line1\nline2\nline3\n'
-              }
-            }
+                content: 'line1\nline2\nline3\n',
+              },
+            },
           ],
           model: 'claude-3',
           stop_reason: null,
@@ -605,9 +607,9 @@ describe('ToolMetricsService', () => {
             cache_creation_input_tokens: 0,
             cache_read_input_tokens: 0,
             server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-        }
+            service_tier: 'standard' as const,
+          },
+        },
       };
 
       mockProcessManager.emit('claude-message', { streamingId: 'stream-1', message: writeMessage });
@@ -633,9 +635,9 @@ describe('ToolMetricsService', () => {
               name: 'Write',
               input: {
                 file_path: '/test.txt',
-                content: 'single line'
-              }
-            }
+                content: 'single line',
+              },
+            },
           ],
           model: 'claude-3',
           stop_reason: null,
@@ -646,9 +648,9 @@ describe('ToolMetricsService', () => {
             cache_creation_input_tokens: 0,
             cache_read_input_tokens: 0,
             server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-        }
+            service_tier: 'standard' as const,
+          },
+        },
       };
 
       mockProcessManager.emit('claude-message', { streamingId: 'stream-1', message: writeMessage });
@@ -675,9 +677,9 @@ describe('ToolMetricsService', () => {
               input: {
                 file_path: '/test.txt',
                 old_string: 'foo\nbar',
-                new_string: 'baz\nqux'
-              }
-            }
+                new_string: 'baz\nqux',
+              },
+            },
           ],
           model: 'claude-3',
           stop_reason: null,
@@ -688,9 +690,9 @@ describe('ToolMetricsService', () => {
             cache_creation_input_tokens: 0,
             cache_read_input_tokens: 0,
             server_tool_use: { web_search_requests: 0 },
-            service_tier: 'standard' as const
-          }
-        }
+            service_tier: 'standard' as const,
+          },
+        },
       };
 
       mockProcessManager.emit('claude-message', { streamingId: 'stream-1', message: editMessage });
@@ -700,7 +702,7 @@ describe('ToolMetricsService', () => {
         linesAdded: 2,
         linesRemoved: 2,
         editCount: 1,
-        writeCount: 0
+        writeCount: 0,
       });
     });
   });

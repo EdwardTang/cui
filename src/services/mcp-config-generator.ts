@@ -45,7 +45,7 @@ export class MCPConfigGenerator {
     // In production: __dirname is /path/to/node_modules/cui-server/dist/services
     // In development: __dirname is /path/to/cui-server/src/services
     // MCP server is always in dist/mcp-server/index.js
-    
+
     let mcpServerPath: string;
     if (__dirname.includes('/dist/') || __dirname.includes('\\dist\\')) {
       // Production: we're in dist/services, go up to dist then to mcp-server
@@ -54,7 +54,7 @@ export class MCPConfigGenerator {
       // Development: we're in src/services, go up to root then to dist/mcp-server
       mcpServerPath = join(__dirname, '..', '..', 'dist', 'mcp-server', 'index.js');
     }
-    
+
     // Validate that the MCP server file and Node.js executable exist
     if (this.fileSystemService) {
       // Check if MCP server JS file exists
@@ -62,11 +62,11 @@ export class MCPConfigGenerator {
         const error = new Error(`MCP server file not found: ${mcpServerPath}`);
         this.logger.warn('MCP server file not found, skipping MCP config generation', {
           mcpServerPath,
-          error: error.message
+          error: error.message,
         });
         throw error;
       }
-      
+
       // Validate that the MCP server file is executable
       try {
         await this.fileSystemService.validateExecutable(mcpServerPath);
@@ -74,14 +74,14 @@ export class MCPConfigGenerator {
       } catch (error) {
         this.logger.warn('MCP server file is not executable, skipping MCP config generation', {
           mcpServerPath,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         });
         throw error;
       }
-      
+
       this.logger.debug('MCP server file and Node.js validated successfully', { mcpServerPath });
     }
-    
+
     const config: MCPConfig = {
       mcpServers: {
         'cui-permissions': {
@@ -90,10 +90,10 @@ export class MCPConfigGenerator {
           env: {
             CUI_SERVER_URL: `http://localhost:${port}`,
             CUI_SERVER_PORT: String(port),
-            LOG_LEVEL: process.env.LOG_LEVEL || 'info'
-          }
-        }
-      }
+            LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+          },
+        },
+      },
     };
 
     // Ensure directory exists
@@ -101,11 +101,11 @@ export class MCPConfigGenerator {
 
     // Write config file
     writeFileSync(this.configPath, JSON.stringify(config, null, 2));
-    
+
     this.logger.info('MCP config file generated', {
       path: this.configPath,
       port,
-      mcpServerPath
+      mcpServerPath,
     });
 
     this.logger.debug('MCP config file', { config });
@@ -130,7 +130,7 @@ export class MCPConfigGenerator {
     } catch (error) {
       this.logger.warn('Failed to clean up MCP config file', {
         path: this.configPath,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }

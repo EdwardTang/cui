@@ -22,7 +22,7 @@ export function getAuthToken(): string | null {
 export function setAuthToken(token: string): void {
   const expires = new Date();
   expires.setDate(expires.getDate() + 7); // 7 days expiration
-  
+
   document.cookie = `${AUTH_COOKIE_NAME}=${encodeURIComponent(token)}; expires=${expires.toUTCString()}; path=/; SameSite=Strict`;
 }
 
@@ -35,13 +35,13 @@ function extractTokenFromFragment(): string | null {
   if (!fragment.startsWith('#token=')) {
     return null;
   }
-  
+
   const token = fragment.substring(7); // Remove '#token='
   if (token.length !== 32 || !/^[a-f0-9]+$/.test(token)) {
     console.warn('Invalid token format in URL fragment');
     return null;
   }
-  
+
   return token;
 }
 
@@ -65,14 +65,14 @@ export function useAuth(): void {
   useEffect(() => {
     // Check if token exists in URL fragment
     const fragmentToken = extractTokenFromFragment();
-    
+
     if (fragmentToken) {
       // Store token in cookie
       setAuthToken(fragmentToken);
-      
+
       // Clear fragment from URL
       clearFragment();
-      
+
       console.log('Authentication token stored successfully');
     }
   }, []);

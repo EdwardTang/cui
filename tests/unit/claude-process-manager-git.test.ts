@@ -33,7 +33,7 @@ describe('ClaudeProcessManager - Git Integration', () => {
         undefined,
         undefined,
         mockSessionInfoService,
-        mockFileSystemService
+        mockFileSystemService,
       );
 
       // Access the private method through reflection to test git logic
@@ -46,17 +46,19 @@ describe('ClaudeProcessManager - Git Integration', () => {
         mcp_servers: [],
         model: 'claude-3',
         permissionMode: 'prompt',
-        apiKeySource: 'env'
+        apiKeySource: 'env',
       };
 
       // Simulate what happens after getting systemInit in executeConversationFlow
       if (processManager['sessionInfoService'] && processManager['fileSystemService']) {
         try {
           if (await processManager['fileSystemService'].isGitRepository(systemInit.cwd)) {
-            const gitHead = await processManager['fileSystemService'].getCurrentGitHead(systemInit.cwd);
+            const gitHead = await processManager['fileSystemService'].getCurrentGitHead(
+              systemInit.cwd,
+            );
             if (gitHead) {
               await processManager['sessionInfoService'].updateSessionInfo(systemInit.session_id, {
-                initial_commit_head: gitHead
+                initial_commit_head: gitHead,
               });
             }
           }
@@ -67,10 +69,9 @@ describe('ClaudeProcessManager - Git Integration', () => {
 
       expect(mockFileSystemService.isGitRepository).toHaveBeenCalledWith('/path/to/git/repo');
       expect(mockFileSystemService.getCurrentGitHead).toHaveBeenCalledWith('/path/to/git/repo');
-      expect(mockSessionInfoService.updateSessionInfo).toHaveBeenCalledWith(
-        'test-session-123',
-        { initial_commit_head: 'abc123commit' }
-      );
+      expect(mockSessionInfoService.updateSessionInfo).toHaveBeenCalledWith('test-session-123', {
+        initial_commit_head: 'abc123commit',
+      });
     });
 
     it('should not set initial_commit_head when not in git repo', async () => {
@@ -83,7 +84,7 @@ describe('ClaudeProcessManager - Git Integration', () => {
         undefined,
         undefined,
         mockSessionInfoService,
-        mockFileSystemService
+        mockFileSystemService,
       );
 
       const systemInit = {
@@ -95,17 +96,19 @@ describe('ClaudeProcessManager - Git Integration', () => {
         mcp_servers: [],
         model: 'claude-3',
         permissionMode: 'prompt',
-        apiKeySource: 'env'
+        apiKeySource: 'env',
       };
 
       // Simulate what happens after getting systemInit in executeConversationFlow
       if (processManager['sessionInfoService'] && processManager['fileSystemService']) {
         try {
           if (await processManager['fileSystemService'].isGitRepository(systemInit.cwd)) {
-            const gitHead = await processManager['fileSystemService'].getCurrentGitHead(systemInit.cwd);
+            const gitHead = await processManager['fileSystemService'].getCurrentGitHead(
+              systemInit.cwd,
+            );
             if (gitHead) {
               await processManager['sessionInfoService'].updateSessionInfo(systemInit.session_id, {
-                initial_commit_head: gitHead
+                initial_commit_head: gitHead,
               });
             }
           }

@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { CornerDownRight, Globe } from 'lucide-react';
 import { extractDomain } from '../../../utils/tool-utils';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/web/chat/components/ui/collapsible';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/web/chat/components/ui/collapsible';
 
 interface WebToolProps {
   input: any;
@@ -35,8 +39,8 @@ export function WebTool({ input, result, toolType }: WebToolProps) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 px-3 py-1 bg-secondary rounded-full text-xs text-muted-foreground no-underline transition-all hover:bg-muted hover:text-foreground"
           >
-            <img 
-              src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`} 
+            <img
+              src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
               alt=""
               width={12}
               height={12}
@@ -54,24 +58,26 @@ export function WebTool({ input, result, toolType }: WebToolProps) {
     <div className="flex flex-col gap-1 -mt-0.5">
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <CollapsibleTrigger asChild>
-          <div 
+          <div
             className="text-sm text-muted-foreground cursor-pointer select-none hover:text-foreground flex items-center gap-1"
             aria-label={`Toggle ${getSummaryText().toLowerCase()} details`}
           >
-            <CornerDownRight 
-              size={12} 
-              className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+            <CornerDownRight
+              size={12}
+              className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`}
             />
             {getSummaryText()}
           </div>
         </CollapsibleTrigger>
 
         {getDomainPills()}
-        
+
         <CollapsibleContent>
           {result && (
             <div className="bg-neutral-950 rounded-xl overflow-hidden">
-              <pre className="m-0 p-3 text-neutral-100 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">{result}</pre>
+              <pre className="m-0 p-3 text-neutral-100 font-mono text-xs leading-relaxed whitespace-pre-wrap break-words">
+                {result}
+              </pre>
             </div>
           )}
         </CollapsibleContent>

@@ -23,7 +23,7 @@ describe('Permission Routes', () => {
     } as any;
 
     app.use('/api/permissions', createPermissionRoutes(permissionTracker));
-    
+
     // Add error handling middleware
     app.use((err: any, req: any, res: any, next: any) => {
       res.status(err.statusCode || 500).json({ error: err.message });
@@ -65,11 +65,9 @@ describe('Permission Routes', () => {
       });
 
       expect(permissionTracker.getPermissionRequests).toHaveBeenCalledWith({ status: 'pending' });
-      expect(permissionTracker.updatePermissionStatus).toHaveBeenCalledWith(
-        requestId,
-        'approved',
-        { modifiedInput: { test: 'modified' } }
-      );
+      expect(permissionTracker.updatePermissionStatus).toHaveBeenCalledWith(requestId, 'approved', {
+        modifiedInput: { test: 'modified' },
+      });
     });
 
     it('should deny a permission request', async () => {
@@ -92,12 +90,10 @@ describe('Permission Routes', () => {
       permissionTracker.getPermissionRequests.mockReturnValue([pendingRequest]);
       permissionTracker.updatePermissionStatus.mockReturnValue(true);
 
-      const response = await request(app)
-        .post(`/api/permissions/${requestId}/decision`)
-        .send({
-          action: 'deny',
-          denyReason: 'User denied permission',
-        });
+      const response = await request(app).post(`/api/permissions/${requestId}/decision`).send({
+        action: 'deny',
+        denyReason: 'User denied permission',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
@@ -106,19 +102,15 @@ describe('Permission Routes', () => {
       });
 
       expect(permissionTracker.getPermissionRequests).toHaveBeenCalledWith({ status: 'pending' });
-      expect(permissionTracker.updatePermissionStatus).toHaveBeenCalledWith(
-        requestId,
-        'denied',
-        { denyReason: 'User denied permission' }
-      );
+      expect(permissionTracker.updatePermissionStatus).toHaveBeenCalledWith(requestId, 'denied', {
+        denyReason: 'User denied permission',
+      });
     });
 
     it('should return 400 for invalid action', async () => {
-      const response = await request(app)
-        .post('/api/permissions/test-id/decision')
-        .send({
-          action: 'invalid',
-        });
+      const response = await request(app).post('/api/permissions/test-id/decision').send({
+        action: 'invalid',
+      });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('Action must be either "approve" or "deny"');
@@ -127,11 +119,9 @@ describe('Permission Routes', () => {
     it('should return 404 for non-existent permission request', async () => {
       permissionTracker.getPermissionRequests.mockReturnValue([]);
 
-      const response = await request(app)
-        .post('/api/permissions/non-existent-id/decision')
-        .send({
-          action: 'approve',
-        });
+      const response = await request(app).post('/api/permissions/non-existent-id/decision').send({
+        action: 'approve',
+      });
 
       expect(response.status).toBe(404);
       expect(response.body.error).toContain('Permission request not found or not pending');
@@ -150,11 +140,9 @@ describe('Permission Routes', () => {
 
       permissionTracker.getPermissionRequests.mockReturnValue([]);
 
-      const response = await request(app)
-        .post(`/api/permissions/${requestId}/decision`)
-        .send({
-          action: 'approve',
-        });
+      const response = await request(app).post(`/api/permissions/${requestId}/decision`).send({
+        action: 'approve',
+      });
 
       expect(response.status).toBe(404);
       expect(response.body.error).toContain('Permission request not found or not pending');
@@ -191,7 +179,7 @@ describe('Permission Routes', () => {
       expect(permissionTracker.addPermissionRequest).toHaveBeenCalledWith(
         'test-tool',
         { test: 'input' },
-        'test-streaming-id'
+        'test-streaming-id',
       );
     });
 
@@ -231,8 +219,7 @@ describe('Permission Routes', () => {
 
       permissionTracker.getPermissionRequests.mockReturnValue(permissions);
 
-      const response = await request(app)
-        .get('/api/permissions');
+      const response = await request(app).get('/api/permissions');
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ permissions });
@@ -253,8 +240,7 @@ describe('Permission Routes', () => {
 
       permissionTracker.getPermissionRequests.mockReturnValue(permissions);
 
-      const response = await request(app)
-        .get('/api/permissions?streamingId=stream1');
+      const response = await request(app).get('/api/permissions?streamingId=stream1');
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ permissions });
@@ -277,8 +263,7 @@ describe('Permission Routes', () => {
 
       permissionTracker.getPermissionRequests.mockReturnValue(permissions);
 
-      const response = await request(app)
-        .get('/api/permissions?status=pending');
+      const response = await request(app).get('/api/permissions?status=pending');
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ permissions });

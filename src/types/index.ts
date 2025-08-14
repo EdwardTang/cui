@@ -50,7 +50,7 @@ export interface SystemInitMessage extends StreamMessage {
   subtype: 'init';
   cwd: string;
   tools: string[];
-  mcp_servers: { name: string; status: string; }[];
+  mcp_servers: { name: string; status: string }[];
   model: string;
   permissionMode: string;
   apiKeySource: string;
@@ -124,7 +124,6 @@ export interface StartConversationRequest {
   resumedSessionId?: string; // Optional: session ID to resume from
 }
 
-
 export interface StartConversationResponse {
   streamingId: string; // CUI's internal streaming identifier for managing streaming connections
   streamUrl: string;
@@ -132,7 +131,7 @@ export interface StartConversationResponse {
   sessionId: string; // Claude CLI's session ID
   cwd: string; // Working directory
   tools: string[]; // Available tools
-  mcpServers: { name: string; status: string; }[]; // MCP server list
+  mcpServers: { name: string; status: string }[]; // MCP server list
   model: string; // Actual model being used
   permissionMode: string; // Permission handling mode
   apiKeySource: string; // API key source
@@ -154,12 +153,11 @@ export interface ConversationDetailsResponse {
   summary: string;
   projectPath: string;
   metadata: {
-      totalDuration: number;
+    totalDuration: number;
     model: string;
   };
   toolMetrics?: ToolMetrics; // Optional tool usage metrics
 }
-
 
 export interface PermissionDecisionRequest {
   action: 'approve' | 'deny';
@@ -181,7 +179,28 @@ export interface SystemStatusResponse {
 }
 
 // Stream event types
-export type StreamEvent = 
+// Podcast-specific stream message types
+export interface PodcastProgressMessage {
+  type: 'system';
+  subtype: 'progress';
+  streaming_id: string;
+  timestamp: string;
+  progress: number;
+  message: string;
+}
+
+export interface PodcastCompletedMessage {
+  type: 'system';
+  subtype: 'completed';
+  streaming_id: string;
+  timestamp: string;
+  result: {
+    audioUrl: string;
+    metadata: Record<string, any>; // Flexible metadata structure
+  };
+}
+
+export type StreamEvent =
   | { type: 'connected'; streaming_id: string; timestamp: string }
   | { type: 'permission_request'; data: PermissionRequest; streamingId: string; timestamp: string }
   | { type: 'error'; error: string; streamingId: string; timestamp: string }
@@ -189,11 +208,17 @@ export type StreamEvent =
   | SystemInitMessage
   | AssistantStreamMessage
   | UserStreamMessage
-  | ResultStreamMessage;
+  | ResultStreamMessage
+  | PodcastProgressMessage
+  | PodcastCompletedMessage;
 
 // Error types
 export class CUIError extends Error {
-  constructor(public code: string, message: string, public statusCode: number = 500) {
+  constructor(
+    public code: string,
+    message: string,
+    public statusCode: number = 500,
+  ) {
     super(message);
     this.name = 'CUIError';
   }
@@ -233,17 +258,16 @@ export interface FileSystemReadResponse {
 
 // Session Info Database types for lowdb
 export interface SessionInfo {
-  custom_name: string;          // Custom name for the session, default: ""
-  created_at: string;           // ISO 8601 timestamp when session info was created
-  updated_at: string;           // ISO 8601 timestamp when session info was last updated
-  version: number;              // Schema version for future migrations
-  pinned: boolean;              // Whether session is pinned, default: false
-  archived: boolean;            // Whether session is archived, default: false
+  custom_name: string; // Custom name for the session, default: ""
+  created_at: string; // ISO 8601 timestamp when session info was created
+  updated_at: string; // ISO 8601 timestamp when session info was last updated
+  version: number; // Schema version for future migrations
+  pinned: boolean; // Whether session is pinned, default: false
+  archived: boolean; // Whether session is archived, default: false
   continuation_session_id: string; // ID of the continuation session if exists, default: ""
-  initial_commit_head: string;  // Git commit HEAD when session started, default: ""
-  permission_mode: string;      // Permission mode used for the session, default: "default"
+  initial_commit_head: string; // Git commit HEAD when session started, default: ""
+  permission_mode: string; // Permission mode used for the session, default: "default"
 }
-
 
 // API types for session renaming (deprecated - use SessionUpdateRequest instead)
 export interface SessionRenameRequest {
@@ -258,18 +282,18 @@ export interface SessionRenameResponse {
 
 // API types for session update
 export interface SessionUpdateRequest {
-  customName?: string;           // Optional: update custom name
-  pinned?: boolean;              // Optional: update pinned status
-  archived?: boolean;            // Optional: update archived status
+  customName?: string; // Optional: update custom name
+  pinned?: boolean; // Optional: update pinned status
+  archived?: boolean; // Optional: update archived status
   continuationSessionId?: string; // Optional: update continuation session
-  initialCommitHead?: string;    // Optional: update initial commit head
-  permissionMode?: string;       // Optional: update permission mode
+  initialCommitHead?: string; // Optional: update initial commit head
+  permissionMode?: string; // Optional: update permission mode
 }
 
 export interface SessionUpdateResponse {
   success: boolean;
   sessionId: string;
-  updatedFields: SessionInfo;    // Returns the complete updated session info
+  updatedFields: SessionInfo; // Returns the complete updated session info
 }
 
 // Notification types
@@ -285,9 +309,9 @@ export interface Notification {
 
 // Working directories API types
 export interface WorkingDirectory {
-  path: string;              // Full absolute path (e.g., "/home/user/projects/myapp")
-  shortname: string;         // Smart suffix (e.g., "myapp" or "projects/myapp")
-  lastDate: string;          // ISO timestamp of most recent conversation
+  path: string; // Full absolute path (e.g., "/home/user/projects/myapp")
+  shortname: string; // Smart suffix (e.g., "myapp" or "projects/myapp")
+  lastDate: string; // ISO timestamp of most recent conversation
   conversationCount: number; // Total conversations in this directory
 }
 
@@ -306,7 +330,6 @@ export interface Command {
 export interface CommandsResponse {
   commands: Command[];
 }
-
 
 // Gemini API types
 export interface GeminiHealthResponse {

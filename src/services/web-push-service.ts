@@ -86,18 +86,24 @@ export class WebPushService {
       this.isInitialized = true;
     } catch (error) {
       this.logger.error('Failed to initialize web push database', error);
-      throw new Error(`WebPush database initialization failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `WebPush database initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   private prepareStatements(): void {
     this.insertStmt = this.db.prepare(
-      'INSERT OR REPLACE INTO subscriptions (endpoint, p256dh, auth, user_agent, created_at, last_seen, expired) VALUES (?, ?, ?, ?, COALESCE((SELECT created_at FROM subscriptions WHERE endpoint = ?), ?), ?, 0)'
+      'INSERT OR REPLACE INTO subscriptions (endpoint, p256dh, auth, user_agent, created_at, last_seen, expired) VALUES (?, ?, ?, ?, COALESCE((SELECT created_at FROM subscriptions WHERE endpoint = ?), ?), ?, 0)',
     );
     this.deleteStmt = this.db.prepare('DELETE FROM subscriptions WHERE endpoint = ?');
-    this.upsertSeenStmt = this.db.prepare('UPDATE subscriptions SET last_seen = ?, expired = ? WHERE endpoint = ?');
+    this.upsertSeenStmt = this.db.prepare(
+      'UPDATE subscriptions SET last_seen = ?, expired = ? WHERE endpoint = ?',
+    );
     this.listStmt = this.db.prepare('SELECT * FROM subscriptions WHERE expired = 0');
-    this.countStmt = this.db.prepare('SELECT COUNT(*) as count FROM subscriptions WHERE expired = 0');
+    this.countStmt = this.db.prepare(
+      'SELECT COUNT(*) as count FROM subscriptions WHERE expired = 0',
+    );
   }
 
   private configureVapid(): void {
@@ -114,21 +120,23 @@ export class WebPushService {
         publicKey = keys.publicKey;
         privateKey = keys.privateKey;
         // Persist into config (partial update preserves other interface fields)
-        void this.configService.updateConfig({
-          interface: {
-            ...config.interface,
-            notifications: {
-              ...(config.interface.notifications || { enabled: true }),
-              webPush: {
-                subject,
-                vapidPublicKey: publicKey,
-                vapidPrivateKey: privateKey,
+        void this.configService
+          .updateConfig({
+            interface: {
+              ...config.interface,
+              notifications: {
+                ...(config.interface.notifications || { enabled: true }),
+                webPush: {
+                  subject,
+                  vapidPublicKey: publicKey,
+                  vapidPrivateKey: privateKey,
+                },
               },
             },
-          },
-        }).catch((_err: unknown) => {
-          this.logger.warn('Failed to persist generated VAPID keys to config');
-        });
+          })
+          .catch((_err: unknown) => {
+            this.logger.warn('Failed to persist generated VAPID keys to config');
+          });
         this.logger.info('Generated and applied VAPID keys');
         generated = true;
       } catch (_e) {
@@ -137,7 +145,9 @@ export class WebPushService {
     }
 
     if (!publicKey || !privateKey) {
-      this.logger.warn('Web Push VAPID keys are not configured. Native push will be disabled until set in config');
+      this.logger.warn(
+        'Web Push VAPID keys are not configured. Native push will be disabled until set in config',
+      );
       return;
     }
 
@@ -155,7 +165,8 @@ export class WebPushService {
   }
 
   getPublicKey(): string | null {
-    const publicKey = this.configService.getConfig().interface.notifications?.webPush?.vapidPublicKey || null;
+    const publicKey =
+      this.configService.getConfig().interface.notifications?.webPush?.vapidPublicKey || null;
     return publicKey || null;
   }
 
@@ -171,7 +182,10 @@ export class WebPushService {
 
   addOrUpdateSubscription(subscription: PushSubscription, userAgent = ''): void {
     const now = new Date().toISOString();
-    const { endpoint, keys } = subscription as unknown as { endpoint: string; keys: { p256dh: string; auth: string } };
+    const { endpoint, keys } = subscription as unknown as {
+      endpoint: string;
+      keys: { p256dh: string; auth: string };
+    };
     if (!endpoint || !keys?.p256dh || !keys?.auth) {
       throw new Error('Invalid subscription payload: missing endpoint/keys');
     }
@@ -187,7 +201,7 @@ export class WebPushService {
     return this.listStmt.all() as SubscriptionRow[];
   }
 
-  async broadcast(payload: WebPushPayload): Promise<{ sent: number; failed: number }>{
+  async broadcast(payload: WebPushPayload): Promise<{ sent: number; failed: number }> {
     await this.initialize();
     const subs = this.listSubscriptions();
     let sent = 0;
@@ -209,15 +223,19 @@ export class WebPushService {
           const status = undefined;
           if (status === 404 || status === 410) {
             this.upsertSeenStmt.run(new Date().toISOString(), 1, row.endpoint);
-            this.logger.info('Expired web push subscription removed', { endpoint: row.endpoint, status });
+            this.logger.info('Expired web push subscription removed', {
+              endpoint: row.endpoint,
+              status,
+            });
           } else {
-            this.logger.error('Failed sending web push notification', { endpoint: row.endpoint, statusCode: status });
+            this.logger.error('Failed sending web push notification', {
+              endpoint: row.endpoint,
+              statusCode: status,
+            });
           }
         }
-      })
+      }),
     );
     return { sent, failed };
   }
 }
-
-

@@ -21,18 +21,18 @@ interface ToolUseRendererProps {
   onToggleTaskExpanded?: (toolUseId: string) => void;
 }
 
-export function ToolUseRenderer({ 
-  toolUse, 
-  toolResult, 
+export function ToolUseRenderer({
+  toolUse,
+  toolResult,
   toolResults = {},
   workingDirectory,
   childrenMessages = {},
   expandedTasks = new Set(),
-  onToggleTaskExpanded
+  onToggleTaskExpanded,
 }: ToolUseRendererProps) {
   return (
     <>
-      <ToolLabel 
+      <ToolLabel
         toolName={toolUse.name}
         toolInput={toolUse.input}
         workingDirectory={workingDirectory}

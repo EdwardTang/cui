@@ -3,7 +3,10 @@ import type { StreamEvent, StreamStatus } from '../types';
 /**
  * Maps stream events to user-friendly status messages
  */
-export function mapStreamEventToStatus(event: StreamEvent, currentStatus?: StreamStatus): Partial<StreamStatus> {
+export function mapStreamEventToStatus(
+  event: StreamEvent,
+  currentStatus?: StreamStatus,
+): Partial<StreamStatus> {
   const updates: Partial<StreamStatus> = {
     lastEvent: event,
     lastEventTime: new Date().toISOString(),
@@ -67,14 +70,17 @@ export function mapStreamEventToStatus(event: StreamEvent, currentStatus?: Strea
 /**
  * Maps assistant messages to status updates
  */
-function mapAssistantMessage(event: Extract<StreamEvent, { type: 'assistant' }>, updates: Partial<StreamStatus>): Partial<StreamStatus> {
+function mapAssistantMessage(
+  event: Extract<StreamEvent, { type: 'assistant' }>,
+  updates: Partial<StreamStatus>,
+): Partial<StreamStatus> {
   const message = event.message;
   const result: Partial<StreamStatus> = { ...updates };
 
   if (message.content && Array.isArray(message.content)) {
     // Check for tool use
-    const toolUseItems = message.content.filter(item => 
-      typeof item === 'object' && 'type' in item && item.type === 'tool_use'
+    const toolUseItems = message.content.filter(
+      (item) => typeof item === 'object' && 'type' in item && item.type === 'tool_use',
     );
 
     if (toolUseItems.length > 0) {
@@ -88,7 +94,6 @@ function mapAssistantMessage(event: Extract<StreamEvent, { type: 'assistant' }>,
       // No tools, just thinking
       result.currentStatus = 'Thinking...';
     }
-
   } else {
     // Fallback for non-array content
     result.currentStatus = 'Processing...';
@@ -100,7 +105,10 @@ function mapAssistantMessage(event: Extract<StreamEvent, { type: 'assistant' }>,
 /**
  * Maps result messages to status updates
  */
-function mapResultMessage(event: Extract<StreamEvent, { type: 'result' }>, updates: Partial<StreamStatus>): Partial<StreamStatus> {
+function mapResultMessage(
+  event: Extract<StreamEvent, { type: 'result' }>,
+  updates: Partial<StreamStatus>,
+): Partial<StreamStatus> {
   const result: Partial<StreamStatus> = { ...updates };
 
   switch (event.subtype) {
@@ -136,32 +144,32 @@ function mapResultMessage(event: Extract<StreamEvent, { type: 'result' }>, updat
 function getToolStatusMessage(toolName: string): string {
   const toolStatusMap: Record<string, string> = {
     // File operations
-    'Read': 'Reading file...',
-    'Write': 'Writing file...',
-    'Edit': 'Editing file...',
-    'MultiEdit': 'Editing multiple sections...',
-    'NotebookRead': 'Reading notebook...',
-    'NotebookEdit': 'Editing notebook...',
-    
+    Read: 'Reading file...',
+    Write: 'Writing file...',
+    Edit: 'Editing file...',
+    MultiEdit: 'Editing multiple sections...',
+    NotebookRead: 'Reading notebook...',
+    NotebookEdit: 'Editing notebook...',
+
     // Search operations
-    'Grep': 'Searching files...',
-    'Glob': 'Finding files...',
-    'LS': 'Listing directory...',
-    
+    Grep: 'Searching files...',
+    Glob: 'Finding files...',
+    LS: 'Listing directory...',
+
     // System operations
-    'Bash': 'Running command...',
-    'Task': 'Running task...',
-    
+    Bash: 'Running command...',
+    Task: 'Running task...',
+
     // Web operations
-    'WebFetch': 'Fetching web content...',
-    'WebSearch': 'Searching web...',
-    
+    WebFetch: 'Fetching web content...',
+    WebSearch: 'Searching web...',
+
     // Todo operations
-    'TodoRead': 'Reading To-Do...',
-    'TodoWrite': 'Updating To-Do...',
-    
+    TodoRead: 'Reading To-Do...',
+    TodoWrite: 'Updating To-Do...',
+
     // Planning
-    'exit_plan_mode': 'Finalizing plan...',
+    exit_plan_mode: 'Finalizing plan...',
   };
 
   return toolStatusMap[toolName] || `Running ${toolName}...`;
@@ -178,12 +186,21 @@ export function extractToolMetrics(events: StreamEvent[]): StreamStatus['toolMet
     writeCount: 0,
   };
 
-  events.forEach(event => {
-    if (event.type === 'assistant' && event.message.content && Array.isArray(event.message.content)) {
-      event.message.content.forEach(item => {
-        if (typeof item === 'object' && 'type' in item && item.type === 'tool_use' && 'name' in item) {
+  events.forEach((event) => {
+    if (
+      event.type === 'assistant' &&
+      event.message.content &&
+      Array.isArray(event.message.content)
+    ) {
+      event.message.content.forEach((item) => {
+        if (
+          typeof item === 'object' &&
+          'type' in item &&
+          item.type === 'tool_use' &&
+          'name' in item
+        ) {
           const toolName = item.name as string;
-          
+
           // Count edits and writes
           if (toolName === 'Edit' || toolName === 'MultiEdit') {
             metrics.editCount++;
@@ -205,7 +222,7 @@ export function getConversationSummary(events: StreamEvent[]): string {
   if (events.length === 0) return 'No activity';
 
   const lastEvent = events[events.length - 1];
-  
+
   // Check if conversation is complete
   if (lastEvent.type === 'result') {
     if (lastEvent.subtype === 'success') {
@@ -218,20 +235,24 @@ export function getConversationSummary(events: StreamEvent[]): string {
   // Look for the last meaningful activity
   for (let i = events.length - 1; i >= 0; i--) {
     const event = events[i];
-    
-    if (event.type === 'assistant' && event.message.content && Array.isArray(event.message.content)) {
-      const toolUse = event.message.content.find(item => 
-        typeof item === 'object' && 'type' in item && item.type === 'tool_use'
+
+    if (
+      event.type === 'assistant' &&
+      event.message.content &&
+      Array.isArray(event.message.content)
+    ) {
+      const toolUse = event.message.content.find(
+        (item) => typeof item === 'object' && 'type' in item && item.type === 'tool_use',
       );
-      
+
       if (toolUse && typeof toolUse === 'object' && 'name' in toolUse) {
         return `Last action: ${toolUse.name}`;
       }
-      
-      const textContent = event.message.content.find(item => 
-        typeof item === 'object' && 'type' in item && item.type === 'text'
+
+      const textContent = event.message.content.find(
+        (item) => typeof item === 'object' && 'type' in item && item.type === 'text',
       );
-      
+
       if (textContent && typeof textContent === 'object' && 'text' in textContent) {
         const text = textContent.text as string;
         return text.length > 50 ? text.substring(0, 47) + '...' : text;

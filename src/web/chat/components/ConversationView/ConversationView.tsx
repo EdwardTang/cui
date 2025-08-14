@@ -5,7 +5,12 @@ import { Composer, ComposerRef } from '@/web/chat/components/Composer';
 import { ConversationHeader } from '../ConversationHeader/ConversationHeader';
 import { api } from '../../services/api';
 import { useStreaming, useConversationMessages } from '../../hooks';
-import type { ChatMessage, ConversationDetailsResponse, ConversationMessage, ConversationSummary } from '../../types';
+import type {
+  ChatMessage,
+  ConversationDetailsResponse,
+  ConversationMessage,
+  ConversationSummary,
+} from '../../types';
 
 export function ConversationView() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -53,7 +58,7 @@ export function ConversationView() {
   // Clear navigation state to prevent issues on refresh
   useEffect(() => {
     const state = location.state;
-    
+
     if (state) {
       // Clear the state to prevent issues on refresh
       window.history.replaceState({}, document.title);
@@ -64,7 +69,7 @@ export function ConversationView() {
   useEffect(() => {
     // Clear streamingId when sessionId changes
     setStreamingId(null);
-    
+
     return () => {
       // Clear streaming when navigating away
       setStreamingId(null);
@@ -75,60 +80,66 @@ export function ConversationView() {
   useEffect(() => {
     const loadConversation = async () => {
       if (!sessionId) return;
-      
+
       setIsLoading(true);
       setError(null);
 
       try {
         const details = await api.getConversationDetails(sessionId);
         const chatMessages = convertToChatlMessages(details);
-        
+
         // Always load fresh messages from backend
         setAllMessages(chatMessages);
-        
+
         // Set working directory from the most recent message with a working directory
-        const messagesWithCwd = chatMessages.filter(msg => msg.workingDirectory);
+        const messagesWithCwd = chatMessages.filter((msg) => msg.workingDirectory);
         if (messagesWithCwd.length > 0) {
           const latestCwd = messagesWithCwd[messagesWithCwd.length - 1].workingDirectory;
           if (latestCwd) {
             setCurrentWorkingDirectory(latestCwd);
           }
         }
-        
+
         // Check if this conversation has an active stream
         const conversationsResponse = await api.getConversations({ limit: 100 });
         const currentConversation = conversationsResponse.conversations.find(
-          conv => conv.sessionId === sessionId
+          (conv) => conv.sessionId === sessionId,
         );
-        
+
         if (currentConversation) {
           setConversationSummary(currentConversation);
-          
+
           // Set conversation title from custom name or summary
-          const title = currentConversation.sessionInfo.custom_name || currentConversation.summary || 'Untitled';
+          const title =
+            currentConversation.sessionInfo.custom_name ||
+            currentConversation.summary ||
+            'Untitled';
           setConversationTitle(title);
-          
+
           if (currentConversation.status === 'ongoing' && currentConversation.streamingId) {
             // Active stream, check for existing pending permissions
             setStreamingId(currentConversation.streamingId);
-            
+
             try {
-              const { permissions } = await api.getPermissions({ 
-                streamingId: currentConversation.streamingId, 
-                status: 'pending' 
+              const { permissions } = await api.getPermissions({
+                streamingId: currentConversation.streamingId,
+                status: 'pending',
               });
-              
+
               if (permissions.length > 0) {
                 // Take the most recent pending permission (by timestamp)
-                const mostRecentPermission = permissions.reduce((latest, current) => 
-                  new Date(current.timestamp) > new Date(latest.timestamp) ? current : latest
+                const mostRecentPermission = permissions.reduce((latest, current) =>
+                  new Date(current.timestamp) > new Date(latest.timestamp) ? current : latest,
                 );
-                
+
                 setPermissionRequest(mostRecentPermission);
               }
             } catch (permissionError) {
               // Don't break conversation loading if permission fetching fails
-              console.warn('[ConversationView] Failed to fetch existing permissions:', permissionError);
+              console.warn(
+                '[ConversationView] Failed to fetch existing permissions:',
+                permissionError,
+              );
             }
           }
         }
@@ -136,7 +147,7 @@ export function ConversationView() {
         setError(err.message || 'Failed to load conversation');
       } finally {
         setIsLoading(false);
-        
+
         // Focus the input after loading is complete
         setTimeout(() => {
           composerRef.current?.focusInput();
@@ -155,7 +166,12 @@ export function ConversationView() {
     },
   });
 
-  const handleSendMessage = async (message: string, workingDirectory?: string, model?: string, permissionMode?: string) => {
+  const handleSendMessage = async (
+    message: string,
+    workingDirectory?: string,
+    model?: string,
+    permissionMode?: string,
+  ) => {
     if (!sessionId) return;
 
     setError(null);
@@ -166,7 +182,7 @@ export function ConversationView() {
         initialPrompt: message,
         workingDirectory: workingDirectory || currentWorkingDirectory,
         model,
-        permissionMode
+        permissionMode,
       });
 
       // Navigate immediately to the new session
@@ -182,13 +198,13 @@ export function ConversationView() {
     try {
       // Call the API to stop the conversation
       await api.stopConversation(streamingId);
-      
+
       // Disconnect the streaming connection
       disconnect();
-      
+
       // Clear the streaming ID
       setStreamingId(null);
-      
+
       // Streaming has stopped
     } catch (err: any) {
       console.error('Failed to stop conversation:', err);
@@ -196,7 +212,11 @@ export function ConversationView() {
     }
   };
 
-  const handlePermissionDecision = async (requestId: string, action: 'approve' | 'deny', denyReason?: string) => {
+  const handlePermissionDecision = async (
+    requestId: string,
+    action: 'approve' | 'deny',
+    denyReason?: string,
+  ) => {
     if (isPermissionDecisionLoading) return;
 
     setIsPermissionDecisionLoading(true);
@@ -212,47 +232,62 @@ export function ConversationView() {
     }
   };
 
-
   return (
-    <div className="h-full flex flex-col bg-background relative" role="main" aria-label="Conversation view">
-      <ConversationHeader 
+    <div
+      className="h-full flex flex-col bg-background relative"
+      role="main"
+      aria-label="Conversation view"
+    >
+      <ConversationHeader
         title={conversationSummary?.sessionInfo.custom_name || conversationTitle}
         sessionId={sessionId}
         isArchived={conversationSummary?.sessionInfo.archived || false}
         isPinned={conversationSummary?.sessionInfo.pinned || false}
-        subtitle={conversationSummary ? {
-          date: new Date(conversationSummary.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          repo: conversationSummary.projectPath.split('/').pop() || 'project',
-          commitSHA: conversationSummary.sessionInfo.initial_commit_head,
-          changes: conversationSummary.toolMetrics ? {
-            additions: conversationSummary.toolMetrics.linesAdded,
-            deletions: conversationSummary.toolMetrics.linesRemoved
-          } : undefined
-        } : undefined}
+        subtitle={
+          conversationSummary
+            ? {
+                date: new Date(conversationSummary.createdAt).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                }),
+                repo: conversationSummary.projectPath.split('/').pop() || 'project',
+                commitSHA: conversationSummary.sessionInfo.initial_commit_head,
+                changes: conversationSummary.toolMetrics
+                  ? {
+                      additions: conversationSummary.toolMetrics.linesAdded,
+                      deletions: conversationSummary.toolMetrics.linesRemoved,
+                    }
+                  : undefined,
+              }
+            : undefined
+        }
         onTitleUpdate={async (newTitle) => {
           // Update local state immediately for instant feedback
           setConversationTitle(newTitle);
-          
+
           // Update the conversation summary with the new custom name
           if (conversationSummary) {
             setConversationSummary({
               ...conversationSummary,
               sessionInfo: {
                 ...conversationSummary.sessionInfo,
-                custom_name: newTitle
-              }
+                custom_name: newTitle,
+              },
             });
           }
-          
+
           // Optionally refresh from backend to ensure consistency
           try {
             const conversationsResponse = await api.getConversations({ limit: 100 });
             const updatedConversation = conversationsResponse.conversations.find(
-              conv => conv.sessionId === sessionId
+              (conv) => conv.sessionId === sessionId,
             );
             if (updatedConversation) {
               setConversationSummary(updatedConversation);
-              const title = updatedConversation.sessionInfo.custom_name || updatedConversation.summary || 'Untitled';
+              const title =
+                updatedConversation.sessionInfo.custom_name ||
+                updatedConversation.summary ||
+                'Untitled';
               setConversationTitle(title);
             }
           } catch (error) {
@@ -265,15 +300,15 @@ export function ConversationView() {
               ...conversationSummary,
               sessionInfo: {
                 ...conversationSummary.sessionInfo,
-                pinned: isPinned
-              }
+                pinned: isPinned,
+              },
             });
           }
         }}
       />
-      
+
       {error && (
-        <div 
+        <div
           className="bg-red-500/10 border-b border-red-500 text-red-600 dark:text-red-400 px-4 py-2 text-sm text-center animate-in slide-in-from-top duration-300"
           role="alert"
           aria-label="Error message"
@@ -282,7 +317,7 @@ export function ConversationView() {
         </div>
       )}
 
-      <MessageList 
+      <MessageList
         messages={messages}
         toolResults={toolResults}
         childrenMessages={childrenMessages}
@@ -292,7 +327,7 @@ export function ConversationView() {
         isStreaming={!!streamingId}
       />
 
-      <div 
+      <div
         className="sticky bottom-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm z-10 w-full flex justify-center px-2 pb-6"
         aria-label="Message composer section"
       >
@@ -335,7 +370,6 @@ export function ConversationView() {
           />
         </div>
       </div>
-
     </div>
   );
 }
@@ -344,19 +378,19 @@ export function ConversationView() {
 function convertToChatlMessages(details: ConversationDetailsResponse): ChatMessage[] {
   // Create a map for quick parent message lookup
   const messageMap = new Map<string, ConversationMessage>();
-  details.messages.forEach(msg => messageMap.set(msg.uuid, msg));
+  details.messages.forEach((msg) => messageMap.set(msg.uuid, msg));
 
   return details.messages
-    .filter(msg => !msg.isSidechain) // Filter out sidechain messages
-    .map(msg => {
+    .filter((msg) => !msg.isSidechain) // Filter out sidechain messages
+    .map((msg) => {
       // Extract content from the message structure
       let content = msg.message;
-      
+
       // Handle Anthropic message format
       if (typeof msg.message === 'object' && 'content' in msg.message) {
         content = msg.message.content;
       }
-      
+
       return {
         id: msg.uuid,
         messageId: msg.uuid, // For historical messages, use UUID as messageId

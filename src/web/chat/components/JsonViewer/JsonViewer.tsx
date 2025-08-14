@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Copy, Check } from 'lucide-react';
-import { cn } from "../../lib/utils";
+import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
 
 interface JsonViewerProps {
@@ -60,7 +60,9 @@ export function JsonViewer({ data, collapsed = false, depth = 0 }: JsonViewerPro
           </button>
           <span className="text-foreground">[</span>
           {isCollapsed ? (
-            <span className="text-neutral-500 dark:text-neutral-400 italic mx-1">...{value.length} items</span>
+            <span className="text-neutral-500 dark:text-neutral-400 italic mx-1">
+              ...{value.length} items
+            </span>
           ) : (
             <div className="ml-[18px]">
               {value.map((item, index) => (
@@ -94,13 +96,15 @@ export function JsonViewer({ data, collapsed = false, depth = 0 }: JsonViewerPro
           </button>
           <span className="text-foreground">{'{'}</span>
           {isCollapsed ? (
-            <span className="text-neutral-500 dark:text-neutral-400 italic mx-1">...{entries.length} properties</span>
+            <span className="text-neutral-500 dark:text-neutral-400 italic mx-1">
+              ...{entries.length} properties
+            </span>
           ) : (
             <div className="ml-[18px]">
               {entries.map(([k, v], index) => (
                 <div key={k} className="my-0.5">
                   <span className="text-blue-700 dark:text-blue-300">"{k}"</span>
-                   <span className="text-foreground mx-1">:</span>
+                  <span className="text-foreground mx-1">:</span>
                   {renderValue(v, k)}
                   {index < entries.length - 1 && <span className="text-foreground">,</span>}
                 </div>

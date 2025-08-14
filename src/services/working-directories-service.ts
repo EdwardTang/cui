@@ -7,7 +7,7 @@ export class WorkingDirectoriesService {
 
   constructor(
     private historyReader: ClaudeHistoryReader,
-    logger: Logger
+    logger: Logger,
   ) {
     this.logger = logger.child({ component: 'WorkingDirectoriesService' });
   }
@@ -16,12 +16,15 @@ export class WorkingDirectoriesService {
     try {
       // Get all conversations from history
       const { conversations } = await this.historyReader.listConversations();
-      
+
       // Build directory map with metadata
-      const directoryMap = new Map<string, {
-        lastDate: Date;
-        count: number;
-      }>();
+      const directoryMap = new Map<
+        string,
+        {
+          lastDate: Date;
+          count: number;
+        }
+      >();
 
       for (const conversation of conversations) {
         const path = conversation.projectPath;
@@ -33,7 +36,7 @@ export class WorkingDirectoriesService {
         if (!existing || conversationDate > existing.lastDate) {
           directoryMap.set(path, {
             lastDate: conversationDate,
-            count: (existing?.count || 0) + 1
+            count: (existing?.count || 0) + 1,
           });
         } else {
           existing.count++;
@@ -51,22 +54,20 @@ export class WorkingDirectoriesService {
           path,
           shortname: shortnames.get(path) || path.split('/').pop() || path,
           lastDate: metadata.lastDate.toISOString().replace(/\.\d{3}Z$/, 'Z'), // Remove milliseconds for consistency
-          conversationCount: metadata.count
+          conversationCount: metadata.count,
         });
       }
 
       // Sort by lastDate descending
-      directories.sort((a, b) => 
-        new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime()
-      );
+      directories.sort((a, b) => new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime());
 
-      this.logger.debug('Retrieved working directories', { 
-        totalDirectories: directories.length 
+      this.logger.debug('Retrieved working directories', {
+        totalDirectories: directories.length,
       });
 
       return {
         directories,
-        totalCount: directories.length
+        totalCount: directories.length,
       };
     } catch (error) {
       this.logger.error('Failed to get working directories', error);
@@ -76,7 +77,7 @@ export class WorkingDirectoriesService {
 
   /**
    * Compute shortest unique suffixes for a list of paths
-   * 
+   *
    * Examples:
    * - ["/home/alice/project", "/home/bob/project"] -> ["alice/project", "bob/project"]
    * - ["/home/user/web", "/home/user/api"] -> ["web", "api"]
@@ -84,19 +85,19 @@ export class WorkingDirectoriesService {
    */
   private computeShortnames(paths: string[]): Map<string, string> {
     const result = new Map<string, string>();
-    
+
     // Handle edge cases
     if (paths.length === 0) return result;
     if (paths.length === 1) {
-      const segments = paths[0].split('/').filter(s => s);
+      const segments = paths[0].split('/').filter((s) => s);
       result.set(paths[0], segments[segments.length - 1] || paths[0]);
       return result;
     }
 
     // Split all paths into segments
-    const pathSegments = paths.map(path => ({
+    const pathSegments = paths.map((path) => ({
       path,
-      segments: path.split('/').filter(s => s)
+      segments: path.split('/').filter((s) => s),
     }));
 
     // For each path, find the shortest unique suffix
@@ -107,18 +108,18 @@ export class WorkingDirectoriesService {
       // Keep adding segments until we have a unique suffix
       while (suffixLength <= segments.length) {
         const suffix = segments.slice(-suffixLength).join('/');
-        
+
         // Check if this suffix is unique among all paths
-        const isUnique = pathSegments.every(other => 
-          other.path === path || 
-          other.segments.slice(-suffixLength).join('/') !== suffix
+        const isUnique = pathSegments.every(
+          (other) =>
+            other.path === path || other.segments.slice(-suffixLength).join('/') !== suffix,
         );
 
         if (isUnique) {
           shortname = suffix;
           break;
         }
-        
+
         suffixLength++;
       }
 

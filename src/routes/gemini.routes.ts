@@ -19,7 +19,7 @@ const upload = multer({
     } else {
       cb(new Error('Only audio files are allowed'));
     }
-  }
+  },
 });
 
 export function createGeminiRoutes(geminiService: GeminiService): Router {
@@ -38,42 +38,46 @@ export function createGeminiRoutes(geminiService: GeminiService): Router {
   });
 
   // Transcribe endpoint - accepts both file upload and base64
-  router.post('/transcribe', upload.single('audio'), async (req: RequestWithRequestId, res, next) => {
-    try {
-      logger.debug('Transcribe requested', { requestId: req.requestId });
+  router.post(
+    '/transcribe',
+    upload.single('audio'),
+    async (req: RequestWithRequestId, res, next) => {
+      try {
+        logger.debug('Transcribe requested', { requestId: req.requestId });
 
-      let audio: string;
-      let mimeType: string;
+        let audio: string;
+        let mimeType: string;
 
-      if (req.file) {
-        // Handle file upload
-        audio = req.file.buffer.toString('base64');
-        mimeType = req.file.mimetype;
-        logger.debug('Processing uploaded audio file', { 
-          mimeType, 
-          size: req.file.size,
-          requestId: req.requestId 
-        });
-      } else if (req.body.audio && req.body.mimeType) {
-        // Handle base64 input
-        const transcribeRequest = req.body as GeminiTranscribeRequest;
-        audio = transcribeRequest.audio;
-        mimeType = transcribeRequest.mimeType;
-        logger.debug('Processing base64 audio', { 
-          mimeType,
-          audioLength: audio.length,
-          requestId: req.requestId 
-        });
-      } else {
-        throw new CUIError('INVALID_REQUEST', 'No audio provided', 400);
+        if (req.file) {
+          // Handle file upload
+          audio = req.file.buffer.toString('base64');
+          mimeType = req.file.mimetype;
+          logger.debug('Processing uploaded audio file', {
+            mimeType,
+            size: req.file.size,
+            requestId: req.requestId,
+          });
+        } else if (req.body.audio && req.body.mimeType) {
+          // Handle base64 input
+          const transcribeRequest = req.body as GeminiTranscribeRequest;
+          audio = transcribeRequest.audio;
+          mimeType = transcribeRequest.mimeType;
+          logger.debug('Processing base64 audio', {
+            mimeType,
+            audioLength: audio.length,
+            requestId: req.requestId,
+          });
+        } else {
+          throw new CUIError('INVALID_REQUEST', 'No audio provided', 400);
+        }
+
+        const result = await geminiService.transcribe(audio, mimeType);
+        res.json(result);
+      } catch (error) {
+        next(error);
       }
-
-      const result = await geminiService.transcribe(audio, mimeType);
-      res.json(result);
-    } catch (error) {
-      next(error);
-    }
-  });
+    },
+  );
 
   // Summarize endpoint
   router.post('/summarize', async (req: RequestWithRequestId, res, next) => {
@@ -81,14 +85,14 @@ export function createGeminiRoutes(geminiService: GeminiService): Router {
       logger.debug('Summarize requested', { requestId: req.requestId });
 
       const summarizeRequest = req.body as GeminiSummarizeRequest;
-      
+
       if (!summarizeRequest.text) {
         throw new CUIError('INVALID_REQUEST', 'No text provided', 400);
       }
 
-      logger.debug('Summarizing text', { 
+      logger.debug('Summarizing text', {
         textLength: summarizeRequest.text.length,
-        requestId: req.requestId 
+        requestId: req.requestId,
       });
 
       const result = await geminiService.summarize(summarizeRequest.text);

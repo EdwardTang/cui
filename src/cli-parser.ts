@@ -14,10 +14,10 @@ export function parseArgs(argv: string[]): CLIConfig {
   const logger = createLogger('CLIParser');
   const args = argv.slice(2);
   const config: CLIConfig = {};
-  
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    
+
     switch (arg) {
       case '--port':
         if (i + 1 < args.length) {
@@ -33,7 +33,7 @@ export function parseArgs(argv: string[]): CLIConfig {
           process.exit(1);
         }
         break;
-        
+
       case '--host':
         if (i + 1 < args.length) {
           config.host = args[++i];
@@ -42,7 +42,7 @@ export function parseArgs(argv: string[]): CLIConfig {
           process.exit(1);
         }
         break;
-        
+
       case '--token':
         if (i + 1 < args.length) {
           config.token = args[++i];
@@ -51,17 +51,19 @@ export function parseArgs(argv: string[]): CLIConfig {
           process.exit(1);
         }
         break;
-        
+
       case '--skip-auth-token':
         config.skipAuthToken = true;
         break;
-        
+
       default:
         logger.error(`Unknown argument: ${arg}`);
-        logger.info('Usage: cui-server [--port <number>] [--host <string>] [--token <string>] [--skip-auth-token]');
+        logger.info(
+          'Usage: cui-server [--port <number>] [--host <string>] [--token <string>] [--skip-auth-token]',
+        );
         process.exit(1);
     }
   }
-  
+
   return config;
 }

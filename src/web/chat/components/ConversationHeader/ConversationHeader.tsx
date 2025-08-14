@@ -4,7 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { Button } from '@/web/chat/components/ui/button';
 import { Input } from '@/web/chat/components/ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/web/chat/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/web/chat/components/ui/tooltip';
 import { MoreOptionsMenu } from '../MoreOptionsMenu';
 
 interface ConversationHeaderProps {
@@ -25,7 +30,15 @@ interface ConversationHeaderProps {
   onPinToggle?: (isPinned: boolean) => void;
 }
 
-export function ConversationHeader({ title, sessionId, isArchived = false, isPinned = false, subtitle, onTitleUpdate, onPinToggle }: ConversationHeaderProps) {
+export function ConversationHeader({
+  title,
+  sessionId,
+  isArchived = false,
+  isPinned = false,
+  subtitle,
+  onTitleUpdate,
+  onPinToggle,
+}: ConversationHeaderProps) {
   const navigate = useNavigate();
   const [isRenaming, setIsRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
@@ -45,7 +58,7 @@ export function ConversationHeader({ title, sessionId, isArchived = false, isPin
 
   const handleArchive = async () => {
     if (!sessionId) return;
-    
+
     try {
       await api.updateSession(sessionId, { archived: !isArchived });
       navigate('/');
@@ -97,9 +110,9 @@ export function ConversationHeader({ title, sessionId, isArchived = false, isPin
               <p>Go back to tasks</p>
             </TooltipContent>
           </Tooltip>
-          
+
           <div className="w-px h-4 bg-border mx-1" />
-          
+
           <div className="flex flex-col min-w-0 gap-0.5">
             <div className="flex items-center gap-3">
               {isRenaming ? (
@@ -143,13 +156,19 @@ export function ConversationHeader({ title, sessionId, isArchived = false, isPin
             {subtitle && (
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 {subtitle.date && (
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">{subtitle.date}</span>
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                    {subtitle.date}
+                  </span>
                 )}
                 {subtitle.repo && (
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">{subtitle.repo}</span>
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                    {subtitle.repo}
+                  </span>
                 )}
                 {subtitle.commitSHA && (
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">{subtitle.commitSHA.slice(0, 7)}</span>
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                    {subtitle.commitSHA.slice(0, 7)}
+                  </span>
                 )}
                 {subtitle.changes && (
                   <span className="flex gap-2 font-medium">
@@ -170,7 +189,7 @@ export function ConversationHeader({ title, sessionId, isArchived = false, isPin
                 size="sm"
                 onClick={handleArchive}
                 disabled={!sessionId}
-                aria-label={isArchived ? "Unarchive Task" : "Archive Task"}
+                aria-label={isArchived ? 'Unarchive Task' : 'Archive Task'}
                 className="flex items-center gap-1.5 px-3 py-2 text-sm font-normal text-foreground hover:bg-secondary transition-colors whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Archive size={20} className="flex-shrink-0" />
@@ -181,7 +200,7 @@ export function ConversationHeader({ title, sessionId, isArchived = false, isPin
               <p>{isArchived ? 'Unarchive Task' : 'Archive Task'}</p>
             </TooltipContent>
           </Tooltip>
-          
+
           {sessionId && (
             <MoreOptionsMenu
               sessionId={sessionId}

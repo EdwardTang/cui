@@ -27,5 +27,3 @@ export function displayServerStartup(options: ServerStartupOptions): void {
     logger.info('Authentication is disabled (--skip-auth-token)');
   }
 }
-
- 

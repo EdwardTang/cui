@@ -44,15 +44,18 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
       toolMetricsService: {} as any,
     };
 
-    app.use('/api/conversations', createConversationRoutes(
-      processManager,
-      historyReader,
-      mockServices.statusTracker,
-      sessionInfoService,
-      conversationStatusManager,
-      mockServices.toolMetricsService
-    ));
-    
+    app.use(
+      '/api/conversations',
+      createConversationRoutes(
+        processManager,
+        historyReader,
+        mockServices.statusTracker,
+        sessionInfoService,
+        conversationStatusManager,
+        mockServices.toolMetricsService,
+      ),
+    );
+
     app.use((err: any, req: any, res: any, next: any) => {
       res.status(err.statusCode || 500).json({ error: err.message });
     });
@@ -69,22 +72,20 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
         mcp_servers: [],
         model: 'claude-3',
         permissionMode: 'prompt',
-        apiKeySource: 'env'
+        apiKeySource: 'env',
       };
 
       processManager.startConversation.mockResolvedValue({
         streamingId: 'stream-123',
-        systemInit: mockSystemInit
+        systemInit: mockSystemInit,
       });
 
       sessionInfoService.updateSessionInfo.mockResolvedValue({} as any);
 
-      const response = await request(app)
-        .post('/api/conversations/start')
-        .send({
-          workingDirectory: '/path/to/project',
-          initialPrompt: 'Hello Claude!'
-        });
+      const response = await request(app).post('/api/conversations/start').send({
+        workingDirectory: '/path/to/project',
+        initialPrompt: 'Hello Claude!',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.sessionId).toBe('new-session-123');
@@ -92,8 +93,8 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
         expect.objectContaining({
           workingDirectory: '/path/to/project',
           initialPrompt: 'Hello Claude!',
-          previousMessages: undefined
-        })
+          previousMessages: undefined,
+        }),
       );
     });
 
@@ -107,11 +108,11 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
         mcp_servers: [],
         model: 'claude-3',
         permissionMode: 'prompt',
-        apiKeySource: 'env'
+        apiKeySource: 'env',
       };
 
       const mockPreviousMessages = [
-        { uuid: '1', type: 'user' as const, message: 'Previous message' }
+        { uuid: '1', type: 'user' as const, message: 'Previous message' },
       ];
 
       historyReader.fetchConversation.mockResolvedValue(mockPreviousMessages as any);
@@ -119,18 +120,16 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
 
       processManager.startConversation.mockResolvedValue({
         streamingId: 'stream-123',
-        systemInit: mockSystemInit
+        systemInit: mockSystemInit,
       });
 
       sessionInfoService.updateSessionInfo.mockResolvedValue({} as any);
 
-      const response = await request(app)
-        .post('/api/conversations/start')
-        .send({
-          resumedSessionId: 'original-session-456',
-          initialPrompt: 'Continue the conversation',
-          workingDirectory: '/path/to/git/repo'
-        });
+      const response = await request(app).post('/api/conversations/start').send({
+        resumedSessionId: 'original-session-456',
+        initialPrompt: 'Continue the conversation',
+        workingDirectory: '/path/to/git/repo',
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.sessionId).toBe('new-session-123');
@@ -139,10 +138,9 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
       expect(historyReader.fetchConversation).toHaveBeenCalledWith('original-session-456');
 
       // Verify continuation_session_id was set on original session
-      expect(sessionInfoService.updateSessionInfo).toHaveBeenCalledWith(
-        'original-session-456',
-        { continuation_session_id: 'new-session-123' }
-      );
+      expect(sessionInfoService.updateSessionInfo).toHaveBeenCalledWith('original-session-456', {
+        continuation_session_id: 'new-session-123',
+      });
 
       // Verify process manager was called with previous messages
       expect(processManager.startConversation).toHaveBeenCalledWith(
@@ -150,8 +148,8 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
           workingDirectory: '/path/to/git/repo',
           initialPrompt: 'Continue the conversation',
           previousMessages: mockPreviousMessages,
-          resumedSessionId: 'original-session-456'
-        })
+          resumedSessionId: 'original-session-456',
+        }),
       );
 
       // Verify active session was registered with inherited messages
@@ -159,28 +157,24 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
         'stream-123',
         'new-session-123',
         expect.objectContaining({
-          inheritedMessages: mockPreviousMessages
-        })
+          inheritedMessages: mockPreviousMessages,
+        }),
       );
     });
 
     it('should handle missing workingDirectory validation', async () => {
-      const response = await request(app)
-        .post('/api/conversations/start')
-        .send({
-          initialPrompt: 'Hello Claude!'
-        });
+      const response = await request(app).post('/api/conversations/start').send({
+        initialPrompt: 'Hello Claude!',
+      });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('workingDirectory is required');
     });
 
     it('should handle missing initialPrompt validation', async () => {
-      const response = await request(app)
-        .post('/api/conversations/start')
-        .send({
-          workingDirectory: '/path/to/project'
-        });
+      const response = await request(app).post('/api/conversations/start').send({
+        workingDirectory: '/path/to/project',
+      });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toContain('initialPrompt is required');
@@ -196,31 +190,31 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
         mcp_servers: [],
         model: 'claude-3',
         permissionMode: 'bypassPermissions',
-        apiKeySource: 'env'
+        apiKeySource: 'env',
       };
 
       historyReader.fetchConversation.mockResolvedValue([]);
-      sessionInfoService.getSessionInfo.mockResolvedValue({ permission_mode: 'bypassPermissions' } as any);
+      sessionInfoService.getSessionInfo.mockResolvedValue({
+        permission_mode: 'bypassPermissions',
+      } as any);
 
       processManager.startConversation.mockResolvedValue({
         streamingId: 'stream-123',
-        systemInit: mockSystemInit
+        systemInit: mockSystemInit,
       });
 
-      const response = await request(app)
-        .post('/api/conversations/start')
-        .send({
-          resumedSessionId: 'original-session-456',
-          initialPrompt: 'Continue the conversation',
-          workingDirectory: '/path/to/git/repo'
-          // Note: not providing permissionMode, should inherit from original session
-        });
+      const response = await request(app).post('/api/conversations/start').send({
+        resumedSessionId: 'original-session-456',
+        initialPrompt: 'Continue the conversation',
+        workingDirectory: '/path/to/git/repo',
+        // Note: not providing permissionMode, should inherit from original session
+      });
 
       expect(response.status).toBe(200);
       expect(processManager.startConversation).toHaveBeenCalledWith(
         expect.objectContaining({
-          permissionMode: 'bypassPermissions'
-        })
+          permissionMode: 'bypassPermissions',
+        }),
       );
     });
   });
@@ -233,15 +227,13 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
     it('should archive all sessions successfully', async () => {
       sessionInfoService.archiveAllSessions.mockResolvedValue(5);
 
-      const response = await request(app)
-        .post('/api/conversations/archive-all')
-        .send();
+      const response = await request(app).post('/api/conversations/archive-all').send();
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
         success: true,
         archivedCount: 5,
-        message: 'Successfully archived 5 sessions'
+        message: 'Successfully archived 5 sessions',
       });
       expect(sessionInfoService.archiveAllSessions).toHaveBeenCalled();
     });
@@ -249,15 +241,13 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
     it('should handle archiving zero sessions', async () => {
       sessionInfoService.archiveAllSessions.mockResolvedValue(0);
 
-      const response = await request(app)
-        .post('/api/conversations/archive-all')
-        .send();
+      const response = await request(app).post('/api/conversations/archive-all').send();
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
         success: true,
         archivedCount: 0,
-        message: 'Successfully archived 0 sessions'
+        message: 'Successfully archived 0 sessions',
       });
       expect(sessionInfoService.archiveAllSessions).toHaveBeenCalled();
     });
@@ -265,15 +255,13 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
     it('should handle archiving one session with singular message', async () => {
       sessionInfoService.archiveAllSessions.mockResolvedValue(1);
 
-      const response = await request(app)
-        .post('/api/conversations/archive-all')
-        .send();
+      const response = await request(app).post('/api/conversations/archive-all').send();
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
         success: true,
         archivedCount: 1,
-        message: 'Successfully archived 1 session'
+        message: 'Successfully archived 1 session',
       });
       expect(sessionInfoService.archiveAllSessions).toHaveBeenCalled();
     });
@@ -281,9 +269,7 @@ describe('Conversation Routes - Unified Start/Resume Endpoint', () => {
     it('should handle service errors', async () => {
       sessionInfoService.archiveAllSessions.mockRejectedValue(new Error('Database error'));
 
-      const response = await request(app)
-        .post('/api/conversations/archive-all')
-        .send();
+      const response = await request(app).post('/api/conversations/archive-all').send();
 
       expect(response.status).toBe(500);
       expect(response.body.error).toBe('Database error');

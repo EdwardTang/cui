@@ -12,14 +12,15 @@ interface TaskToolProps {
   toolResults?: Record<string, any>;
 }
 
-export function TaskTool({ 
-  input, 
-  result, 
-  toolUseId, 
-  childrenMessages = {}, 
-  toolResults = {}
+export function TaskTool({
+  input,
+  result,
+  toolUseId,
+  childrenMessages = {},
+  toolResults = {},
 }: TaskToolProps) {
-  const hasChildren = toolUseId && childrenMessages[toolUseId] && childrenMessages[toolUseId].length > 0;
+  const hasChildren =
+    toolUseId && childrenMessages[toolUseId] && childrenMessages[toolUseId].length > 0;
   const children = toolUseId ? childrenMessages[toolUseId] || [] : [];
   const [isFullHeight, setIsFullHeight] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -29,7 +30,7 @@ export function TaskTool({
     if (!isFullHeight && contentRef.current && children.length > 0) {
       contentRef.current.scrollTo({
         top: contentRef.current.scrollHeight,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   }, [children.length, isFullHeight]);
@@ -44,15 +45,16 @@ export function TaskTool({
               size="sm"
               className="absolute top-2 right-2 h-6 w-6 p-0 text-muted-foreground hover:bg-background hover:text-foreground z-10"
               onClick={() => setIsFullHeight(!isFullHeight)}
-              aria-label={isFullHeight ? "Collapse height" : "Expand height"}
+              aria-label={isFullHeight ? 'Collapse height' : 'Expand height'}
             >
               {isFullHeight ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
             </Button>
-            <div 
+            <div
               ref={contentRef}
-              className={`${isFullHeight 
-                ? 'max-h-96 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border' 
-                : 'max-h-24 overflow-hidden [mask-image:linear-gradient(180deg,transparent_0,black_40%,black_45%,transparent_90%)]'
+              className={`${
+                isFullHeight
+                  ? 'max-h-96 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border'
+                  : 'max-h-24 overflow-hidden [mask-image:linear-gradient(180deg,transparent_0,black_40%,black_45%,transparent_90%)]'
               } p-4 pt-8 pb-2 relative`}
             >
               {children.map((childMessage) => (

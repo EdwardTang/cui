@@ -6,11 +6,10 @@
  * Convert absolute path to relative path if it's a subpath of working directory
  */
 export function formatFilePath(path: string, workingDirectory?: string): string {
-  
   if (!path) {
     return path;
   }
-  
+
   // If we have a working directory and the path starts with it, make it relative
   if (workingDirectory && path.startsWith(workingDirectory)) {
     const relativePath = path.slice(workingDirectory.length);
@@ -19,7 +18,7 @@ export function formatFilePath(path: string, workingDirectory?: string): string 
     const result = cleaned ? `./${cleaned}` : './';
     return result;
   }
-  
+
   // If it starts with user home directory, show as ~
   // Note: In browser environment, we can't access process.env, so we'll use common paths
   const commonHomePaths = ['/home/', '/Users/'];
@@ -29,7 +28,7 @@ export function formatFilePath(path: string, workingDirectory?: string): string 
       return result;
     }
   }
-  
+
   return path;
 }
 
@@ -50,32 +49,34 @@ export function formatToolInput(input: any, maxLength: number = 50): string {
   if (!input || typeof input !== 'object') {
     return String(input || '');
   }
-  
+
   const entries = Object.entries(input);
   if (entries.length === 0) return '';
-  
+
   if (entries.length === 1) {
     const [key, value] = entries[0];
-    const formattedValue = typeof value === 'string' && value.length > maxLength 
-      ? `"${value.slice(0, maxLength)}..."` 
-      : typeof value === 'string' 
-        ? `"${value}"` 
-        : String(value);
+    const formattedValue =
+      typeof value === 'string' && value.length > maxLength
+        ? `"${value.slice(0, maxLength)}..."`
+        : typeof value === 'string'
+          ? `"${value}"`
+          : String(value);
     return `${key}: ${formattedValue}`;
   }
-  
+
   // Multiple parameters - show key value pairs separated by commas
   const formatted = entries
     .map(([key, value]) => {
-      const formattedValue = typeof value === 'string' && value.length > maxLength 
-        ? `"${value.slice(0, maxLength)}..."` 
-        : typeof value === 'string' 
-          ? `"${value}"` 
-          : String(value);
+      const formattedValue =
+        typeof value === 'string' && value.length > maxLength
+          ? `"${value.slice(0, maxLength)}..."`
+          : typeof value === 'string'
+            ? `"${value}"`
+            : String(value);
       return `${key}: ${formattedValue}`;
     })
     .join(', ');
-    
+
   return formatted.length > maxLength ? `${formatted.slice(0, maxLength)}...` : formatted;
 }
 
@@ -84,29 +85,32 @@ export function formatToolInput(input: any, maxLength: number = 50): string {
  */
 export function extractFileCount(content: string): number {
   if (!content) return 0;
-  
+
   // Count lines that represent file/directory entries
   // LS output typically has indented structure
-  const lines = content.split('\n').filter(line => line.trim().length > 0);
-  
+  const lines = content.split('\n').filter((line) => line.trim().length > 0);
+
   // Count lines that look like file entries (have proper indentation)
-  const fileLines = lines.filter(line => line.match(/^\s*-\s+/));
-  
+  const fileLines = lines.filter((line) => line.match(/^\s*-\s+/));
+
   return fileLines.length || lines.length;
 }
 
 /**
  * Parse todo items from JSON string content
  */
-export function parseTodos(content: string): Array<{id: string; content: string; status: string}> {
+export function parseTodos(
+  content: string,
+): Array<{ id: string; content: string; status: string }> {
   try {
     const parsed = JSON.parse(content);
     if (Array.isArray(parsed)) {
-      return parsed.filter(item => 
-        item && 
-        typeof item === 'object' && 
-        typeof item.content === 'string' &&
-        typeof item.status === 'string'
+      return parsed.filter(
+        (item) =>
+          item &&
+          typeof item === 'object' &&
+          typeof item.content === 'string' &&
+          typeof item.status === 'string',
       );
     }
   } catch (e) {
@@ -114,7 +118,6 @@ export function parseTodos(content: string): Array<{id: string; content: string;
   }
   return [];
 }
-
 
 /**
  * Extract domain from URL for WebFetch

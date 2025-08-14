@@ -20,7 +20,7 @@ const createConversation = (overrides: Partial<ConversationSummary>): Conversati
     archived: false,
     continuation_session_id: '',
     initial_commit_head: '',
-    permission_mode: 'default'
+    permission_mode: 'default',
   },
   createdAt: '2024-01-01T10:00:00Z',
   updatedAt: '2024-01-01T10:00:00Z',
@@ -28,7 +28,7 @@ const createConversation = (overrides: Partial<ConversationSummary>): Conversati
   totalDuration: 100,
   model: 'claude-3',
   status: 'completed' as const,
-  ...overrides
+  ...overrides,
 });
 
 describe('WorkingDirectoriesService', () => {
@@ -54,7 +54,7 @@ describe('WorkingDirectoriesService', () => {
 
       expect(result).toEqual({
         directories: [],
-        totalCount: 0
+        totalCount: 0,
       });
     });
 
@@ -67,7 +67,7 @@ describe('WorkingDirectoriesService', () => {
           createdAt: '2024-01-01T10:00:00Z',
           updatedAt: '2024-01-01T10:00:00Z',
           messageCount: 1,
-          totalDuration: 100
+          totalDuration: 100,
         }),
         createConversation({
           sessionId: '2',
@@ -76,7 +76,7 @@ describe('WorkingDirectoriesService', () => {
           createdAt: '2024-01-02T10:00:00Z',
           updatedAt: '2024-01-02T10:00:00Z',
           messageCount: 2,
-          totalDuration: 200
+          totalDuration: 200,
         }),
         createConversation({
           sessionId: '3',
@@ -85,23 +85,26 @@ describe('WorkingDirectoriesService', () => {
           createdAt: '2024-01-03T10:00:00Z',
           updatedAt: '2024-01-03T10:00:00Z',
           messageCount: 1,
-          totalDuration: 150
-        })
+          totalDuration: 150,
+        }),
       ];
 
-      mockHistoryReader.listConversations.mockResolvedValue({ conversations: mockConversations, total: mockConversations.length });
+      mockHistoryReader.listConversations.mockResolvedValue({
+        conversations: mockConversations,
+        total: mockConversations.length,
+      });
 
       const result = await service.getWorkingDirectories();
 
       expect(result.totalCount).toBe(2);
       expect(result.directories).toHaveLength(2);
-      
-      const project1 = result.directories.find(d => d.path === '/home/user/project1');
+
+      const project1 = result.directories.find((d) => d.path === '/home/user/project1');
       expect(project1).toBeDefined();
       expect(project1!.conversationCount).toBe(2);
       expect(project1!.lastDate).toBe('2024-01-02T10:00:00Z');
-      
-      const project2 = result.directories.find(d => d.path === '/home/user/project2');
+
+      const project2 = result.directories.find((d) => d.path === '/home/user/project2');
       expect(project2).toBeDefined();
       expect(project2!.conversationCount).toBe(1);
       expect(project2!.lastDate).toBe('2024-01-03T10:00:00Z');
@@ -114,25 +117,28 @@ describe('WorkingDirectoriesService', () => {
           projectPath: '/home/user/old',
           summary: 'Old',
           createdAt: '2024-01-01T10:00:00Z',
-          updatedAt: '2024-01-01T10:00:00Z'
+          updatedAt: '2024-01-01T10:00:00Z',
         }),
         createConversation({
           sessionId: '2',
           projectPath: '/home/user/new',
           summary: 'New',
           createdAt: '2024-01-05T10:00:00Z',
-          updatedAt: '2024-01-05T10:00:00Z'
+          updatedAt: '2024-01-05T10:00:00Z',
         }),
         createConversation({
           sessionId: '3',
           projectPath: '/home/user/middle',
           summary: 'Middle',
           createdAt: '2024-01-03T10:00:00Z',
-          updatedAt: '2024-01-03T10:00:00Z'
-        })
+          updatedAt: '2024-01-03T10:00:00Z',
+        }),
       ];
 
-      mockHistoryReader.listConversations.mockResolvedValue({ conversations: mockConversations, total: mockConversations.length });
+      mockHistoryReader.listConversations.mockResolvedValue({
+        conversations: mockConversations,
+        total: mockConversations.length,
+      });
 
       const result = await service.getWorkingDirectories();
 
@@ -148,25 +154,28 @@ describe('WorkingDirectoriesService', () => {
           projectPath: '/home/user/web',
           summary: 'Web',
           createdAt: '2024-01-01T10:00:00Z',
-          updatedAt: '2024-01-01T10:00:00Z'
+          updatedAt: '2024-01-01T10:00:00Z',
         }),
         createConversation({
           sessionId: '2',
           projectPath: '/home/user/api',
           summary: 'API',
           createdAt: '2024-01-02T10:00:00Z',
-          updatedAt: '2024-01-02T10:00:00Z'
-        })
+          updatedAt: '2024-01-02T10:00:00Z',
+        }),
       ];
 
-      mockHistoryReader.listConversations.mockResolvedValue({ conversations: mockConversations, total: mockConversations.length });
+      mockHistoryReader.listConversations.mockResolvedValue({
+        conversations: mockConversations,
+        total: mockConversations.length,
+      });
 
       const result = await service.getWorkingDirectories();
 
-      const web = result.directories.find(d => d.path === '/home/user/web');
+      const web = result.directories.find((d) => d.path === '/home/user/web');
       expect(web!.shortname).toBe('web');
-      
-      const api = result.directories.find(d => d.path === '/home/user/api');
+
+      const api = result.directories.find((d) => d.path === '/home/user/api');
       expect(api!.shortname).toBe('api');
     });
 
@@ -177,25 +186,28 @@ describe('WorkingDirectoriesService', () => {
           projectPath: '/home/alice/project',
           summary: 'Alice project',
           createdAt: '2024-01-01T10:00:00Z',
-          updatedAt: '2024-01-01T10:00:00Z'
+          updatedAt: '2024-01-01T10:00:00Z',
         }),
         createConversation({
           sessionId: '2',
           projectPath: '/home/bob/project',
           summary: 'Bob project',
           createdAt: '2024-01-02T10:00:00Z',
-          updatedAt: '2024-01-02T10:00:00Z'
-        })
+          updatedAt: '2024-01-02T10:00:00Z',
+        }),
       ];
 
-      mockHistoryReader.listConversations.mockResolvedValue({ conversations: mockConversations, total: mockConversations.length });
+      mockHistoryReader.listConversations.mockResolvedValue({
+        conversations: mockConversations,
+        total: mockConversations.length,
+      });
 
       const result = await service.getWorkingDirectories();
 
-      const alice = result.directories.find(d => d.path === '/home/alice/project');
+      const alice = result.directories.find((d) => d.path === '/home/alice/project');
       expect(alice!.shortname).toBe('alice/project');
-      
-      const bob = result.directories.find(d => d.path === '/home/bob/project');
+
+      const bob = result.directories.find((d) => d.path === '/home/bob/project');
       expect(bob!.shortname).toBe('bob/project');
     });
 
@@ -206,11 +218,14 @@ describe('WorkingDirectoriesService', () => {
           projectPath: '/home/user/only-project',
           summary: 'Only',
           createdAt: '2024-01-01T10:00:00Z',
-          updatedAt: '2024-01-01T10:00:00Z'
-        })
+          updatedAt: '2024-01-01T10:00:00Z',
+        }),
       ];
 
-      mockHistoryReader.listConversations.mockResolvedValue({ conversations: mockConversations, total: mockConversations.length });
+      mockHistoryReader.listConversations.mockResolvedValue({
+        conversations: mockConversations,
+        total: mockConversations.length,
+      });
 
       const result = await service.getWorkingDirectories();
 
@@ -225,18 +240,21 @@ describe('WorkingDirectoriesService', () => {
           projectPath: '/home/user/project',
           summary: 'With path',
           createdAt: '2024-01-01T10:00:00Z',
-          updatedAt: '2024-01-01T10:00:00Z'
+          updatedAt: '2024-01-01T10:00:00Z',
         }),
         createConversation({
           sessionId: '2',
           projectPath: '', // Empty path
           summary: 'No path',
           createdAt: '2024-01-02T10:00:00Z',
-          updatedAt: '2024-01-02T10:00:00Z'
-        })
+          updatedAt: '2024-01-02T10:00:00Z',
+        }),
       ];
 
-      mockHistoryReader.listConversations.mockResolvedValue({ conversations: mockConversations, total: mockConversations.length });
+      mockHistoryReader.listConversations.mockResolvedValue({
+        conversations: mockConversations,
+        total: mockConversations.length,
+      });
 
       const result = await service.getWorkingDirectories();
 

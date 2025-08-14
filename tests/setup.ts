@@ -16,7 +16,7 @@ afterAll(async () => {
   // Clear all timers
   vi.clearAllTimers();
   vi.useRealTimers();
-  
+
   // Give async operations a chance to complete
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
 });

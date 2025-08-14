@@ -34,7 +34,7 @@ interface RouterServer {
   start(): Promise<void>;
   addHook(
     name: 'preHandler',
-    hook: (req: HttpRequest, reply: unknown) => Promise<void> | void
+    hook: (req: HttpRequest, reply: unknown) => Promise<void> | void,
   ): void;
   // The underlying Fastify app exposed by @musistudio/llms Server
   app?: {
@@ -80,7 +80,9 @@ export class ClaudeRouterService {
       return;
     }
 
-    this.logger.debug(`Router service initializing with ${this.config.providers.length} provider(s)`);
+    this.logger.debug(
+      `Router service initializing with ${this.config.providers.length} provider(s)`,
+    );
 
     try {
       // Pick an available localhost port dynamically
@@ -92,10 +94,10 @@ export class ClaudeRouterService {
           providers: this.config.providers,
           Router: this.config.rules,
           HOST: '127.0.0.1',
-          PORT: this.port
-        }
+          PORT: this.port,
+        },
       });
-      
+
       // Add routing transformation hook BEFORE the server starts
       // This hook runs BEFORE the @musistudio/llms preHandler that splits by comma
       this.server.addHook('preHandler', async (req: HttpRequest, _reply: unknown) => {
@@ -103,16 +105,16 @@ export class ClaudeRouterService {
         if (!req.url.startsWith('/v1/messages') || req.method !== 'POST') {
           return;
         }
-        
+
         try {
           const body = req.body;
           if (!body || !body.model) {
             return;
           }
-          
+
           // Apply routing transformation based on rules
           let targetModel = body.model;
-          
+
           // Check if we have specific rules for this model
           if (this.config.rules && typeof this.config.rules === 'object') {
             // Check for exact model match
@@ -131,9 +133,11 @@ export class ClaudeRouterService {
               this.logger.debug(`Routing thinking mode -> ${targetModel}`);
             }
             // Check for web search
-            else if (Array.isArray(body.tools) && 
-                     body.tools.some((tool) => tool.type?.startsWith('web_search')) && 
-                     this.config.rules.webSearch) {
+            else if (
+              Array.isArray(body.tools) &&
+              body.tools.some((tool) => tool.type?.startsWith('web_search')) &&
+              this.config.rules.webSearch
+            ) {
               targetModel = this.config.rules.webSearch;
               this.logger.debug(`Routing web search -> ${targetModel}`);
             }
@@ -143,17 +147,16 @@ export class ClaudeRouterService {
               this.logger.debug(`Routing default ${body.model} -> ${targetModel}`);
             }
           }
-          
+
           // Update the model in the request body
           // This will be in "provider,model" format for @musistudio/llms
           body.model = targetModel;
-          
         } catch (error) {
           this.logger.error('Error in router preHandler hook:', error);
           // Don't modify the request on error, let it pass through
         }
       });
-      
+
       await this.server.start();
       this.logger.info('Claude Code Router started', { port: this.port });
     } catch (error) {

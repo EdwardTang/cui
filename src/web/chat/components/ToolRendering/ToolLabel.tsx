@@ -9,16 +9,15 @@ interface ToolLabelProps {
 }
 
 export function ToolLabel({ toolName, toolInput, workingDirectory, onClick }: ToolLabelProps) {
-  
   const generateLabel = (): React.ReactNode => {
     switch (toolName) {
       case 'Read': {
         const filePath = formatFilePath(toolInput.file_path, workingDirectory);
         const offset = toolInput.offset;
         const limit = toolInput.limit;
-        
+
         let pathWithRange = filePath;
-        
+
         if (offset !== undefined && limit !== undefined) {
           pathWithRange = `${filePath}:${offset},${offset + limit}`;
         } else if (offset !== undefined) {
@@ -26,7 +25,7 @@ export function ToolLabel({ toolName, toolInput, workingDirectory, onClick }: To
         } else if (limit !== undefined) {
           pathWithRange = `${filePath}:0,${limit}`;
         }
-        
+
         return (
           <>
             <span className="font-semibold">Read</span>
@@ -34,23 +33,27 @@ export function ToolLabel({ toolName, toolInput, workingDirectory, onClick }: To
           </>
         );
       }
-      
+
       case 'Edit':
         return (
           <>
             <span className="font-semibold">Update</span>
-            <span className="font-normal">({formatFilePath(toolInput.file_path, workingDirectory)})</span>
+            <span className="font-normal">
+              ({formatFilePath(toolInput.file_path, workingDirectory)})
+            </span>
           </>
         );
-      
+
       case 'MultiEdit':
         return (
           <>
             <span className="font-semibold">MultiEdit</span>
-            <span className="font-normal">({formatFilePath(toolInput.file_path, workingDirectory)})</span>
+            <span className="font-normal">
+              ({formatFilePath(toolInput.file_path, workingDirectory)})
+            </span>
           </>
         );
-      
+
       case 'Bash':
         return (
           <>
@@ -58,37 +61,43 @@ export function ToolLabel({ toolName, toolInput, workingDirectory, onClick }: To
             <span className="font-normal">({toolInput.command || ''})</span>
           </>
         );
-      
+
       case 'Grep':
         return (
           <>
             <span className="font-semibold">Search</span>
-            <span className="font-normal">(pattern: "{toolInput.pattern || ''}", path: "{toolInput.path || ''}")</span>
+            <span className="font-normal">
+              (pattern: "{toolInput.pattern || ''}", path: "{toolInput.path || ''}")
+            </span>
           </>
         );
-      
+
       case 'Glob':
         return (
           <>
             <span className="font-semibold">Search</span>
-            <span className="font-normal">(pattern: "{toolInput.pattern || ''}", path: "{toolInput.path || ''}")</span>
+            <span className="font-normal">
+              (pattern: "{toolInput.pattern || ''}", path: "{toolInput.path || ''}")
+            </span>
           </>
         );
-      
+
       case 'LS':
         return (
           <>
             <span className="font-semibold">List</span>
-            <span className="font-normal">({formatFilePath(toolInput.path, workingDirectory)})</span>
+            <span className="font-normal">
+              ({formatFilePath(toolInput.path, workingDirectory)})
+            </span>
           </>
         );
-      
+
       case 'TodoRead':
         return <span className="font-semibold">Read Todos</span>;
-      
+
       case 'TodoWrite':
         return <span className="font-semibold">Update Todos</span>;
-      
+
       case 'WebSearch':
         return (
           <>
@@ -96,7 +105,7 @@ export function ToolLabel({ toolName, toolInput, workingDirectory, onClick }: To
             <span className="font-normal">("{toolInput.query || ''}")</span>
           </>
         );
-      
+
       case 'WebFetch':
         return (
           <>
@@ -104,7 +113,7 @@ export function ToolLabel({ toolName, toolInput, workingDirectory, onClick }: To
             <span className="font-normal">({toolInput.url || ''})</span>
           </>
         );
-      
+
       case 'Task':
         return (
           <>
@@ -112,10 +121,10 @@ export function ToolLabel({ toolName, toolInput, workingDirectory, onClick }: To
             <span className="font-normal">({toolInput.description || ''})</span>
           </>
         );
-      
+
       case 'exit_plan_mode':
         return <span className="font-semibold">Plan</span>;
-      
+
       default:
         // Fallback for any unspecified tool
         return (
@@ -128,7 +137,7 @@ export function ToolLabel({ toolName, toolInput, workingDirectory, onClick }: To
   };
 
   return (
-    <div 
+    <div
       className={`text-sm font-mono text-foreground mb-1 ${onClick ? 'cursor-pointer' : ''}`}
       onClick={onClick}
       aria-label={`Tool: ${toolName}`}

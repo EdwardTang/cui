@@ -20,7 +20,7 @@ interface Props {
 export function PreferencesModal({ onClose }: Props) {
   const [prefs, setPrefs] = useState<Preferences>({
     colorScheme: 'system',
-    language: 'auto-detect'
+    language: 'auto-detect',
   });
   const [archiveStatus, setArchiveStatus] = useState<string>('');
   const [machineId, setMachineId] = useState<string>('');
@@ -30,9 +30,18 @@ export function PreferencesModal({ onClose }: Props) {
   const [activeTab, setActiveTab] = useState<string>('general');
 
   useEffect(() => {
-    api.getConfig().then(cfg => setPrefs(cfg.interface)).catch(() => { });
-    api.getSystemStatus().then(status => setMachineId(status.machineId)).catch(() => { });
-    api.getConfig().then(setFullConfig).catch(() => { });
+    api
+      .getConfig()
+      .then((cfg) => setPrefs(cfg.interface))
+      .catch(() => {});
+    api
+      .getSystemStatus()
+      .then((status) => setMachineId(status.machineId))
+      .catch(() => {});
+    api
+      .getConfig()
+      .then(setFullConfig)
+      .catch(() => {});
   }, []);
 
   const update = async (updates: Partial<Preferences>) => {
@@ -41,7 +50,10 @@ export function PreferencesModal({ onClose }: Props) {
     if (updates.colorScheme) {
       // For system theme, we need to determine the actual theme
       if (updates.colorScheme === 'system') {
-        const systemTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const systemTheme =
+          window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light';
         document.documentElement.setAttribute('data-theme', systemTheme);
         if (systemTheme === 'dark') {
           document.documentElement.classList.add('dark');
@@ -65,7 +77,11 @@ export function PreferencesModal({ onClose }: Props) {
       const health = await api.getGeminiHealth();
       setGeminiHealth(health);
     } catch (error) {
-      setGeminiHealth({ status: 'unhealthy', message: 'Failed to fetch status', apiKeyValid: false });
+      setGeminiHealth({
+        status: 'unhealthy',
+        message: 'Failed to fetch status',
+        apiKeyValid: false,
+      });
     } finally {
       setGeminiHealthLoading(false);
     }
@@ -104,7 +120,9 @@ export function PreferencesModal({ onClose }: Props) {
         setArchiveStatus(`Error: ${data.error || 'Failed to archive sessions'}`);
       }
     } catch (error) {
-      setArchiveStatus(`Error: ${error instanceof Error ? error.message : 'Failed to archive sessions'}`);
+      setArchiveStatus(
+        `Error: ${error instanceof Error ? error.message : 'Failed to archive sessions'}`,
+      );
     }
   };
 
@@ -112,7 +130,9 @@ export function PreferencesModal({ onClose }: Props) {
     <Dialog open={true} onClose={handleClose} title="">
       <div className="flex flex-col h-[calc(100vh-64px)] w-[calc(100vw-64px)] -m-6">
         <header className="flex justify-between items-center px-6 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex-shrink-0">
-          <h2 className="text-lg font-normal m-0 text-neutral-900 dark:text-neutral-100">Settings</h2>
+          <h2 className="text-lg font-normal m-0 text-neutral-900 dark:text-neutral-100">
+            Settings
+          </h2>
           <Button
             onClick={handleClose}
             variant="ghost"
@@ -124,11 +144,12 @@ export function PreferencesModal({ onClose }: Props) {
           </Button>
         </header>
 
-        <Tabs 
-          defaultValue="general" 
+        <Tabs
+          defaultValue="general"
           value={activeTab}
           onValueChange={setActiveTab}
-          className="flex flex-1 overflow-hidden">
+          className="flex flex-1 overflow-hidden"
+        >
           <div className="flex flex-1 overflow-hidden">
             {/* Minimal sidebar: remove bg/shadow/highlight bar, use subtle text and outline cues */}
             <div className="border-r border-neutral-200 dark:border-neutral-800 min-w-[200px] max-w-[240px] flex flex-col h-full">
@@ -179,148 +200,166 @@ export function PreferencesModal({ onClose }: Props) {
             <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-neutral-900">
               <TabsContent value="general" className="flex-1 overflow-hidden mt-0">
                 <div className="px-6 pb-6 overflow-y-auto h-full">
-                <div className="flex items-center justify-between min-h-[60px] py-2">
-                  <Label htmlFor="theme-select" className="text-sm text-neutral-900 dark:text-neutral-100 font-normal">
-                    Theme
-                  </Label>
-                  <Select
-                    value={prefs.colorScheme}
-                    onValueChange={(value) => update({ colorScheme: value as 'light' | 'dark' | 'system' })}
-                  >
-                    <SelectTrigger
-                      id="theme-select"
-                      className="w-[120px] h-9 bg-white dark:bg-neutral-900 border-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:bg-neutral-100 dark:focus:bg-neutral-800"
-                      aria-label="Select theme"
+                  <div className="flex items-center justify-between min-h-[60px] py-2">
+                    <Label
+                      htmlFor="theme-select"
+                      className="text-sm text-neutral-900 dark:text-neutral-100 font-normal"
                     >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">Light</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                      <SelectItem value="system">System</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                      Theme
+                    </Label>
+                    <Select
+                      value={prefs.colorScheme}
+                      onValueChange={(value) =>
+                        update({ colorScheme: value as 'light' | 'dark' | 'system' })
+                      }
+                    >
+                      <SelectTrigger
+                        id="theme-select"
+                        className="w-[120px] h-9 bg-white dark:bg-neutral-900 border-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800 focus:bg-neutral-100 dark:focus:bg-neutral-800"
+                        aria-label="Select theme"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="system">System</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="notifications" className="flex-1 overflow-hidden mt-0">
-                <NotificationTab 
-                  prefs={prefs}
-                  machineId={machineId}
-                  onUpdate={update}
-                />
+                <NotificationTab prefs={prefs} machineId={machineId} onUpdate={update} />
               </TabsContent>
 
               <TabsContent value="dataControls" className="flex-1 overflow-hidden mt-0">
                 <div className="px-6 pb-6 overflow-y-auto h-full">
-                <div className="py-4">
-                  <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Session Management</h3>
-                  <Button
-                    onClick={handleArchiveAll}
-                    variant="destructive"
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                    aria-label="Archive all sessions"
-                  >
-                    Archive All Sessions
-                  </Button>
-                  {archiveStatus && (
-                    <div className={`mt-4 p-3 rounded-md text-sm font-medium ${archiveStatus.startsWith('Error')
-                        ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                        : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
-                      }`}>
-                      {archiveStatus}
-                    </div>
-                  )}
-                </div>
+                  <div className="py-4">
+                    <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
+                      Session Management
+                    </h3>
+                    <Button
+                      onClick={handleArchiveAll}
+                      variant="destructive"
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                      aria-label="Archive all sessions"
+                    >
+                      Archive All Sessions
+                    </Button>
+                    {archiveStatus && (
+                      <div
+                        className={`mt-4 p-3 rounded-md text-sm font-medium ${
+                          archiveStatus.startsWith('Error')
+                            ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                            : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                        }`}
+                      >
+                        {archiveStatus}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="voiceInput" className="flex-1 overflow-hidden mt-0">
                 <div className="px-6 pb-6 overflow-y-auto h-full">
-                <div className="py-4">
-                  <div className="flex items-center justify-between min-h-[60px] py-2">
-                    <Label className="text-sm text-neutral-900 dark:text-neutral-100 font-normal">
-                      Gemini API Status
-                    </Label>
-                    <div className="text-sm">
-                      {geminiHealthLoading ? (
-                        'Loading...'
-                      ) : geminiHealth ? (
-                        geminiHealth.status === 'healthy' ? (
-                          <span className="text-green-600 dark:text-green-400">Success</span>
-                        ) : (
-                          <span className="text-neutral-500 dark:text-neutral-400">Error</span>
-                        )
-                      ) : (
-                        <Button
-                          onClick={handleCheckGeminiHealth}
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 font-normal hover:underline"
-                          aria-label="Check Gemini API status"
-                        >
-                          Check Status
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {geminiHealth?.status === 'unhealthy' && (
                   <div className="py-4">
-                    <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Enable Voice Input</h3>
-
-                    <p className="text-sm my-3">
-                      To enable Gemini-powered voice input, you need to configure a Google API key:
-                    </p>
-
                     <div className="flex items-center justify-between min-h-[60px] py-2">
-                      <Label className="text-sm text-neutral-900 dark:text-neutral-100 font-normal">1. Get a API key</Label>
-                      <p className="text-sm">
-                        Visit <a
-                          href="https://aistudio.google.com/apikey"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
-                        >
-                          https://aistudio.google.com/apikey
-                        </a> to generate your free API key.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col gap-3 py-2">
-                      <Label className="text-sm text-neutral-900 dark:text-neutral-100 font-normal">2. Configure API Environment Variable</Label>
-
-                      <div className="mt-3">
-                        <div className="bg-neutral-100 dark:bg-neutral-800 p-4 rounded-md font-mono text-sm border border-neutral-200 dark:border-neutral-700">
-                          export GOOGLE_API_KEY="your-api-key"
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-3 py-2">
-                      <Label className="text-sm text-neutral-900 dark:text-neutral-100 font-normal">Or Edit ~/.cui/config.json</Label>
-
-                      <div className="mt-3">
-                        <div className="bg-neutral-100 dark:bg-neutral-800 p-4 rounded-md font-mono text-sm border border-neutral-200 dark:border-neutral-700">
-                          {`{ "gemini": { "apiKey": "your-api-key" } }`}
-                        </div>
+                      <Label className="text-sm text-neutral-900 dark:text-neutral-100 font-normal">
+                        Gemini API Status
+                      </Label>
+                      <div className="text-sm">
+                        {geminiHealthLoading ? (
+                          'Loading...'
+                        ) : geminiHealth ? (
+                          geminiHealth.status === 'healthy' ? (
+                            <span className="text-green-600 dark:text-green-400">Success</span>
+                          ) : (
+                            <span className="text-neutral-500 dark:text-neutral-400">Error</span>
+                          )
+                        ) : (
+                          <Button
+                            onClick={handleCheckGeminiHealth}
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto p-0 font-normal hover:underline"
+                            aria-label="Check Gemini API status"
+                          >
+                            Check Status
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
-                )}
 
-                <div className="italic mt-3 text-sm text-neutral-500 dark:text-neutral-400">
-                  i. When using Gemini voice input, your audio data will be sent to Google for processing. Free Tier API Key allows Google to train on your data. <br />
-                  ii. On iOS Safari, you need HTTPS to use voice input.
-                </div>
+                  {geminiHealth?.status === 'unhealthy' && (
+                    <div className="py-4">
+                      <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
+                        Enable Voice Input
+                      </h3>
+
+                      <p className="text-sm my-3">
+                        To enable Gemini-powered voice input, you need to configure a Google API
+                        key:
+                      </p>
+
+                      <div className="flex items-center justify-between min-h-[60px] py-2">
+                        <Label className="text-sm text-neutral-900 dark:text-neutral-100 font-normal">
+                          1. Get a API key
+                        </Label>
+                        <p className="text-sm">
+                          Visit{' '}
+                          <a
+                            href="https://aistudio.google.com/apikey"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline"
+                          >
+                            https://aistudio.google.com/apikey
+                          </a>{' '}
+                          to generate your free API key.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-3 py-2">
+                        <Label className="text-sm text-neutral-900 dark:text-neutral-100 font-normal">
+                          2. Configure API Environment Variable
+                        </Label>
+
+                        <div className="mt-3">
+                          <div className="bg-neutral-100 dark:bg-neutral-800 p-4 rounded-md font-mono text-sm border border-neutral-200 dark:border-neutral-700">
+                            export GOOGLE_API_KEY="your-api-key"
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-3 py-2">
+                        <Label className="text-sm text-neutral-900 dark:text-neutral-100 font-normal">
+                          Or Edit ~/.cui/config.json
+                        </Label>
+
+                        <div className="mt-3">
+                          <div className="bg-neutral-100 dark:bg-neutral-800 p-4 rounded-md font-mono text-sm border border-neutral-200 dark:border-neutral-700">
+                            {`{ "gemini": { "apiKey": "your-api-key" } }`}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="italic mt-3 text-sm text-neutral-500 dark:text-neutral-400">
+                    i. When using Gemini voice input, your audio data will be sent to Google for
+                    processing. Free Tier API Key allows Google to train on your data. <br />
+                    ii. On iOS Safari, you need HTTPS to use voice input.
+                  </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="modelProvider" className="flex-1 overflow-hidden mt-0">
-                <ModelProviderTab 
-                  config={fullConfig} 
+                <ModelProviderTab
+                  config={fullConfig}
                   onUpdate={handleConfigUpdate}
                   isActive={activeTab === 'modelProvider'}
                 />

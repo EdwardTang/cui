@@ -56,7 +56,7 @@ export class GeminiService {
 
     try {
       this.genAI = new GoogleGenAI({
-        apiKey: apiKey
+        apiKey: apiKey,
       });
 
       if (config.gemini?.model) {
@@ -75,7 +75,7 @@ export class GeminiService {
       return {
         status: 'unhealthy',
         message: 'Gemini API key not configured',
-        apiKeyValid: false
+        apiKeyValid: false,
       };
     }
 
@@ -83,33 +83,37 @@ export class GeminiService {
       // Test the API with a simple request
       const response = await this.genAI.models.generateContent({
         model: this.model,
-        contents: [{
-          role: 'user',
-          parts: [{
-            text: 'Say hello and nothing else'
-          }]
-        }]
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: 'Say hello and nothing else',
+              },
+            ],
+          },
+        ],
       });
 
       if (response.text) {
         return {
           status: 'healthy',
           message: 'Gemini API is accessible',
-          apiKeyValid: true
+          apiKeyValid: true,
         };
       }
 
       return {
         status: 'unhealthy',
         message: 'Unexpected response from Gemini API',
-        apiKeyValid: true
+        apiKeyValid: true,
       };
     } catch (error) {
       this.logger.error('Health check failed', { error });
       return {
         status: 'unhealthy',
         message: error instanceof Error ? error.message : 'Unknown error',
-        apiKeyValid: false
+        apiKeyValid: false,
       };
     }
   }
@@ -122,20 +126,22 @@ export class GeminiService {
     try {
       const response = await this.genAI.models.generateContent({
         model: this.model,
-        contents: [{
-          role: 'user',
-          parts: [
-            {
-              inlineData: {
-                mimeType: mimeType,
-                data: audio
-              }
-            },
-            {
-              text: 'Transcribe the above audio instructions, which are likely related to software development and may include a mix of different languages and technical terms (e.g., code references, file paths, API names). Transcribe verbatim with correct punctuation, do not add explanations or non-verbal cues. Return the raw transcribed text only:'
-            }
-          ]
-        }]
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                inlineData: {
+                  mimeType: mimeType,
+                  data: audio,
+                },
+              },
+              {
+                text: 'Transcribe the above audio instructions, which are likely related to software development and may include a mix of different languages and technical terms (e.g., code references, file paths, API names). Transcribe verbatim with correct punctuation, do not add explanations or non-verbal cues. Return the raw transcribed text only:',
+              },
+            ],
+          },
+        ],
       });
 
       const text = response.text;
@@ -164,48 +170,52 @@ export class GeminiService {
       properties: {
         title: {
           type: Type.STRING,
-          description: 'A concise title summarizing the conversation'
+          description: 'A concise title summarizing the conversation',
         },
         keypoints: {
           type: Type.ARRAY,
           items: {
-            type: Type.STRING
+            type: Type.STRING,
           },
-          description: 'List of key points from the text'
-        }
+          description: 'List of key points from the text',
+        },
       },
-      required: ['title', 'keypoints']
+      required: ['title', 'keypoints'],
     };
 
     try {
       const response = await this.genAI.models.generateContent({
         model: this.model,
-        contents: [{
-          role: 'user',
-          parts: [{
-            text: `Please summarize the following text into a title and key points:\n\n${text}`
-          }]
-        }],
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: `Please summarize the following text into a title and key points:\n\n${text}`,
+              },
+            ],
+          },
+        ],
         config: {
           responseMimeType: 'application/json',
-          responseSchema: schema
-        }
+          responseSchema: schema,
+        },
       });
 
       const responseText = response.text;
       if (!responseText) {
         throw new CUIError('GEMINI_SUMMARIZE_ERROR', 'No response text returned', 500);
       }
-      
+
       const result = JSON.parse(responseText);
-      
+
       if (!result.title || !Array.isArray(result.keypoints)) {
         throw new CUIError('GEMINI_SUMMARIZE_ERROR', 'Invalid response format', 500);
       }
 
-      this.logger.debug('Text summarized successfully', { 
+      this.logger.debug('Text summarized successfully', {
         titleLength: result.title.length,
-        keypointCount: result.keypoints.length 
+        keypointCount: result.keypoints.length,
       });
 
       return result;

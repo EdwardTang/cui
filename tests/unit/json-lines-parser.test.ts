@@ -28,11 +28,7 @@ describe('JsonLinesParser', () => {
     it('should parse multiple lines of JSON', () => {
       return new Promise<void>((resolve) => {
         const input = '{"line":1}\n{"line":2}\n{"line":3}\n';
-        const expected = [
-          { line: 1 },
-          { line: 2 },
-          { line: 3 }
-        ];
+        const expected = [{ line: 1 }, { line: 2 }, { line: 3 }];
         const results: any[] = [];
 
         parser.on('data', (data) => {
@@ -164,7 +160,7 @@ describe('JsonLinesParser', () => {
         const lines = [
           '{"id":1,"name":"Alice"}\n',
           '{"id":2,"name":"Bob"}\n',
-          '{"id":3,"name":"Charlie"}\n'
+          '{"id":3,"name":"Charlie"}\n',
         ];
         const results: any[] = [];
 
@@ -181,7 +177,7 @@ describe('JsonLinesParser', () => {
             resolve();
           });
 
-        lines.forEach(line => input.push(line));
+        lines.forEach((line) => input.push(line));
         input.push(null);
       });
     });
@@ -191,14 +187,14 @@ describe('JsonLinesParser', () => {
     it('should reset buffer state', () => {
       parser.write(Buffer.from('{"partial":'));
       expect(parser.getBuffer()).toBe('{"partial":');
-      
+
       parser.reset();
       expect(parser.getBuffer()).toBe('');
     });
 
     it('should return current buffer content', () => {
       expect(parser.getBuffer()).toBe('');
-      
+
       parser.write(Buffer.from('{"incomplete"'));
       expect(parser.getBuffer()).toBe('{"incomplete"');
     });
@@ -208,11 +204,13 @@ describe('JsonLinesParser', () => {
     it('should handle very large JSON objects', () => {
       return new Promise<void>((resolve) => {
         const largeObject = {
-          data: Array(1000).fill(0).map((_, i) => ({
-            id: i,
-            value: `value_${i}`,
-            nested: { a: i, b: i * 2 }
-          }))
+          data: Array(1000)
+            .fill(0)
+            .map((_, i) => ({
+              id: i,
+              value: `value_${i}`,
+              nested: { a: i, b: i * 2 },
+            })),
         };
         const input = JSON.stringify(largeObject) + '\n';
 
@@ -246,7 +244,7 @@ describe('JsonLinesParser', () => {
         const input = '{"text":"Line 1\\nLine 2\\tTabbed","path":"C:\\\\Users\\\\test"}\n';
         const expected = {
           text: 'Line 1\nLine 2\tTabbed',
-          path: 'C:\\Users\\test'
+          path: 'C:\\Users\\test',
         };
 
         parser.on('data', (data) => {

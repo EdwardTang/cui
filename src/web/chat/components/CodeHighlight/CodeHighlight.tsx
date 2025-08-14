@@ -3,8 +3,13 @@ import { Highlight, Language } from 'prism-react-renderer';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { Button } from '@/web/chat/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/web/chat/components/ui/tooltip';
-import { cn } from "@/web/chat/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/web/chat/components/ui/tooltip';
+import { cn } from '@/web/chat/lib/utils';
 
 interface CodeHighlightProps {
   code: string;
@@ -217,22 +222,18 @@ export const CodeHighlight: React.FC<CodeHighlightProps> = ({
   const theme = useTheme();
   const currentTheme = theme.mode === 'dark' ? darkTheme : lightTheme;
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   // Get the prism language, fallback to text if not found
   const prismLanguage = languageMap[language.toLowerCase()] || 'text';
 
   return (
-    <Highlight
-      theme={currentTheme}
-      code={code.trimEnd()}
-      language={prismLanguage as Language}
-    >
+    <Highlight theme={currentTheme} code={code.trimEnd()} language={prismLanguage as Language}>
       {({ className: highlightClassName, style, tokens, getLineProps, getTokenProps }) => {
         const totalLines = tokens.length;
         const shouldShowExpandButton = totalLines > 8;
         const linesToShow = isExpanded ? tokens : tokens.slice(0, 8);
         const hiddenLinesCount = totalLines - 8;
-        
+
         return (
           <div className="relative">
             {shouldShowExpandButton && (
@@ -244,22 +245,22 @@ export const CodeHighlight: React.FC<CodeHighlightProps> = ({
                       size="icon"
                       onClick={() => setIsExpanded(!isExpanded)}
                       className="absolute top-2 right-2 h-6 w-6 z-10 text-muted-foreground hover:text-foreground"
-                      aria-label={isExpanded ? "Show fewer lines" : "Show all lines"}
+                      aria-label={isExpanded ? 'Show fewer lines' : 'Show all lines'}
                     >
                       {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {isExpanded ? "Show fewer lines" : "Show all lines"}
+                    {isExpanded ? 'Show fewer lines' : 'Show all lines'}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
             <pre
               className={cn(
-                "bg-card text-card-foreground p-3 rounded-md overflow-hidden whitespace-pre-wrap break-words font-mono text-[13px] leading-[1.8] m-0 border border-border",
+                'bg-card text-card-foreground p-3 rounded-md overflow-hidden whitespace-pre-wrap break-words font-mono text-[13px] leading-[1.8] m-0 border border-border',
                 highlightClassName,
-                className
+                className,
               )}
               style={{ ...style, margin: 0 }}
             >
@@ -276,9 +277,7 @@ export const CodeHighlight: React.FC<CodeHighlightProps> = ({
                       <span className="table-cell w-full whitespace-pre-wrap break-words">
                         {line.map((token, key) => {
                           const { key: tokenKey, ...tokenProps } = getTokenProps({ token, key });
-                          return (
-                            <span key={key} {...tokenProps} />
-                          );
+                          return <span key={key} {...tokenProps} />;
                         })}
                       </span>
                     </div>

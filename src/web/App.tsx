@@ -11,7 +11,7 @@ function App() {
 
   // Check if user is authenticated
   const authToken = getAuthToken();
-  
+
   if (!authToken) {
     return <Login onLogin={setAuthToken} />;
   }

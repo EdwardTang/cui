@@ -25,9 +25,7 @@ export function EditTool({ input, result, isMultiEdit = false, workingDirectory 
               newValue={edit.new_string || ''}
               language={language}
             />
-            {index < input.edits.length - 1 && (
-              <div className="h-2" />
-            )}
+            {index < input.edits.length - 1 && <div className="h-2" />}
           </div>
         ))}
       </div>
@@ -38,17 +36,13 @@ export function EditTool({ input, result, isMultiEdit = false, workingDirectory 
   if (input.old_string !== undefined && input.new_string !== undefined) {
     return (
       <div className="flex flex-col gap-1 -mt-0.5">
-        <DiffViewer
-          oldValue={input.old_string}
-          newValue={input.new_string}
-          language={language}
-        />
+        <DiffViewer oldValue={input.old_string} newValue={input.new_string} language={language} />
       </div>
     );
   }
 
   // Fallback if we can't parse the edit
-  
+
   return (
     <div className="flex flex-col gap-1 -mt-0.5">
       {result ? (
@@ -59,7 +53,9 @@ export function EditTool({ input, result, isMultiEdit = false, workingDirectory 
         />
       ) : (
         <div className="bg-neutral-950 rounded-xl overflow-hidden">
-          <pre className="p-3 m-0 text-neutral-200 font-mono text-xs leading-6">Edit completed successfully</pre>
+          <pre className="p-3 m-0 text-neutral-200 font-mono text-xs leading-6">
+            Edit completed successfully
+          </pre>
         </div>
       )}
     </div>

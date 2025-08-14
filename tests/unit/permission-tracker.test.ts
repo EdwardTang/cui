@@ -68,7 +68,7 @@ describe('PermissionTracker', () => {
       const req1 = tracker.addPermissionRequest('Bash', { command: 'ls' }, 'stream-1');
       const req2 = tracker.addPermissionRequest('Read', { file_path: '/tmp/a.txt' }, 'stream-2');
       const req3 = tracker.addPermissionRequest('Write', { file_path: '/tmp/b.txt' }, 'stream-1');
-      
+
       // Update some statuses
       tracker.updatePermissionStatus(req1.id, 'approved');
       tracker.updatePermissionStatus(req2.id, 'denied', { denyReason: 'Not allowed' });
@@ -97,9 +97,9 @@ describe('PermissionTracker', () => {
     });
 
     it('should filter by both streamingId and status', () => {
-      const requests = tracker.getPermissionRequests({ 
-        streamingId: 'stream-1', 
-        status: 'approved' 
+      const requests = tracker.getPermissionRequests({
+        streamingId: 'stream-1',
+        status: 'approved',
       });
 
       expect(requests).toHaveLength(1);
@@ -110,7 +110,7 @@ describe('PermissionTracker', () => {
   describe('getPermissionRequest', () => {
     it('should return specific permission request by ID', () => {
       const added = tracker.addPermissionRequest('Bash', { command: 'echo test' });
-      
+
       const request = tracker.getPermissionRequest(added.id);
 
       expect(request).toBeDefined();
@@ -127,7 +127,7 @@ describe('PermissionTracker', () => {
   describe('updatePermissionStatus', () => {
     it('should update permission status to approved', () => {
       const request = tracker.addPermissionRequest('Bash', { command: 'ls' });
-      
+
       const success = tracker.updatePermissionStatus(request.id, 'approved');
 
       expect(success).toBe(true);
@@ -137,9 +137,9 @@ describe('PermissionTracker', () => {
 
     it('should update permission status to denied with reason', () => {
       const request = tracker.addPermissionRequest('Bash', { command: 'rm -rf /' });
-      
-      const success = tracker.updatePermissionStatus(request.id, 'denied', { 
-        denyReason: 'Dangerous command' 
+
+      const success = tracker.updatePermissionStatus(request.id, 'denied', {
+        denyReason: 'Dangerous command',
       });
 
       expect(success).toBe(true);
@@ -150,9 +150,9 @@ describe('PermissionTracker', () => {
 
     it('should update with modified input when approved', () => {
       const request = tracker.addPermissionRequest('Bash', { command: 'rm file.txt' });
-      
-      const success = tracker.updatePermissionStatus(request.id, 'approved', { 
-        modifiedInput: { command: 'rm -i file.txt' } 
+
+      const success = tracker.updatePermissionStatus(request.id, 'approved', {
+        modifiedInput: { command: 'rm -i file.txt' },
       });
 
       expect(success).toBe(true);

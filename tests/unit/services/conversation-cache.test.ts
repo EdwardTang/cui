@@ -5,12 +5,12 @@ const mockLogger = {
   debug: vi.fn(),
   info: vi.fn(),
   warn: vi.fn(),
-  error: vi.fn()
+  error: vi.fn(),
 };
 
 // Mock the logger module
 vi.mock('../../../src/services/logger', () => ({
-  createLogger: () => mockLogger
+  createLogger: () => mockLogger,
 }));
 
 // Mock RawJsonEntry type for testing
@@ -40,16 +40,16 @@ describe('ConversationCache - File Level Caching', () => {
     cache = new ConversationCache();
     mockFileModTimes = new Map([
       ['/path/projects/project1/session1.jsonl', 1000],
-      ['/path/projects/project2/session2.jsonl', 2000]
+      ['/path/projects/project2/session2.jsonl', 2000],
     ]);
-    
+
     mockRawEntries = [
       {
         type: 'user',
         uuid: 'msg1',
         sessionId: 'session1',
         timestamp: '2023-01-01T00:00:00.000Z',
-        message: 'Hello'
+        message: 'Hello',
       },
       {
         type: 'assistant',
@@ -57,10 +57,10 @@ describe('ConversationCache - File Level Caching', () => {
         sessionId: 'session1',
         parentUuid: 'msg1',
         timestamp: '2023-01-01T00:01:00.000Z',
-        message: 'Hi there!'
-      }
+        message: 'Hi there!',
+      },
     ];
-    
+
     mockConversations = [
       {
         sessionId: 'session1',
@@ -70,10 +70,10 @@ describe('ConversationCache - File Level Caching', () => {
         createdAt: '2023-01-01T00:00:00.000Z',
         updatedAt: '2023-01-01T01:00:00.000Z',
         totalDuration: 100,
-        model: 'claude-3'
-      }
+        model: 'claude-3',
+      },
     ];
-    
+
     // Clear mock calls between tests
     vi.clearAllMocks();
   });
@@ -82,7 +82,7 @@ describe('ConversationCache - File Level Caching', () => {
     it('should cache individual file entries and avoid re-parsing unchanged files', async () => {
       let parseCallCount = 0;
       const fileParseCalls: string[] = [];
-      
+
       const mockParseFile = vi.fn().mockImplementation(async (filePath: string) => {
         parseCallCount++;
         fileParseCalls.push(filePath);
@@ -101,7 +101,7 @@ describe('ConversationCache - File Level Caching', () => {
         mockFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       expect(firstResult).toEqual(mockConversations);
@@ -119,7 +119,7 @@ describe('ConversationCache - File Level Caching', () => {
         mockFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       expect(secondResult).toEqual(mockConversations);
@@ -130,7 +130,7 @@ describe('ConversationCache - File Level Caching', () => {
     it('should re-parse only modified files when file modification times change', async () => {
       let parseCallCount = 0;
       const fileParseCalls: string[] = [];
-      
+
       const mockParseFile = vi.fn().mockImplementation(async (filePath: string) => {
         parseCallCount++;
         fileParseCalls.push(filePath);
@@ -148,7 +148,7 @@ describe('ConversationCache - File Level Caching', () => {
         mockFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       expect(mockParseFile).toHaveBeenCalledTimes(2);
@@ -166,7 +166,7 @@ describe('ConversationCache - File Level Caching', () => {
         modifiedFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       // Should only re-parse the modified file
@@ -178,7 +178,9 @@ describe('ConversationCache - File Level Caching', () => {
 
     it('should handle new files being added', async () => {
       const mockParseFile = vi.fn().mockImplementation(async (filePath: string) => {
-        return filePath.includes('session3') ? [{ ...mockRawEntries[0], sessionId: 'session3' }] : mockRawEntries;
+        return filePath.includes('session3')
+          ? [{ ...mockRawEntries[0], sessionId: 'session3' }]
+          : mockRawEntries;
       });
 
       const mockGetSourceProject = vi.fn().mockImplementation((filePath: string) => {
@@ -192,7 +194,7 @@ describe('ConversationCache - File Level Caching', () => {
         mockFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       // Add a new file
@@ -206,7 +208,7 @@ describe('ConversationCache - File Level Caching', () => {
         newFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       // Should parse only the new file (others are cached)
@@ -224,7 +226,7 @@ describe('ConversationCache - File Level Caching', () => {
         mockFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       // Remove one file
@@ -238,7 +240,7 @@ describe('ConversationCache - File Level Caching', () => {
         reducedFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       // Should not re-parse existing file, but should process remaining entries
@@ -268,7 +270,7 @@ describe('ConversationCache - File Level Caching', () => {
         mockFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       // Should have attempted to parse both files, one failed
@@ -285,12 +287,12 @@ describe('ConversationCache - File Level Caching', () => {
     it('should handle multiple concurrent requests without duplicate parsing', async () => {
       let parseCallCount = 0;
       let parseStarted = false;
-      
+
       const mockParseFile = vi.fn().mockImplementation(async (filePath: string) => {
         parseCallCount++;
         parseStarted = true;
         // Simulate parsing delay
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         return mockRawEntries;
       });
 
@@ -302,11 +304,11 @@ describe('ConversationCache - File Level Caching', () => {
         mockFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
-      
+
       // Wait a bit to ensure parsing starts
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
       expect(parseStarted).toBe(true);
 
       // Now start concurrent requests
@@ -314,7 +316,7 @@ describe('ConversationCache - File Level Caching', () => {
         mockFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       // Wait for all requests to complete
@@ -322,7 +324,7 @@ describe('ConversationCache - File Level Caching', () => {
 
       // Verify all requests got the same result
       expect(results).toHaveLength(2);
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toEqual(mockConversations);
       });
 
@@ -348,7 +350,7 @@ describe('ConversationCache - File Level Caching', () => {
         mockFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       stats = cache.getStats();
@@ -363,16 +365,16 @@ describe('ConversationCache - File Level Caching', () => {
 
     it('should include parsing status in statistics', async () => {
       let isParsingActive = false;
-      
+
       const mockParseFile = vi.fn().mockImplementation(async (filePath: string) => {
         // Small delay and then check - by this point parsing promise should be set
-        await new Promise(resolve => setTimeout(resolve, 10));
-        
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
         // Check stats while parsing
         const statsWhileParsing = cache.getStats();
         isParsingActive = statsWhileParsing.isCurrentlyParsing;
-        
-        await new Promise(resolve => setTimeout(resolve, 50));
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
         return mockRawEntries;
       });
 
@@ -383,13 +385,13 @@ describe('ConversationCache - File Level Caching', () => {
         mockFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
-      
+
       // Stats after parsing completes
       await parsingPromise;
       const statsAfterParsing = cache.getStats();
-      
+
       // The parsing should have been active at some point during execution
       expect(isParsingActive).toBe(true);
       expect(statsAfterParsing.isCurrentlyParsing).toBe(false);
@@ -408,7 +410,7 @@ describe('ConversationCache - File Level Caching', () => {
         mockFileModTimes,
         mockParseFile,
         mockGetSourceProject,
-        mockProcessAllEntries
+        mockProcessAllEntries,
       );
 
       let stats = cache.getStats();

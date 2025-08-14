@@ -21,15 +21,18 @@ export class ToolMetricsService extends EventEmitter {
    * Start listening to messages from ClaudeProcessManager
    */
   listenToClaudeMessages(processManager: EventEmitter): void {
-    processManager.on('claude-message', ({ streamingId, message }: { streamingId: string; message: StreamEvent }) => {
-      this.logger.debug('Received claude-message in ToolMetricsService', {
-        streamingId,
-        messageType: message?.type,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        sessionId: (message as any)?.session_id
-      });
-      this.handleClaudeMessage(streamingId, message);
-    });
+    processManager.on(
+      'claude-message',
+      ({ streamingId, message }: { streamingId: string; message: StreamEvent }) => {
+        this.logger.debug('Received claude-message in ToolMetricsService', {
+          streamingId,
+          messageType: message?.type,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          sessionId: (message as any)?.session_id,
+        });
+        this.handleClaudeMessage(streamingId, message);
+      },
+    );
     this.logger.debug('Started listening to claude-message events');
   }
 
@@ -40,7 +43,6 @@ export class ToolMetricsService extends EventEmitter {
     const metrics = this.metrics.get(sessionId);
     return metrics;
   }
-
 
   /**
    * Handle Claude messages to extract tool use data
@@ -62,24 +64,26 @@ export class ToolMetricsService extends EventEmitter {
       sessionId: message.session_id,
       hasMessage: !!message.message,
       hasContent: !!message.message?.content,
-      contentType: Array.isArray(message.message?.content) ? 'array' : typeof message.message?.content
+      contentType: Array.isArray(message.message?.content)
+        ? 'array'
+        : typeof message.message?.content,
     });
-    
+
     if (!message.message || !message.message.content) {
       return;
     }
 
     const content = message.message.content;
-    
+
     // Content can be a string or an array of content blocks
     if (Array.isArray(content)) {
       this.logger.debug('Processing content blocks', {
         sessionId: message.session_id,
         blockCount: content.length,
-        blockTypes: content.map(b => b.type)
+        blockTypes: content.map((b) => b.type),
       });
-      
-      content.forEach(block => {
+
+      content.forEach((block) => {
         if (block.type === 'tool_use') {
           this.processToolUse(message.session_id, block);
         }
@@ -99,7 +103,7 @@ export class ToolMetricsService extends EventEmitter {
       sessionId,
       toolName,
       toolId: toolUse.id,
-      inputKeys: Object.keys(input || {})
+      inputKeys: Object.keys(input || {}),
     });
 
     // Get or create metrics for this session
@@ -107,7 +111,7 @@ export class ToolMetricsService extends EventEmitter {
       linesAdded: 0,
       linesRemoved: 0,
       editCount: 0,
-      writeCount: 0
+      writeCount: 0,
     };
 
     // Handle Edit and MultiEdit tools
@@ -120,7 +124,7 @@ export class ToolMetricsService extends EventEmitter {
         const edits = input.edits as Array<{ old_string?: string; new_string?: string }>;
         if (Array.isArray(edits)) {
           metrics.editCount += edits.length;
-          edits.forEach(edit => this.calculateEditLineDiff(edit, metrics));
+          edits.forEach((edit) => this.calculateEditLineDiff(edit, metrics));
         }
       }
     }
@@ -134,7 +138,7 @@ export class ToolMetricsService extends EventEmitter {
         this.logger.debug('Write tool processed', {
           sessionId,
           linesAdded: lines,
-          contentLength: content.length
+          contentLength: content.length,
         });
       }
     }
@@ -143,7 +147,7 @@ export class ToolMetricsService extends EventEmitter {
     this.metrics.set(sessionId, metrics);
     this.logger.debug('Updated metrics', {
       sessionId,
-      metrics
+      metrics,
     });
   }
 
@@ -163,13 +167,13 @@ export class ToolMetricsService extends EventEmitter {
     // Use jsdiff to get accurate line-by-line changes
     const changes = diffLines(oldString, newString, {
       ignoreWhitespace: false,
-      newlineIsToken: false
+      newlineIsToken: false,
     });
 
     let linesAdded = 0;
     let linesRemoved = 0;
 
-    changes.forEach(change => {
+    changes.forEach((change) => {
       if (change.added) {
         linesAdded += change.count || 0;
       } else if (change.removed) {
@@ -179,7 +183,6 @@ export class ToolMetricsService extends EventEmitter {
 
     metrics.linesAdded += linesAdded;
     metrics.linesRemoved += linesRemoved;
-
   }
 
   /**
@@ -189,15 +192,15 @@ export class ToolMetricsService extends EventEmitter {
     if (!text || text.length === 0) {
       return 0;
     }
-    
+
     // Split by newline and filter out empty trailing line if it exists
     const lines = text.split('\n');
-    
+
     // If the text ends with a newline, we don't count that as an extra line
     if (lines[lines.length - 1] === '') {
       return lines.length - 1;
     }
-    
+
     return lines.length;
   }
 
@@ -205,22 +208,24 @@ export class ToolMetricsService extends EventEmitter {
    * Calculate metrics from historical conversation messages
    * This is used by ClaudeHistoryReader for past conversations
    */
-  calculateMetricsFromMessages(messages: Array<{ 
-    type: string; 
-    message?: Anthropic.Message | Anthropic.MessageParam 
-  }>): ToolMetrics {
+  calculateMetricsFromMessages(
+    messages: Array<{
+      type: string;
+      message?: Anthropic.Message | Anthropic.MessageParam;
+    }>,
+  ): ToolMetrics {
     const metrics: ToolMetrics = {
       linesAdded: 0,
       linesRemoved: 0,
       editCount: 0,
-      writeCount: 0
+      writeCount: 0,
     };
 
-    messages.forEach(msg => {
+    messages.forEach((msg) => {
       if (msg.type === 'assistant' && msg.message) {
         const message = msg.message as Anthropic.Message;
         if (message.content && Array.isArray(message.content)) {
-          message.content.forEach(block => {
+          message.content.forEach((block) => {
             if (block.type === 'tool_use') {
               this.processToolUseForMetrics(block, metrics);
             }
@@ -248,7 +253,7 @@ export class ToolMetricsService extends EventEmitter {
         const edits = input.edits as Array<{ old_string?: string; new_string?: string }>;
         if (Array.isArray(edits)) {
           metrics.editCount += edits.length;
-          edits.forEach(edit => this.calculateEditLineDiff(edit, metrics));
+          edits.forEach((edit) => this.calculateEditLineDiff(edit, metrics));
         }
       }
     } else if (toolName === 'Write') {

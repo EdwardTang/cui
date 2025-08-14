@@ -12,7 +12,11 @@ import { WebTool } from './tools/WebTool';
 import { TaskTool } from './tools/TaskTool';
 import { PlanTool } from './tools/PlanTool';
 import { FallbackTool } from './tools/FallbackTool';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/web/chat/components/ui/collapsible';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/web/chat/components/ui/collapsible';
 
 interface ToolContentProps {
   toolName: string;
@@ -24,31 +28,31 @@ interface ToolContentProps {
   toolResults?: Record<string, any>;
 }
 
-export function ToolContent({ 
-  toolName, 
-  toolInput, 
-  toolResult, 
-  workingDirectory, 
-  toolUseId, 
-  childrenMessages, 
-  toolResults
+export function ToolContent({
+  toolName,
+  toolInput,
+  toolResult,
+  workingDirectory,
+  toolUseId,
+  childrenMessages,
+  toolResults,
 }: ToolContentProps) {
   const [isErrorExpanded, setIsErrorExpanded] = useState(false);
   // Extract result content - handle both string and ContentBlockParam[] formats
   const getResultContent = (): string => {
     if (!toolResult?.result) return '';
-    
+
     if (typeof toolResult.result === 'string') {
       return toolResult.result;
     }
-    
+
     if (Array.isArray(toolResult.result)) {
       return toolResult.result
         .filter((block: any) => block.type === 'text')
         .map((block: any) => block.text)
         .join('\n');
     }
-    
+
     return '';
   };
 
@@ -66,18 +70,21 @@ export function ToolContent({
     const errorMessage = resultContent || 'Tool execution failed';
     const firstLine = errorMessage.split('\n')[0].trim();
     const hasMultipleLines = errorMessage.includes('\n');
-    
+
     return (
       <div className="flex flex-col gap-1 -mt-0.5">
         <Collapsible open={isErrorExpanded} onOpenChange={setIsErrorExpanded}>
-          <CollapsibleTrigger className="flex items-center gap-1 text-sm text-destructive cursor-pointer select-none hover:text-destructive/80" aria-label="Toggle error details">
-            <CornerDownRight 
-              size={12} 
+          <CollapsibleTrigger
+            className="flex items-center gap-1 text-sm text-destructive cursor-pointer select-none hover:text-destructive/80"
+            aria-label="Toggle error details"
+          >
+            <CornerDownRight
+              size={12}
               className={`transition-transform ${isErrorExpanded ? 'rotate-90' : ''}`}
             />
             Error: {firstLine}
           </CollapsibleTrigger>
-          
+
           <CollapsibleContent>
             <div className="text-destructive bg-destructive/10 rounded-md p-3 border border-destructive text-sm">
               {errorMessage}
@@ -92,13 +99,9 @@ export function ToolContent({
   switch (toolName) {
     case 'Read':
       return (
-        <ReadTool
-          input={toolInput}
-          result={resultContent}
-          workingDirectory={workingDirectory}
-        />
+        <ReadTool input={toolInput} result={resultContent} workingDirectory={workingDirectory} />
       );
-    
+
     case 'Edit':
     case 'MultiEdit':
       return (
@@ -109,55 +112,30 @@ export function ToolContent({
           workingDirectory={workingDirectory}
         />
       );
-    
+
     case 'Write':
       return (
-        <WriteTool
-          input={toolInput}
-          result={resultContent}
-          workingDirectory={workingDirectory}
-        />
+        <WriteTool input={toolInput} result={resultContent} workingDirectory={workingDirectory} />
       );
-    
+
     case 'Bash':
-      return (
-        <BashTool
-          input={toolInput}
-          result={resultContent}
-        />
-      );
-    
+      return <BashTool input={toolInput} result={resultContent} />;
+
     case 'Grep':
     case 'Glob':
     case 'LS':
-      return (
-        <SearchTool
-          input={toolInput}
-          result={resultContent}
-          toolType={toolName}
-        />
-      );
-    
+      return <SearchTool input={toolInput} result={resultContent} toolType={toolName} />;
+
     case 'TodoRead':
     case 'TodoWrite':
       return (
-        <TodoTool
-          input={toolInput}
-          result={resultContent}
-          isWrite={toolName === 'TodoWrite'}
-        />
+        <TodoTool input={toolInput} result={resultContent} isWrite={toolName === 'TodoWrite'} />
       );
-    
+
     case 'WebSearch':
     case 'WebFetch':
-      return (
-        <WebTool
-          input={toolInput}
-          result={resultContent}
-          toolType={toolName}
-        />
-      );
-    
+      return <WebTool input={toolInput} result={resultContent} toolType={toolName} />;
+
     case 'Task':
       return (
         <TaskTool
@@ -168,22 +146,11 @@ export function ToolContent({
           toolResults={toolResults}
         />
       );
-    
+
     case 'exit_plan_mode':
-      return (
-        <PlanTool
-          input={toolInput}
-          result={resultContent}
-        />
-      );
-    
+      return <PlanTool input={toolInput} result={resultContent} />;
+
     default:
-      return (
-        <FallbackTool
-          toolName={toolName}
-          input={toolInput}
-          result={resultContent}
-        />
-      );
+      return <FallbackTool toolName={toolName} input={toolInput} result={resultContent} />;
   }
 }

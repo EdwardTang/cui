@@ -25,7 +25,7 @@ export function useAudioRecording(): UseAudioRecordingReturn {
   const [error, setError] = useState<string | null>(null);
   const [duration, setDuration] = useState(0);
   const [audioData, setAudioData] = useState<Uint8Array | null>(null);
-  
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
@@ -36,7 +36,8 @@ export function useAudioRecording(): UseAudioRecordingReturn {
   const animationFrameRef = useRef<number | null>(null);
 
   // Check if MediaRecorder is supported
-  const isSupported = typeof MediaRecorder !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
+  const isSupported =
+    typeof MediaRecorder !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
 
   const startRecording = useCallback(async () => {
     if (!isSupported) {
@@ -47,18 +48,18 @@ export function useAudioRecording(): UseAudioRecordingReturn {
     try {
       setError(null);
       setState('recording');
-      
+
       // Request microphone access with optimized settings for speech
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           channelCount: 1,
           sampleRate: 16000, // Good for speech (vs 44.1kHz for music)
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true, // Helps normalize volume
-        } 
+        },
       });
-      
+
       streamRef.current = stream;
       audioChunksRef.current = [];
 
@@ -66,20 +67,20 @@ export function useAudioRecording(): UseAudioRecordingReturn {
       const audioContext = new AudioContext();
       const analyser = audioContext.createAnalyser();
       const source = audioContext.createMediaStreamSource(stream);
-      
+
       analyser.fftSize = 256;
       analyser.smoothingTimeConstant = 0.8;
       source.connect(analyser);
-      
+
       audioContextRef.current = audioContext;
       analyserRef.current = analyser;
 
       // Create MediaRecorder with compression settings
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus',
-        audioBitsPerSecond: 16000 // Lower bitrate for better compression (default is ~128kbps)
+        audioBitsPerSecond: 16000, // Lower bitrate for better compression (default is ~128kbps)
       });
-      
+
       mediaRecorderRef.current = mediaRecorder;
 
       // Set up event handlers
@@ -104,13 +105,12 @@ export function useAudioRecording(): UseAudioRecordingReturn {
       mediaRecorder.start(250); // 250ms chunks for more granular data
       startTimeRef.current = Date.now();
       setDuration(0);
-      
+
       durationIntervalRef.current = setInterval(() => {
         if (startTimeRef.current > 0) {
           setDuration(Math.floor((Date.now() - startTimeRef.current) / 1000));
         }
       }, 100);
-
     } catch (err) {
       setState('idle');
       if (err instanceof Error) {
@@ -134,9 +134,9 @@ export function useAudioRecording(): UseAudioRecordingReturn {
 
     return new Promise((resolve) => {
       const mediaRecorder = mediaRecorderRef.current!;
-      
+
       setState('processing');
-      
+
       // Clear duration interval
       if (durationIntervalRef.current) {
         clearInterval(durationIntervalRef.current);
@@ -146,42 +146,41 @@ export function useAudioRecording(): UseAudioRecordingReturn {
       mediaRecorder.onstop = async () => {
         try {
           // Create audio blob from chunks
-          const audioBlob = new Blob(audioChunksRef.current, { 
-            type: 'audio/webm;codecs=opus' 
+          const audioBlob = new Blob(audioChunksRef.current, {
+            type: 'audio/webm;codecs=opus',
           });
-          
+
           // Log recording size information
           console.log(`Audio recording completed:`, {
             size: `${audioBlob.size} bytes (${(audioBlob.size / 1024).toFixed(2)} KB)`,
             duration: `${Math.floor((Date.now() - startTimeRef.current) / 1000)}s`,
-            format: 'audio/webm;codecs=opus'
+            format: 'audio/webm;codecs=opus',
           });
-          
+
           // Convert to base64
           const reader = new FileReader();
           reader.onloadend = () => {
             const base64 = reader.result as string;
             const audioBase64 = base64.split(',')[1]; // Remove data:audio/webm;base64, prefix
-            
+
             const result: AudioRecordingResult = {
               audioBlob,
               audioBase64,
               mimeType: 'audio/webm;codecs=opus',
-              duration: Math.floor((Date.now() - startTimeRef.current) / 1000)
+              duration: Math.floor((Date.now() - startTimeRef.current) / 1000),
             };
-            
+
             // Don't set state to 'idle' here - let the caller handle it
             resolve(result);
           };
-          
+
           reader.onerror = () => {
             setError('Failed to process recorded audio');
             setState('idle');
             resolve(null);
           };
-          
+
           reader.readAsDataURL(audioBlob);
-          
         } catch (err) {
           setError('Failed to process recorded audio');
           setState('idle');
@@ -192,19 +191,19 @@ export function useAudioRecording(): UseAudioRecordingReturn {
             cancelAnimationFrame(animationFrameRef.current);
             animationFrameRef.current = null;
           }
-          
+
           // Clean up audio context
           if (audioContextRef.current) {
             audioContextRef.current.close();
             audioContextRef.current = null;
           }
-          
+
           analyserRef.current = null;
           setAudioData(null);
-          
+
           // Clean up stream
           if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current.getTracks().forEach((track) => track.stop());
             streamRef.current = null;
           }
         }
@@ -226,6 +225,6 @@ export function useAudioRecording(): UseAudioRecordingReturn {
     error,
     duration,
     isSupported,
-    audioData
+    audioData,
   };
 }

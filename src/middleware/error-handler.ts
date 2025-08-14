@@ -5,9 +5,14 @@ import { RequestWithRequestId } from '@/types/express.js';
 
 const logger = createLogger('ErrorHandler');
 
-export function errorHandler(err: Error, req: RequestWithRequestId, res: Response, _next: NextFunction): void {
+export function errorHandler(
+  err: Error,
+  req: RequestWithRequestId,
+  res: Response,
+  _next: NextFunction,
+): void {
   const requestId = req.requestId || 'unknown';
-  
+
   if (err instanceof CUIError) {
     logger.warn('CUIError in request', {
       requestId,
@@ -15,7 +20,7 @@ export function errorHandler(err: Error, req: RequestWithRequestId, res: Respons
       message: err.message,
       statusCode: err.statusCode,
       url: req.url,
-      method: req.method
+      method: req.method,
     });
     res.status(err.statusCode).json({ error: err.message, code: err.code });
   } else {
@@ -23,7 +28,7 @@ export function errorHandler(err: Error, req: RequestWithRequestId, res: Respons
       requestId,
       url: req.url,
       method: req.method,
-      errorType: err.constructor.name
+      errorType: err.constructor.name,
     });
     res.status(500).json({ error: 'Internal server error' });
   }

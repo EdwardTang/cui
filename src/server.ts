@@ -10,7 +10,7 @@ let globalServer: CUIServer | null = null;
 async function main() {
   const cliConfig = parseArgs(process.argv);
   globalServer = new CUIServer(cliConfig);
-  
+
   // Handle graceful shutdown
   const shutdown = async (signal: string) => {
     logger.info(`Received ${signal}, shutting down...`);
@@ -19,11 +19,11 @@ async function main() {
     }
     process.exit(0);
   };
-  
+
   // Set up signal handlers before starting server
   process.on('SIGTERM', () => shutdown('SIGTERM'));
   process.on('SIGINT', () => shutdown('SIGINT'));
-  
+
   try {
     await globalServer.start();
   } catch (error) {

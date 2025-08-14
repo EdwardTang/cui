@@ -23,7 +23,7 @@ export class MockClaudeProcess extends EventEmitter {
   public killed: boolean = false;
   public connected: boolean = true;
   public channel?: any;
-  
+
   private messages: string[] = [];
   private currentMessageIndex: number = 0;
   private emitInterval?: NodeJS.Timeout;
@@ -32,14 +32,14 @@ export class MockClaudeProcess extends EventEmitter {
     super();
     this.stdout = new EventEmitter();
     this.stderr = new EventEmitter();
-    this.stdin = { 
-      write: vi.fn(), 
+    this.stdin = {
+      write: vi.fn(),
       end: vi.fn(),
-      destroy: vi.fn()
+      destroy: vi.fn(),
     };
     this.pid = Math.floor(Math.random() * 10000) + 1000;
     this.messages = messages;
-    
+
     // Add common stream properties to stdout/stderr
     (this.stdout as any).readable = true;
     (this.stderr as any).readable = true;
@@ -49,16 +49,16 @@ export class MockClaudeProcess extends EventEmitter {
     this.killed = true;
     this.signalCode = signal || 'SIGTERM';
     this.exitCode = signal === 'SIGKILL' ? 137 : 143;
-    
+
     if (this.emitInterval) {
       clearInterval(this.emitInterval);
     }
-    
+
     // Emit close event after a short delay
     setTimeout(() => {
       this.emit('close', this.exitCode, signal);
     }, 10);
-    
+
     return true;
   }
 
@@ -113,15 +113,15 @@ export class MockClaudeProcess extends EventEmitter {
         mcp_servers: [],
         model: 'claude-3-5-sonnet-20241022',
         permissionMode: 'auto',
-        apiKeySource: 'environment'
+        apiKeySource: 'environment',
       }),
       JSON.stringify({
         type: 'user',
         session_id: sessionId,
         message: {
           role: 'user',
-          content: 'Hello Claude'
-        }
+          content: 'Hello Claude',
+        },
       }),
       JSON.stringify({
         type: 'assistant',
@@ -133,17 +133,17 @@ export class MockClaudeProcess extends EventEmitter {
           content: [
             {
               type: 'text',
-              text: 'Hello! How can I help you today?'
-            }
+              text: 'Hello! How can I help you today?',
+            },
           ],
           model: 'claude-3-5-sonnet-20241022',
           stop_reason: 'end_turn',
           stop_sequence: null,
           usage: {
             input_tokens: 10,
-            output_tokens: 8
-          }
-        }
+            output_tokens: 8,
+          },
+        },
       }),
       JSON.stringify({
         type: 'result',
@@ -161,10 +161,10 @@ export class MockClaudeProcess extends EventEmitter {
           cache_read_input_tokens: 0,
           output_tokens: 8,
           server_tool_use: {
-            web_search_requests: 0
-          }
-        }
-      })
+            web_search_requests: 0,
+          },
+        },
+      }),
     ];
   }
 }
@@ -176,9 +176,7 @@ export class TestHelpers {
   /**
    * Create a test server with isolated configuration
    */
-  static createTestServer(config?: {
-    port?: number;
-  }): CUIServer {
+  static createTestServer(config?: { port?: number }): CUIServer {
     // Mock ConfigService for tests
     vi.spyOn(ConfigService, 'getInstance').mockReturnValue({
       initialize: vi.fn().mockResolvedValue(undefined),
@@ -186,14 +184,14 @@ export class TestHelpers {
         machine_id: 'test-machine-12345678',
         server: {
           host: 'localhost',
-          port: config?.port || 3001
+          port: config?.port || 3001,
         },
         logging: {
-          level: 'silent'
-        }
-      })
+          level: 'silent',
+        },
+      }),
     });
-    
+
     return new CUIServer();
   }
 
@@ -205,13 +203,12 @@ export class TestHelpers {
     const mockHistoryReader = new ClaudeHistoryReader();
     // Mock the getConversationWorkingDirectory method to return current directory
     vi.spyOn(mockHistoryReader, 'getConversationWorkingDirectory').mockResolvedValue(process.cwd());
-    
+
     // Create a mock status tracker
     const mockStatusTracker = new ConversationStatusManager();
-    
+
     const manager = new ClaudeProcessManager(mockHistoryReader, mockStatusTracker);
-    
-    
+
     return manager;
   }
 
@@ -231,31 +228,28 @@ export class TestHelpers {
   static async waitFor(
     condition: () => boolean | Promise<boolean>,
     timeoutMs: number = 5000,
-    intervalMs: number = 100
+    intervalMs: number = 100,
   ): Promise<void> {
     const startTime = Date.now();
-    
+
     while (Date.now() - startTime < timeoutMs) {
       const result = await condition();
       if (result) {
         return;
       }
-      await new Promise(resolve => setTimeout(resolve, intervalMs));
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
     }
-    
+
     throw new Error(`Condition not met within ${timeoutMs}ms`);
   }
 
   /**
    * Create a test server for integration tests (no mocking of internal services)
    */
-  static createIntegrationTestServer(config?: {
-    port?: number;
-    host?: string;
-  }): CUIServer {
-    const randomPort = config?.port || (3000 + Math.floor(Math.random() * 1000));
+  static createIntegrationTestServer(config?: { port?: number; host?: string }): CUIServer {
+    const randomPort = config?.port || 3000 + Math.floor(Math.random() * 1000);
     const host = config?.host || 'localhost';
-    
+
     // Mock ConfigService for integration tests
     vi.spyOn(ConfigService, 'getInstance').mockReturnValue({
       initialize: vi.fn().mockResolvedValue(undefined),
@@ -263,14 +257,14 @@ export class TestHelpers {
         machine_id: 'test-machine-12345678',
         server: {
           host: host,
-          port: randomPort
+          port: randomPort,
         },
         logging: {
-          level: 'silent'
-        }
-      })
+          level: 'silent',
+        },
+      }),
     });
-    
+
     // Pass config overrides to ensure the server uses our test port/host
     return new CUIServer({ port: randomPort, host: host });
   }
@@ -280,7 +274,7 @@ export class TestHelpers {
    */
   static setupClaudeProcessMock(mockProcess: MockClaudeProcess): vi.SpyInstance {
     const mockSpawn = vi.fn();
-    
+
     mockSpawn.mockImplementation((...args: any[]) => {
       const [command, spawnArgs, options] = args;
       if (command === 'claude') {
@@ -303,20 +297,20 @@ export class TestHelpers {
   static async waitForStreamingMessages(
     streamingData: string[],
     expectedCount: number,
-    timeoutMs: number = 3000
+    timeoutMs: number = 3000,
   ): Promise<void> {
     return this.waitFor(
       () => streamingData.length >= expectedCount,
       timeoutMs,
-      50 // Check more frequently for faster tests
+      50, // Check more frequently for faster tests
     );
   }
 
   static parseStreamingData(rawData: string): any[] {
     return rawData
       .split('\n')
-      .filter(line => line.trim())
-      .map(line => {
+      .filter((line) => line.trim())
+      .map((line) => {
         try {
           return JSON.parse(line);
         } catch (error) {

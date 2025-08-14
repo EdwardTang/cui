@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import { Ellipsis, Edit2, Pin, Bell, BellOff, PinOff } from 'lucide-react';
 import { Button } from '@/web/chat/components/ui/button';
 import { Input } from '@/web/chat/components/ui/input';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/web/chat/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/web/chat/components/ui/popover';
 import { api } from '../services/api';
 import { cn } from '../lib/utils';
 
@@ -30,7 +26,8 @@ export function MoreOptionsMenu({
   className,
 }: MoreOptionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [localIsNotificationsEnabled, setLocalIsNotificationsEnabled] = useState(isNotificationsEnabled);
+  const [localIsNotificationsEnabled, setLocalIsNotificationsEnabled] =
+    useState(isNotificationsEnabled);
 
   const handleRename = () => {
     setIsOpen(false);
@@ -73,20 +70,13 @@ export function MoreOptionsMenu({
         <Button
           variant="ghost"
           size="icon"
-          className={cn(
-            "w-6 h-6 rounded-full hover:bg-muted/50",
-            className
-          )}
+          className={cn('w-6 h-6 rounded-full hover:bg-muted/50', className)}
           aria-label="More options"
         >
           <Ellipsis size={21} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
-        className="w-52 p-2 rounded-2xl"
-        align="end"
-        sideOffset={5}
-      >
+      <PopoverContent className="w-52 p-2 rounded-2xl" align="end" sideOffset={5}>
         <div className="flex flex-col gap-1">
           <Button
             variant="ghost"
@@ -97,7 +87,7 @@ export function MoreOptionsMenu({
             <Edit2 size={14} />
             Rename
           </Button>
-          
+
           <Button
             variant="ghost"
             size="sm"
@@ -107,7 +97,7 @@ export function MoreOptionsMenu({
             {isPinned ? <PinOff size={14} /> : <Pin size={14} />}
             {isPinned ? 'Unpin' : 'Pin'}
           </Button>
-          
+
           <Button
             variant="ghost"
             size="sm"

@@ -43,7 +43,11 @@ export class PermissionTracker extends EventEmitter {
   /**
    * Add a new permission request
    */
-  addPermissionRequest(toolName: string, toolInput: Record<string, unknown>, streamingId?: string): PermissionRequest {
+  addPermissionRequest(
+    toolName: string,
+    toolInput: Record<string, unknown>,
+    streamingId?: string,
+  ): PermissionRequest {
     const id = uuidv4();
     const request: PermissionRequest = {
       id,
@@ -64,33 +68,34 @@ export class PermissionTracker extends EventEmitter {
     if (this.notificationService && this.conversationStatusManager && this.historyReader) {
       // Get session ID from streaming ID
       const sessionId = this.conversationStatusManager.getSessionId(streamingId || '');
-      
+
       if (sessionId) {
         // Try to get conversation summary
-        this.historyReader.getConversationMetadata(sessionId)
-          .then(metadata => {
+        this.historyReader
+          .getConversationMetadata(sessionId)
+          .then((metadata) => {
             if (this.notificationService) {
               return this.notificationService.sendPermissionNotification(
-                request, 
-                sessionId, 
-                metadata?.summary
+                request,
+                sessionId,
+                metadata?.summary,
               );
             }
           })
-          .catch(error => {
+          .catch((error) => {
             logger.error('Failed to fetch conversation metadata for notification', error);
             // Fall back to sending without summary
             if (this.notificationService) {
-              this.notificationService.sendPermissionNotification(request, sessionId)
-                .catch(err => logger.error('Failed to send permission notification', err));
+              this.notificationService
+                .sendPermissionNotification(request, sessionId)
+                .catch((err) => logger.error('Failed to send permission notification', err));
             }
           });
       } else {
         // No session ID available, send without session info
-        this.notificationService.sendPermissionNotification(request)
-          .catch(error => {
-            logger.error('Failed to send permission notification', error);
-          });
+        this.notificationService.sendPermissionNotification(request).catch((error) => {
+          logger.error('Failed to send permission notification', error);
+        });
       }
     }
 
@@ -107,15 +112,18 @@ export class PermissionTracker extends EventEmitter {
   /**
    * Get permission requests filtered by criteria
    */
-  getPermissionRequests(filter?: { streamingId?: string; status?: 'pending' | 'approved' | 'denied' }): PermissionRequest[] {
+  getPermissionRequests(filter?: {
+    streamingId?: string;
+    status?: 'pending' | 'approved' | 'denied';
+  }): PermissionRequest[] {
     let requests = Array.from(this.permissionRequests.values());
 
     if (filter?.streamingId) {
-      requests = requests.filter(req => req.streamingId === filter.streamingId);
+      requests = requests.filter((req) => req.streamingId === filter.streamingId);
     }
 
     if (filter?.status) {
-      requests = requests.filter(req => req.status === filter.status);
+      requests = requests.filter((req) => req.status === filter.status);
     }
 
     return requests;
@@ -132,9 +140,9 @@ export class PermissionTracker extends EventEmitter {
    * Update permission request status (for future use when we implement approval/denial)
    */
   updatePermissionStatus(
-    id: string, 
-    status: 'approved' | 'denied', 
-    options?: { modifiedInput?: Record<string, unknown>; denyReason?: string }
+    id: string,
+    status: 'approved' | 'denied',
+    options?: { modifiedInput?: Record<string, unknown>; denyReason?: string },
   ): boolean {
     const request = this.permissionRequests.get(id);
     if (!request) {
@@ -176,24 +184,24 @@ export class PermissionTracker extends EventEmitter {
    */
   removePermissionsByStreamingId(streamingId: string): number {
     const toRemove: string[] = [];
-    
+
     // Find all permissions with this streamingId
     for (const [id, request] of this.permissionRequests.entries()) {
       if (request.streamingId === streamingId) {
         toRemove.push(id);
       }
     }
-    
+
     // Remove them
-    toRemove.forEach(id => this.permissionRequests.delete(id));
-    
+    toRemove.forEach((id) => this.permissionRequests.delete(id));
+
     if (toRemove.length > 0) {
-      logger.info('Removed permissions for streaming session', { 
-        streamingId, 
-        removedCount: toRemove.length 
+      logger.info('Removed permissions for streaming session', {
+        streamingId,
+        removedCount: toRemove.length,
       });
     }
-    
+
     return toRemove.length;
   }
 }

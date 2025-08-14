@@ -73,5 +73,3 @@ export function createNotificationsRoutes(webPush: WebPushService): Router {
 
   return router;
 }
-
-

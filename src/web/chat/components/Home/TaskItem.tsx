@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { StopCircle, Archive, Check, X } from 'lucide-react';
 import { Button } from '@/web/chat/components/ui/button';
 import { Input } from '@/web/chat/components/ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/web/chat/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/web/chat/components/ui/tooltip';
 import { MoreOptionsMenu } from '../MoreOptionsMenu';
 import { api } from '../../services/api';
 import type { StreamStatus } from '../../types';
@@ -32,11 +37,11 @@ interface TaskItemProps {
   onPinToggle?: (isPinned: boolean) => void;
 }
 
-export function TaskItem({ 
-  id: _id, 
-  title, 
-  timestamp, 
-  projectPath, 
+export function TaskItem({
+  id: _id,
+  title,
+  timestamp,
+  projectPath,
   recentDirectories,
   status,
   messageCount,
@@ -52,7 +57,7 @@ export function TaskItem({
   onStartRename,
   onCancelRename,
   onNameUpdate,
-  onPinToggle
+  onPinToggle,
 }: TaskItemProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [newName, setNewName] = useState(title);
@@ -61,7 +66,7 @@ export function TaskItem({
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
@@ -88,13 +93,13 @@ export function TaskItem({
   };
 
   return (
-    <div 
+    <div
       className="relative group hover:bg-muted/30 focus-within:border-l-2 focus-within:border-accent"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <a 
-        className="block no-underline text-inherit outline-offset-[-1px] focus-within:rounded-lg" 
+      <a
+        className="block no-underline text-inherit outline-offset-[-1px] focus-within:rounded-lg"
         onClick={(e) => {
           if (isRenaming) {
             e.preventDefault();
@@ -169,8 +174,10 @@ export function TaskItem({
               </span>
               <span className="text-muted-foreground">·</span>
               <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                {projectPath 
-                  ? (recentDirectories[projectPath]?.shortname || projectPath.split('/').pop() || projectPath)
+                {projectPath
+                  ? recentDirectories[projectPath]?.shortname ||
+                    projectPath.split('/').pop() ||
+                    projectPath
                   : 'No project'}
               </span>
               {messageCount !== undefined && (
@@ -181,10 +188,12 @@ export function TaskItem({
               )}
             </div>
           </div>
-          
+
           {status === 'ongoing' && (
             <div className="flex items-center gap-2">
-              <span className={`animate-pulse bg-gradient-to-r from-muted-foreground via-muted-foreground to-muted-foreground/50 bg-[length:200%_100%] bg-clip-text text-transparent ${liveStatus ? 'animate-[shimmer_2s_linear_infinite]' : ''}`}>
+              <span
+                className={`animate-pulse bg-gradient-to-r from-muted-foreground via-muted-foreground to-muted-foreground/50 bg-[length:200%_100%] bg-clip-text text-transparent ${liveStatus ? 'animate-[shimmer_2s_linear_infinite]' : ''}`}
+              >
                 {liveStatus?.currentStatus || 'Running'}
               </span>
               <TooltipProvider>
@@ -212,7 +221,7 @@ export function TaskItem({
               </TooltipProvider>
             </div>
           )}
-          
+
           {status === 'completed' && isHovered && (
             <div className="flex items-center gap-2">
               <TooltipProvider>
@@ -231,18 +240,23 @@ export function TaskItem({
                           onArchive?.();
                         }
                       }}
-                      aria-label={isArchived ? "Unarchive task" : "Archive task"}
+                      aria-label={isArchived ? 'Unarchive task' : 'Archive task'}
                       type="button"
                     >
                       <Archive size={21} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{isArchived ? "Unarchive task" : "Archive task"}</p>
+                    <p>{isArchived ? 'Unarchive task' : 'Archive task'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+              <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
                 <MoreOptionsMenu
                   sessionId={_id}
                   currentName={title}
@@ -256,17 +270,20 @@ export function TaskItem({
               </div>
             </div>
           )}
-          
-          {status !== 'ongoing' && !isHovered && toolMetrics && (toolMetrics.linesAdded > 0 || toolMetrics.linesRemoved > 0) && (
-            <div className="flex items-center gap-2 text-xs">
-              {toolMetrics.linesAdded > 0 && (
-                <span className="text-green-500 font-medium">+{toolMetrics.linesAdded}</span>
-              )}
-              {toolMetrics.linesRemoved > 0 && (
-                <span className="text-red-500 font-medium">-{toolMetrics.linesRemoved}</span>
-              )}
-            </div>
-          )}
+
+          {status !== 'ongoing' &&
+            !isHovered &&
+            toolMetrics &&
+            (toolMetrics.linesAdded > 0 || toolMetrics.linesRemoved > 0) && (
+              <div className="flex items-center gap-2 text-xs">
+                {toolMetrics.linesAdded > 0 && (
+                  <span className="text-green-500 font-medium">+{toolMetrics.linesAdded}</span>
+                )}
+                {toolMetrics.linesRemoved > 0 && (
+                  <span className="text-red-500 font-medium">-{toolMetrics.linesRemoved}</span>
+                )}
+              </div>
+            )}
         </div>
       </a>
     </div>

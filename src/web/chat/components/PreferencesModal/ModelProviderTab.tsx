@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Code, Info, AlertCircle, Edit, LayoutGrid } from 'lucide-react';
 import { Button } from '@/web/chat/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/web/chat/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/web/chat/components/ui/select';
 import { Switch } from '@/web/chat/components/ui/switch';
 import { Input } from '@/web/chat/components/ui/input';
 import { Label } from '@/web/chat/components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/web/chat/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/web/chat/components/ui/tooltip';
 import { Textarea } from '@/web/chat/components/ui/textarea';
 import type { CUIConfig } from '@/types/config';
 import type { RouterProvider, RouterConfiguration } from '@/types/router-config';
@@ -52,8 +63,8 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
               ...config?.router,
               providers: localProviders,
               enabled: config?.router?.enabled || false,
-              rules: config?.router?.rules || {}
-            } as RouterConfiguration
+              rules: config?.router?.rules || {},
+            } as RouterConfiguration,
           });
         } catch (error) {
           console.error('Failed to auto-save providers:', error);
@@ -65,7 +76,7 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
 
   const handleActiveProviderChange = async (provider: string) => {
     setActiveProvider(provider);
-    
+
     if (provider === 'claude-pro') {
       setActiveModel('');
       await onUpdate({
@@ -73,11 +84,11 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
           ...config?.router,
           enabled: false,
           providers: localProviders,
-          rules: config?.router?.rules || {}
-        } as RouterConfiguration
+          rules: config?.router?.rules || {},
+        } as RouterConfiguration,
       });
     } else {
-      const selectedProvider = localProviders.find(p => p.name === provider);
+      const selectedProvider = localProviders.find((p) => p.name === provider);
       if (selectedProvider && selectedProvider.models.length > 0) {
         const firstModel = selectedProvider.models[0];
         setActiveModel(firstModel);
@@ -86,9 +97,9 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
             enabled: true,
             providers: localProviders,
             rules: {
-              default: `${provider},${firstModel}`
-            }
-          } as RouterConfiguration
+              default: `${provider},${firstModel}`,
+            },
+          } as RouterConfiguration,
         });
       }
     }
@@ -102,9 +113,9 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
           enabled: true,
           providers: localProviders,
           rules: {
-            default: `${activeProvider},${model}`
-          }
-        } as RouterConfiguration
+            default: `${activeProvider},${model}`,
+          },
+        } as RouterConfiguration,
       });
     }
   };
@@ -115,7 +126,7 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
       api_base_url: '',
       api_key: '',
       models: [],
-      transformer: { use: ['openrouter'] }
+      transformer: { use: ['openrouter'] },
     };
     const newProviders = [...localProviders, newProvider];
     setLocalProviders(newProviders);
@@ -128,7 +139,7 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
     const updated = [...localProviders];
     updated[index] = { ...updated[index], ...updates };
     setLocalProviders(updated);
-    
+
     // Check if this is the editing provider and track changes
     if (index === editingProviderIndex && initialProviderState) {
       const currentProvider = updated[index];
@@ -140,7 +151,7 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
   const deleteProvider = (index: number) => {
     const updated = localProviders.filter((_, i) => i !== index);
     setLocalProviders(updated);
-    
+
     // Reset editing state if we're deleting the editing provider
     if (index === editingProviderIndex) {
       setEditingProviderIndex(null);
@@ -156,7 +167,7 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
     const updated = [...localProviders];
     updated[providerIndex].models.push('new-model');
     setLocalProviders(updated);
-    
+
     // Track changes if this is the editing provider
     if (providerIndex === editingProviderIndex && initialProviderState) {
       setHasChanges(true);
@@ -167,7 +178,7 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
     const updated = [...localProviders];
     updated[providerIndex].models[modelIndex] = value;
     setLocalProviders(updated);
-    
+
     // Track changes if this is the editing provider
     if (providerIndex === editingProviderIndex && initialProviderState) {
       const currentProvider = updated[providerIndex];
@@ -178,9 +189,11 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
 
   const deleteModel = (providerIndex: number, modelIndex: number) => {
     const updated = [...localProviders];
-    updated[providerIndex].models = updated[providerIndex].models.filter((_: any, i: number) => i !== modelIndex);
+    updated[providerIndex].models = updated[providerIndex].models.filter(
+      (_: any, i: number) => i !== modelIndex,
+    );
     setLocalProviders(updated);
-    
+
     // Track changes if this is the editing provider
     if (providerIndex === editingProviderIndex && initialProviderState) {
       const currentProvider = updated[providerIndex];
@@ -192,24 +205,26 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
   const saveEditingProvider = async () => {
     try {
       // Trim and clean provider data before saving
-      const cleanedProviders = localProviders.map(provider => ({
+      const cleanedProviders = localProviders.map((provider) => ({
         ...provider,
         name: provider.name?.trim() || '',
         api_base_url: provider.api_base_url?.trim() || '',
         api_key: provider.api_key?.trim() || '',
-        models: provider.models.map((model: string) => model?.trim() || '').filter((model: string) => model !== ''),
-        transformer: provider.transformer
+        models: provider.models
+          .map((model: string) => model?.trim() || '')
+          .filter((model: string) => model !== ''),
+        transformer: provider.transformer,
       }));
-      
+
       await onUpdate({
         router: {
           ...config?.router,
           providers: cleanedProviders,
           enabled: config?.router?.enabled || false,
-          rules: config?.router?.rules || {}
-        } as RouterConfiguration
+          rules: config?.router?.rules || {},
+        } as RouterConfiguration,
       });
-      
+
       // Update local state with cleaned data
       setLocalProviders(cleanedProviders);
       setEditingProviderIndex(null);
@@ -236,18 +251,20 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
           name: provider.name?.trim() || '',
           api_base_url: provider.api_base_url?.trim() || '',
           api_key: provider.api_key?.trim() || '',
-          models: provider.models.map((model: string) => model?.trim() || '').filter((model: string) => model !== ''),
-          transformer: provider.transformer
+          models: provider.models
+            .map((model: string) => model?.trim() || '')
+            .filter((model: string) => model !== ''),
+          transformer: provider.transformer,
         }));
-        
+
         setLocalProviders(cleanedParsed);
         await onUpdate({
           router: {
             ...config?.router,
             providers: cleanedParsed,
             enabled: config?.router?.enabled || false,
-            rules: config?.router?.rules || {}
-          } as RouterConfiguration
+            rules: config?.router?.rules || {},
+          } as RouterConfiguration,
         });
       } else {
         await saveEditingProvider();
@@ -277,7 +294,9 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
       <div className="px-6 pb-6 overflow-y-auto h-full">
         <div className="py-4 border-b border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Active Provider</h3>
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+              Active Provider
+            </h3>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Info className="h-4 w-4 text-neutral-400" />
@@ -287,7 +306,7 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
               </TooltipContent>
             </Tooltip>
           </div>
-          
+
           <div className="flex gap-3">
             <Select value={activeProvider} onValueChange={handleActiveProviderChange}>
               <SelectTrigger className="flex-1 bg-white dark:bg-neutral-900 border-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800">
@@ -296,8 +315,8 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
               <SelectContent>
                 <SelectItem value="claude-pro">Claude Pro/Max</SelectItem>
                 {localProviders
-                  .filter(provider => provider.name && provider.name.trim() !== '')
-                  .map(provider => (
+                  .filter((provider) => provider.name && provider.name.trim() !== '')
+                  .map((provider) => (
                     <SelectItem key={provider.name} value={provider.name}>
                       {provider.name}
                     </SelectItem>
@@ -312,7 +331,7 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
                 </SelectTrigger>
                 <SelectContent>
                   {localProviders
-                    .find(p => p.name === activeProvider)
+                    .find((p) => p.name === activeProvider)
                     ?.models.map((model: string) => (
                       <SelectItem key={model} value={model}>
                         {model}
@@ -326,13 +345,10 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
 
         <div className="py-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Providers</h3>
-            <Button
-              onClick={toggleJsonMode}
-              variant="ghost"
-              size="sm"
-              className="h-8 px-3"
-            >
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+              Providers
+            </h3>
+            <Button onClick={toggleJsonMode} variant="ghost" size="sm" className="h-8 px-3">
               {isJsonMode ? (
                 <LayoutGrid className="h-4 w-4 mr-1" />
               ) : (
@@ -346,7 +362,9 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
             <div className="space-y-3">
               <Textarea
                 value={jsonText}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setJsonText(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  setJsonText(e.target.value)
+                }
                 className="min-h-[300px] font-mono text-sm bg-neutral-100 dark:bg-neutral-800"
                 placeholder="Enter provider configuration as JSON array"
               />
@@ -358,7 +376,7 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
             <div className="space-y-4">
               {localProviders.map((provider, providerIndex) => {
                 const isEditing = providerIndex === editingProviderIndex;
-                
+
                 if (!isEditing) {
                   // Compact, non-editable view
                   return (
@@ -373,7 +391,9 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
                           </div>
                           <div className="text-xs text-neutral-500 dark:text-neutral-400">
                             {provider.api_base_url ? (
-                              <span className="truncate block max-w-md">{provider.api_base_url}</span>
+                              <span className="truncate block max-w-md">
+                                {provider.api_base_url}
+                              </span>
                             ) : (
                               <span>No endpoint configured</span>
                             )}
@@ -406,7 +426,7 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
                     </div>
                   );
                 }
-                
+
                 // Editable view
                 return (
                   <div
@@ -427,20 +447,28 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
 
                     <div className="grid gap-3">
                       <div>
-                        <Label htmlFor={`name-${providerIndex}`} className="text-xs text-neutral-600 dark:text-neutral-400">
+                        <Label
+                          htmlFor={`name-${providerIndex}`}
+                          className="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
                           Name
                         </Label>
                         <Input
                           id={`name-${providerIndex}`}
                           value={provider.name}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateProvider(providerIndex, { name: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            updateProvider(providerIndex, { name: e.target.value })
+                          }
                           className="mt-1 bg-white dark:bg-neutral-900"
                           placeholder="e.g., OpenRouter"
                         />
                       </div>
 
                       <div>
-                        <Label htmlFor={`transformer-${providerIndex}`} className="text-xs text-neutral-600 dark:text-neutral-400">
+                        <Label
+                          htmlFor={`transformer-${providerIndex}`}
+                          className="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
                           Transformer
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -466,27 +494,37 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
                       </div>
 
                       <div>
-                        <Label htmlFor={`base-url-${providerIndex}`} className="text-xs text-neutral-600 dark:text-neutral-400">
+                        <Label
+                          htmlFor={`base-url-${providerIndex}`}
+                          className="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
                           Base URL
                         </Label>
                         <Input
                           id={`base-url-${providerIndex}`}
                           value={provider.api_base_url}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateProvider(providerIndex, { api_base_url: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            updateProvider(providerIndex, { api_base_url: e.target.value })
+                          }
                           className="mt-1 bg-white dark:bg-neutral-900"
                           placeholder="https://openai-compatible/api/v1/chat/completions"
                         />
                       </div>
 
                       <div>
-                        <Label htmlFor={`api-key-${providerIndex}`} className="text-xs text-neutral-600 dark:text-neutral-400">
+                        <Label
+                          htmlFor={`api-key-${providerIndex}`}
+                          className="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
                           API Key
                         </Label>
                         <Input
                           id={`api-key-${providerIndex}`}
                           type="password"
                           value={provider.api_key}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateProvider(providerIndex, { api_key: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            updateProvider(providerIndex, { api_key: e.target.value })
+                          }
                           className="mt-1 bg-white dark:bg-neutral-900"
                           placeholder="Enter API key"
                         />
@@ -494,7 +532,9 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
 
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <Label className="text-xs text-neutral-600 dark:text-neutral-400">Models</Label>
+                          <Label className="text-xs text-neutral-600 dark:text-neutral-400">
+                            Models
+                          </Label>
                           <Button
                             onClick={() => addModel(providerIndex)}
                             variant="ghost"
@@ -510,7 +550,9 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
                             <div key={modelIndex} className="flex gap-2">
                               <Input
                                 value={model}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateModel(providerIndex, modelIndex, e.target.value)}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                  updateModel(providerIndex, modelIndex, e.target.value)
+                                }
                                 className="flex-1 bg-white dark:bg-neutral-900"
                                 placeholder="Model name"
                               />
@@ -535,8 +577,8 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
               {!isJsonMode && (
                 <div className="flex gap-2 justify-end">
                   {editingProviderIndex !== null && (
-                    <Button 
-                      onClick={saveProviders} 
+                    <Button
+                      onClick={saveProviders}
                       variant="default"
                       size="sm"
                       className="rounded-full"
@@ -544,9 +586,9 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
                       Save Provider
                     </Button>
                   )}
-                  <Button 
-                    onClick={addProvider} 
-                    variant={editingProviderIndex !== null ? "outline" : "default"}
+                  <Button
+                    onClick={addProvider}
+                    variant={editingProviderIndex !== null ? 'outline' : 'default'}
                     size="sm"
                     className="rounded-full"
                     disabled={editingProviderIndex !== null}
@@ -558,7 +600,7 @@ export function ModelProviderTab({ config, onUpdate, isActive }: ModelProviderTa
               )}
             </div>
           )}
-          
+
           <div className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
             <p className="text-xs text-neutral-600 dark:text-neutral-400">
               For more information about provider configuration, see{' '}

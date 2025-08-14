@@ -13,11 +13,11 @@ export class JsonLinesParser extends Transform {
   _transform(chunk: Buffer | string, encoding: string, callback: TransformCallback): void {
     // Append new data to buffer
     this.buffer += chunk.toString();
-    
+
     // Split by newlines but keep last incomplete line in buffer
     const lines = this.buffer.split('\n');
     this.buffer = lines.pop() || '';
-    
+
     // Parse each complete line
     for (const line of lines) {
       if (line.trim()) {
@@ -29,7 +29,7 @@ export class JsonLinesParser extends Transform {
         }
       }
     }
-    
+
     callback();
   }
 

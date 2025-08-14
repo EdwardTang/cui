@@ -27,7 +27,7 @@ export function StreamStatusProvider({ children }: { children: ReactNode }) {
 
     // Use the streamEventMapper utility to map event to status
     const statusUpdates = mapStreamEventToStatus(event, currentStatus);
-    
+
     // Merge with current status
     const updatedStatus: StreamStatus = {
       ...currentStatus,
@@ -97,16 +97,16 @@ export function StreamStatusProvider({ children }: { children: ReactNode }) {
   // Subscribe to streams
   const subscribeToStreams = useCallback((streamingIds: string[]) => {
     // Filter out any null or undefined values
-    const validStreamIds = streamingIds.filter(id => id && id.length > 0);
-    
+    const validStreamIds = streamingIds.filter((id) => id && id.length > 0);
+
     // Update subscribed streams
-    setSubscribedStreamIds(current => {
+    setSubscribedStreamIds((current) => {
       const newSet = new Set([...current, ...validStreamIds]);
       return Array.from(newSet);
     });
 
     // Initialize status for new streams
-    validStreamIds.forEach(streamingId => {
+    validStreamIds.forEach((streamingId) => {
       if (!streamStatusesRef.current.has(streamingId)) {
         const initialStatus: StreamStatus = {
           connectionState: 'connecting',
@@ -116,23 +116,26 @@ export function StreamStatusProvider({ children }: { children: ReactNode }) {
         streamStatusesRef.current.set(streamingId, initialStatus);
       }
     });
-    
+
     setStreamStatuses(new Map(streamStatusesRef.current));
   }, []);
 
   // Unsubscribe from a stream
   const unsubscribeFromStream = useCallback((streamingId: string) => {
-    setSubscribedStreamIds(current => current.filter(id => id !== streamingId));
-    
+    setSubscribedStreamIds((current) => current.filter((id) => id !== streamingId));
+
     // Remove status
     streamStatusesRef.current.delete(streamingId);
     setStreamStatuses(new Map(streamStatusesRef.current));
   }, []);
 
   // Get stream status
-  const getStreamStatus = useCallback((streamingId: string): StreamStatus | undefined => {
-    return streamStatuses.get(streamingId);
-  }, [streamStatuses]);
+  const getStreamStatus = useCallback(
+    (streamingId: string): StreamStatus | undefined => {
+      return streamStatuses.get(streamingId);
+    },
+    [streamStatuses],
+  );
 
   return (
     <StreamStatusContext.Provider

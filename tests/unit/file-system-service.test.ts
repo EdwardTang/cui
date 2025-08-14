@@ -15,38 +15,38 @@ describe('FileSystemService', () => {
   describe('Path validation', () => {
     it('should reject relative paths', async () => {
       await expect(service.listDirectory('../etc')).rejects.toThrow(
-        new CUIError('INVALID_PATH', 'Path must be absolute', 400)
+        new CUIError('INVALID_PATH', 'Path must be absolute', 400),
       );
     });
 
     it('should reject paths with traversal attempts', async () => {
       await expect(service.listDirectory('/home/../etc')).rejects.toThrow(
-        new CUIError('PATH_TRAVERSAL_DETECTED', 'Invalid path: path traversal detected', 400)
+        new CUIError('PATH_TRAVERSAL_DETECTED', 'Invalid path: path traversal detected', 400),
       );
     });
 
     it('should reject paths with null bytes', async () => {
       await expect(service.listDirectory('/home/user\u0000/file')).rejects.toThrow(
-        new CUIError('INVALID_PATH', 'Path contains null bytes', 400)
+        new CUIError('INVALID_PATH', 'Path contains null bytes', 400),
       );
     });
 
     it('should reject paths with invalid characters', async () => {
       await expect(service.listDirectory('/home/user<file>')).rejects.toThrow(
-        new CUIError('INVALID_PATH', 'Path contains invalid characters', 400)
+        new CUIError('INVALID_PATH', 'Path contains invalid characters', 400),
       );
     });
 
     it('should reject paths with hidden directories', async () => {
       await expect(service.listDirectory('/home/.hidden')).rejects.toThrow(
-        new CUIError('INVALID_PATH', 'Path contains hidden files/directories', 400)
+        new CUIError('INVALID_PATH', 'Path contains hidden files/directories', 400),
       );
     });
 
     it('should accept valid absolute paths', async () => {
       // This will fail with PATH_NOT_FOUND which is expected for non-existent paths
       await expect(service.listDirectory('/this/path/does/not/exist')).rejects.toThrow(
-        new CUIError('PATH_NOT_FOUND', 'Path not found: /this/path/does/not/exist', 404)
+        new CUIError('PATH_NOT_FOUND', 'Path not found: /this/path/does/not/exist', 404),
       );
     });
   });
@@ -63,18 +63,18 @@ describe('FileSystemService', () => {
   describe('Allowed base paths', () => {
     it('should restrict access to allowed paths only', async () => {
       const restrictedService = new FileSystemService(undefined, ['/home/user']);
-      
+
       await expect(restrictedService.listDirectory('/etc/passwd')).rejects.toThrow(
-        new CUIError('PATH_NOT_ALLOWED', 'Path is outside allowed directories', 403)
+        new CUIError('PATH_NOT_ALLOWED', 'Path is outside allowed directories', 403),
       );
     });
 
     it('should allow access within allowed paths', async () => {
       const restrictedService = new FileSystemService(undefined, ['/home/user']);
-      
+
       // This will fail with PATH_NOT_FOUND which is expected
       await expect(restrictedService.listDirectory('/home/user/documents')).rejects.toThrow(
-        new CUIError('PATH_NOT_FOUND', 'Path not found: /home/user/documents', 404)
+        new CUIError('PATH_NOT_FOUND', 'Path not found: /home/user/documents', 404),
       );
     });
   });
@@ -85,7 +85,7 @@ describe('FileSystemService', () => {
     beforeEach(async () => {
       // Create a temporary test directory structure
       testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cui-test-'));
-      
+
       // Create test structure
       await fs.mkdir(path.join(testDir, 'src'));
       await fs.mkdir(path.join(testDir, 'src', 'components'));
@@ -101,24 +101,28 @@ describe('FileSystemService', () => {
 
     it('should list directory non-recursively by default', async () => {
       const result = await service.listDirectory(testDir);
-      
+
       expect(result.entries).toHaveLength(2);
-      expect(result.entries.map(e => e.name)).toEqual(expect.arrayContaining(['src', 'README.md']));
-      expect(result.entries.find(e => e.name === 'src')?.type).toBe('directory');
-      expect(result.entries.find(e => e.name === 'README.md')?.type).toBe('file');
+      expect(result.entries.map((e) => e.name)).toEqual(
+        expect.arrayContaining(['src', 'README.md']),
+      );
+      expect(result.entries.find((e) => e.name === 'src')?.type).toBe('directory');
+      expect(result.entries.find((e) => e.name === 'README.md')?.type).toBe('file');
     });
 
     it('should list directory recursively when requested', async () => {
       const result = await service.listDirectory(testDir, true);
-      
+
       expect(result.entries).toHaveLength(5);
-      expect(result.entries.map(e => e.name)).toEqual(expect.arrayContaining([
-        'README.md',
-        'src',
-        path.join('src', 'components'),
-        path.join('src', 'index.ts'),
-        path.join('src', 'components', 'Button.tsx')
-      ]));
+      expect(result.entries.map((e) => e.name)).toEqual(
+        expect.arrayContaining([
+          'README.md',
+          'src',
+          path.join('src', 'components'),
+          path.join('src', 'index.ts'),
+          path.join('src', 'components', 'Button.tsx'),
+        ]),
+      );
     });
   });
 
@@ -128,7 +132,7 @@ describe('FileSystemService', () => {
     beforeEach(async () => {
       // Create a temporary test directory structure
       testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cui-test-'));
-      
+
       // Create test structure
       await fs.mkdir(path.join(testDir, 'src'));
       await fs.mkdir(path.join(testDir, 'node_modules'));
@@ -148,8 +152,8 @@ describe('FileSystemService', () => {
 
     it('should respect gitignore patterns when requested', async () => {
       const result = await service.listDirectory(testDir, false, true);
-      
-      const names = result.entries.map(e => e.name);
+
+      const names = result.entries.map((e) => e.name);
       expect(names).toContain('src');
       expect(names).toContain('README.md');
       expect(names).not.toContain('node_modules');
@@ -159,8 +163,8 @@ describe('FileSystemService', () => {
 
     it('should include ignored files when gitignore is not respected', async () => {
       const result = await service.listDirectory(testDir, false, false);
-      
-      const names = result.entries.map(e => e.name);
+
+      const names = result.entries.map((e) => e.name);
       expect(names).toContain('src');
       expect(names).toContain('README.md');
       expect(names).toContain('node_modules');
@@ -170,8 +174,8 @@ describe('FileSystemService', () => {
 
     it('should respect gitignore with recursive listing', async () => {
       const result = await service.listDirectory(testDir, true, true);
-      
-      const names = result.entries.map(e => e.name);
+
+      const names = result.entries.map((e) => e.name);
       expect(names).toContain('src');
       expect(names).toContain('README.md');
       expect(names).toContain(path.join('src', 'index.ts'));

@@ -33,12 +33,12 @@ export function clearRateLimitStore(): void {
  */
 function isRateLimited(ip: string): boolean {
   cleanupRateLimit();
-  
+
   const data = rateLimitStore.get(ip);
   if (!data) {
     return false;
   }
-  
+
   return data.attempts >= MAX_ATTEMPTS && Date.now() < data.resetTime;
 }
 
@@ -47,14 +47,14 @@ function isRateLimited(ip: string): boolean {
  */
 function recordFailedAttempt(ip: string): void {
   cleanupRateLimit();
-  
+
   const now = Date.now();
   const data = rateLimitStore.get(ip);
-  
+
   if (!data || now >= data.resetTime) {
     rateLimitStore.set(ip, {
       attempts: 1,
-      resetTime: now + RATE_LIMIT_WINDOW
+      resetTime: now + RATE_LIMIT_WINDOW,
     });
   } else {
     data.attempts++;
@@ -66,7 +66,9 @@ function recordFailedAttempt(ip: string): void {
  * @param tokenOverride - Optional token to use instead of config token
  * @returns Express middleware function
  */
-export function createAuthMiddleware(tokenOverride?: string): (req: Request, res: Response, next: NextFunction) => void {
+export function createAuthMiddleware(
+  tokenOverride?: string,
+): (req: Request, res: Response, next: NextFunction) => void {
   return (req: Request, res: Response, next: NextFunction): void => {
     authMiddlewareImpl(req, res, next, tokenOverride);
   };
@@ -81,21 +83,26 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
   authMiddlewareImpl(req, res, next);
 }
 
-function authMiddlewareImpl(req: Request, res: Response, next: NextFunction, tokenOverride?: string): void {
+function authMiddlewareImpl(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+  tokenOverride?: string,
+): void {
   // Skip auth in test environment unless explicitly enabled for auth tests
   if (process.env.NODE_ENV === 'test' && !process.env.ENABLE_AUTH_IN_TESTS) {
     next();
     return;
   }
   const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
-  
+
   // Check rate limiting
   if (isRateLimited(clientIp)) {
     logger.warn('Rate limit exceeded', { ip: clientIp });
     res.status(429).json({ error: 'Too many authentication attempts. Try again later.' });
     return;
   }
-  
+
   try {
     // Extract Bearer token from Authorization header
     const authHeader = req.headers.authorization;
@@ -105,12 +112,12 @@ function authMiddlewareImpl(req: Request, res: Response, next: NextFunction, tok
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    
+
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
+
     // Get expected token from config or use override
     const expectedToken = tokenOverride ?? ConfigService.getInstance().getConfig().authToken;
-    
+
     // Validate token
     if (token !== expectedToken) {
       recordFailedAttempt(clientIp);
@@ -118,7 +125,7 @@ function authMiddlewareImpl(req: Request, res: Response, next: NextFunction, tok
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    
+
     // Token is valid, proceed
     logger.debug('Authentication successful', { ip: clientIp });
     next();

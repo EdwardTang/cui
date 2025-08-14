@@ -12,7 +12,7 @@ describe('Log Endpoints Integration', () => {
     // Create server instance for testing
     server = new CUIServer({ port: 0 }); // Use port 0 for random available port
     app = (server as any).app; // Access the Express app for testing
-    
+
     // Start the server for integration tests
     await server.start();
   });
@@ -30,9 +30,7 @@ describe('Log Endpoints Integration', () => {
 
   describe('GET /api/logs/recent', () => {
     it('should return empty logs when buffer is empty', async () => {
-      const response = await request(app)
-        .get('/api/logs/recent')
-        .expect(200);
+      const response = await request(app).get('/api/logs/recent').expect(200);
 
       expect(response.body).toEqual({ logs: [] });
     });
@@ -43,9 +41,7 @@ describe('Log Endpoints Integration', () => {
       logStreamBuffer.addLog('{"level":"debug","msg":"test log 2"}');
       logStreamBuffer.addLog('{"level":"warn","msg":"test log 3"}');
 
-      const response = await request(app)
-        .get('/api/logs/recent')
-        .expect(200);
+      const response = await request(app).get('/api/logs/recent').expect(200);
 
       expect(response.body.logs).toHaveLength(3);
       expect(response.body.logs[0]).toBe('{"level":"info","msg":"test log 1"}');
@@ -59,9 +55,7 @@ describe('Log Endpoints Integration', () => {
         logStreamBuffer.addLog(`{"level":"info","msg":"test log ${i}"}`);
       }
 
-      const response = await request(app)
-        .get('/api/logs/recent?limit=3')
-        .expect(200);
+      const response = await request(app).get('/api/logs/recent?limit=3').expect(200);
 
       expect(response.body.logs).toHaveLength(3);
       expect(response.body.logs[0]).toBe('{"level":"info","msg":"test log 3"}');
@@ -75,9 +69,7 @@ describe('Log Endpoints Integration', () => {
         logStreamBuffer.addLog(`{"level":"info","msg":"test log ${i}"}`);
       }
 
-      const response = await request(app)
-        .get('/api/logs/recent')
-        .expect(200);
+      const response = await request(app).get('/api/logs/recent').expect(200);
 
       // Should return the last 100 logs (default limit is 100)
       expect(response.body.logs).toHaveLength(100);
@@ -88,9 +80,7 @@ describe('Log Endpoints Integration', () => {
     it('should handle invalid limit parameter gracefully', async () => {
       logStreamBuffer.addLog('{"level":"info","msg":"test log"}');
 
-      const response = await request(app)
-        .get('/api/logs/recent?limit=invalid')
-        .expect(200);
+      const response = await request(app).get('/api/logs/recent?limit=invalid').expect(200);
 
       // Should fall back to default behavior
       expect(response.body.logs).toHaveLength(1);
@@ -99,18 +89,14 @@ describe('Log Endpoints Integration', () => {
     it('should handle zero limit parameter', async () => {
       logStreamBuffer.addLog('{"level":"info","msg":"test log"}');
 
-      const response = await request(app)
-        .get('/api/logs/recent?limit=0')
-        .expect(200);
+      const response = await request(app).get('/api/logs/recent?limit=0').expect(200);
 
       // Zero limit should return empty array
       expect(response.body.logs).toEqual([]);
     });
 
     it('should include request logging in response', async () => {
-      const response = await request(app)
-        .get('/api/logs/recent')
-        .expect(200);
+      const response = await request(app).get('/api/logs/recent').expect(200);
 
       // The request itself should generate logs that might be in the buffer
       expect(response.body).toHaveProperty('logs');
@@ -124,35 +110,35 @@ describe('Log Endpoints Integration', () => {
       const serverAddress = (server as any).server?.address();
       const serverPort = serverAddress?.port || 3001;
       const baseUrl = `http://localhost:${serverPort}`;
-      
+
       // Create AbortController for cleanup
       const controller = new AbortController();
-      
+
       try {
         // Make raw HTTP request to check headers
         const streamResponse = await fetch(`${baseUrl}/api/logs/stream`, {
-          signal: controller.signal
+          signal: controller.signal,
         });
-        
+
         // Verify SSE headers
         expect(streamResponse.status).toBe(200);
         expect(streamResponse.headers.get('content-type')).toBe('text/event-stream');
         expect(streamResponse.headers.get('cache-control')).toBe('no-cache');
         expect(streamResponse.headers.get('connection')).toBe('keep-alive');
-        
+
         // Verify response is streaming
         expect(streamResponse.body).toBeDefined();
-        
+
         // Read initial chunk to verify SSE format
         if (streamResponse.body) {
           const reader = streamResponse.body.getReader();
           const decoder = new TextDecoder();
-          
+
           try {
             const { value } = await reader.read();
             if (value) {
               const chunk = decoder.decode(value);
-              
+
               // Should contain SSE-formatted connection confirmation
               expect(chunk).toContain('data: {"type":"connected"}');
             }
@@ -172,19 +158,19 @@ describe('Log Endpoints Integration', () => {
       const serverAddress = (server as any).server?.address();
       const serverPort = serverAddress?.port || 3001;
       const baseUrl = `http://localhost:${serverPort}`;
-      
+
       // Create AbortController for cleanup
       const controller = new AbortController();
-      
+
       try {
         // Connect to stream endpoint
         const streamResponse = await fetch(`${baseUrl}/api/logs/stream`, {
-          signal: controller.signal
+          signal: controller.signal,
         });
-        
+
         expect(streamResponse.status).toBe(200);
         expect(streamResponse.headers.get('content-type')).toBe('text/event-stream');
-        
+
         // Read initial data to verify connection
         if (streamResponse.body) {
           const reader = streamResponse.body.getReader();
@@ -203,11 +189,9 @@ describe('Log Endpoints Integration', () => {
         // Always abort to clean up
         controller.abort();
       }
-      
+
       // Verify we can still make requests (no resource leaks)
-      await request(app)
-        .get('/api/logs/recent')
-        .expect(200);
+      await request(app).get('/api/logs/recent').expect(200);
     });
   });
 
@@ -215,11 +199,9 @@ describe('Log Endpoints Integration', () => {
     it('should work with manual log buffer entries', async () => {
       // Test with manually added entries since logger async import may not work in tests
       logStreamBuffer.addLog('{"level":"info","msg":"manual test log","component":"Test"}');
-      
-      const response = await request(app)
-        .get('/api/logs/recent')
-        .expect(200);
-      
+
+      const response = await request(app).get('/api/logs/recent').expect(200);
+
       // Check if our test message appears in the logs
       const hasTestMessage = response.body.logs.some((log: string) => {
         try {
@@ -229,7 +211,7 @@ describe('Log Endpoints Integration', () => {
           return false;
         }
       });
-      
+
       expect(hasTestMessage).toBe(true);
     });
   });
@@ -237,9 +219,7 @@ describe('Log Endpoints Integration', () => {
   describe('Error Handling', () => {
     it('should handle log streaming errors gracefully', async () => {
       // This test ensures the endpoint doesn't crash on malformed log buffer operations
-      const response = await request(app)
-        .get('/api/logs/recent')
-        .expect(200);
+      const response = await request(app).get('/api/logs/recent').expect(200);
 
       expect(response.body).toHaveProperty('logs');
     });
@@ -251,9 +231,7 @@ describe('Log Endpoints Integration', () => {
         throw new Error('Buffer error');
       };
 
-      const response = await request(app)
-        .get('/api/logs/recent')
-        .expect(500);
+      const response = await request(app).get('/api/logs/recent').expect(500);
 
       expect(response.body).toHaveProperty('error');
 
@@ -280,16 +258,16 @@ describe('Log Endpoints Integration', () => {
       const serverAddress = (server as any).server?.address();
       const serverPort = serverAddress?.port || 3001;
       const baseUrl = `http://localhost:${serverPort}`;
-      
+
       // Create AbortController for cleanup
       const controller = new AbortController();
-      
+
       try {
         // Make request to check headers
         const streamResponse = await fetch(`${baseUrl}/api/logs/stream`, {
-          signal: controller.signal
+          signal: controller.signal,
         });
-        
+
         expect(streamResponse.status).toBe(200);
         expect(streamResponse.headers.get('content-type')).toMatch(/text\/event-stream/);
       } finally {

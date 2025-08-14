@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { CornerDownRight } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/web/chat/components/ui/collapsible';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/web/chat/components/ui/collapsible';
 
 interface FallbackToolProps {
   toolName: string;
@@ -26,18 +30,18 @@ export function FallbackTool({ toolName, input, result }: FallbackToolProps) {
     <div className="flex flex-col gap-1 -mt-0.5">
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <CollapsibleTrigger asChild>
-          <div 
+          <div
             className="text-sm text-muted-foreground cursor-pointer select-none hover:text-foreground flex items-center gap-1"
             aria-label={`Toggle ${toolName} details`}
           >
-            <CornerDownRight 
-              size={12} 
-              className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+            <CornerDownRight
+              size={12}
+              className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`}
             />
             {toolName} completed
           </div>
         </CollapsibleTrigger>
-        
+
         <CollapsibleContent className="space-y-1">
           {result && (
             <div className="bg-neutral-950 rounded-xl overflow-hidden">
@@ -46,7 +50,7 @@ export function FallbackTool({ toolName, input, result }: FallbackToolProps) {
               </pre>
             </div>
           )}
-          
+
           {/* Always show input in expanded state for debugging */}
           {input && (
             <div className="bg-secondary rounded-xl p-3 overflow-x-auto font-mono text-xs leading-relaxed">
