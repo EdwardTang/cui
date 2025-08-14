@@ -1,0 +1,16 @@
+#\!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run full test suite before push
+echo "🧪 Running full test suite..."
+npm test
+
+# Run linting
+echo "🧹 Running linting..."
+npm run lint
+
+# Run build to ensure production builds work
+echo "🏗️ Testing production build..."
+npm run build
+
+echo "✅ Pre-push checks completed successfully\!"

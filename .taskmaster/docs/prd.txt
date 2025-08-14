@@ -1,0 +1,376 @@
+# CUI Voice & Podcast Upgrade — PRD + System Design + Development Playbook
+
+> **Overview**: This playbook guides the implementation of podcast generation, real-time voice conversation, and dictation features for CUI (Claude Code Web UI), with built-in quality gates via TDD Guard, Git hooks, and CI.
+
+**Branch**: feat/podcast-livekit  
+**Architecture**: Express.js (TypeScript) + React (Vite) + Single Port 3001  
+**Key Features**:
+1. One-click podcast generation from task conversations (Podcastfy)
+2. Real-time voice conversation similar to ChatGPT Advanced Voice (LiveKit + voice-mode + Claude Code)
+3. Dictation with switchable providers: gemini / openai-whisper / openai-gpt4o-transcribe
+4. Quality enforcement: Claude Code Hooks + TDD Guard + pre-commit + CI
+
+---
+
+## 1. PRD (Product Requirements)
+
+### 1.1 Problem & Value
+- CUI users need off-screen consumption of task progress and conclusions: convert task conversations into dual-host podcasts for listening anytime.
+- Need real-time voice interaction to advance tasks, ask about progress, and give next instructions.
+- Need stable dictation with provider switching (cost/accuracy/latency trade-offs).
+- Need TDD and security constraints enforced: Claude Code must pass tests before writing/modifying, with pre-commit and CI safety nets.
+
+### 1.2 Success Criteria (Acceptance)
+- Task details page shows "Generate Podcast" button; produces ≤8 minute .m4a within 30 seconds, playable on iPhone/Safari; generates show notes (chapters/highlights/next steps).
+- Voice Converse: Press to join LiveKit room, voice interaction with Claude Code (via voice-mode), average end-to-end latency ≤1.2s.
+- Dictation Provider switching: After settings change, frontend recording upload via /api/dictation/transcribe?provider=... returns stable text.
+- Hooks + Guard:
+  - Any Claude Code write/edit goes through PreToolUse → tdd-guard, rejecting without red→green evidence.
+  - pre-commit automatically runs format + lint + typecheck + unit test, blocking on failure.
+  - CI aligns with local strategy: typecheck + lint + test + build all green for merge.
+
+### 1.3 Non-Goals (Outside MVP)
+- Voice separation/speaker diarization (WhisperX/pyannote) for future enhancement only.
+- Multi-tenant/cross-instance voice-mode pooling and task routing.
+- Production-grade Podcast CDN/transcoding pipeline (MVP uses local static directory).
+
+---
+
+## 2. System Design
+
+### 2.1 Components & Data Flow
+
+```
+[Browser UI]
+  |             ┌───────────── Express (3001) ──────────────┐
+  |  /api/podcast  /api/voice/*   /api/dictation/transcribe |
+  v             │                                              │
+[Task View] -> [Podcast Controller] -> [Podcastfy Adapter] -> [public/podcasts/*.m4a]
+   |                                                     ^
+   |<------------- audioUrl + show notes ----------------|
+   |
+[Voice Toggle] -> [Voice Controller] -> spawn voice-mode (MCP) -> Claude Code
+   |                 |                    ^
+   |                 v                    |
+   |             LiveKit token <----------|
+   |------------- Join LiveKit room <----> voice-mode audio loopback
+
+[DictationInput] -- MediaRecorder(audio/webm, mp4) --> /api/dictation/transcribe?provider=...
+                                                -> OpenAI Whisper / GPT-4o-transcribe -> text
+```
+
+### 2.2 Module & Directory Structure
+
+```
+server/
+  routes/
+    podcast.ts         # POST /api/podcast
+    voice.ts           # POST /api/voice/start|stop
+    dictation.ts       # POST /api/dictation/transcribe
+  lib/
+    config.ts
+    podcast/
+      index.ts         # provider abstraction
+      podcastfy.ts     # Podcastfy adapter
+    voice/voiceMode.ts # spawn voice-mode + LiveKit token
+    dictation/
+      index.ts
+      openaiWhisper.ts
+      openaiGpt4o.ts
+  utils/taskSummary.ts # Generate dual-host script + show notes from task conversation
+
+client/src/
+  components/TaskActions/PodcastButton.tsx
+  components/TaskActions/VoiceToggle.tsx
+  components/Dictation/DictationInput.tsx
+  pages/SettingsVoiceAndPodcast.tsx
+  state/settings.ts    # (Zustand) store provider/voice settings
+public/podcasts/
+```
+
+### 2.3 API Contracts (MVP)
+- **POST /api/podcast**
+  - Request: `{ taskId, lang?, voices? }`
+  - Response: `{ audioUrl, showNotes:[{title,bullets[]}], durationSec? }`
+- **POST /api/voice/start**
+  - Request: `{ taskId }`
+  - Response: `{ room, token, hint }`
+- **POST /api/voice/stop** → `{ ok:true }`
+- **POST /api/dictation/transcribe?provider=openai-whisper|openai-gpt4o-transcribe|gemini**
+  - FormData: audio (webm/mp4)
+  - Response: `{ text, language?, confidence? }`
+
+### 2.4 Configuration (.env.example summary)
+
+```env
+PORT=3001
+LIVEKIT_URL=...
+LIVEKIT_API_KEY=...
+LIVEKIT_API_SECRET=...
+VOICE_MODE_CMD=voice-mode
+VOICE_ROOM_PREFIX=cui
+VOICE_DEFAULT_MODE=ptt
+
+PODCAST_PROVIDER=podcastfy
+PODCASTFY_URL=http://localhost:8123/api/generate
+PODCAST_OUTPUT_DIR=public/podcasts
+PODCAST_DEFAULT_LANG=en-US
+PODCAST_EN_VOICE_A=Alloy
+PODCAST_EN_VOICE_B=Verse
+PODCAST_ZH_VOICE_A=zh-male-1
+PODCAST_ZH_VOICE_B=zh-female-1
+
+DICTATION_DEFAULT_PROVIDER=openai-gpt4o-transcribe
+OPENAI_API_KEY=...
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_WHISPER_MODEL=whisper-1
+OPENAI_GPT4O_TRANSCRIBE_MODEL=gpt-4o-transcribe
+```
+
+---
+
+## 3. Detailed Development Guide (Spec→TDD→Implementation)
+
+### 3.1 Initialization (Commit 000)
+- Add/confirm scripts: typecheck, lint, test (Vitest + Supertest + RTL), build
+- Add Dev dependencies (Vitest/RTL/Supertest/eslint/ts/...)
+- Complete .env.example; draft README-voice-podcast.md
+
+### 3.2 Feature A: Podcast (Podcastfy)
+1. **Write tests first**
+   - server/routes/podcast.spec.ts: missing taskId→400; normal→200 with /podcasts/*.m4a; upstream error→500
+   - client/PodcastButton.spec.tsx: click→call API→render <audio> & show notes
+2. **Implementation**
+   - buildPodcastScript(taskId): Generate dual-host script + sections from task records
+   - PodcastfyProvider.generate(): POST script→save m4a→return path
+   - Express serve static /podcasts
+3. **Acceptance**: Local/iPhone playback normal, available within 30 seconds
+
+### 3.3 Feature B: Voice (LiveKit + voice-mode)
+1. **Write tests first**
+   - server/lib/voice/voiceMode.spec.ts: start spawns first time, idempotent second time, stop kills
+   - server/routes/voice.spec.ts: parameter validation, returns room+token
+   - client/VoiceToggle.spec.tsx: start→UI changes; stop→restore
+2. **Implementation**
+   - startVoiceMode(room): spawn(VOICE_MODE_CMD, ['--livekit-url', ...]) + monitor exit
+   - mintLiveKitToken(identity, room) (livekit-server-sdk)
+3. **Acceptance**: Join room, voice-mode logs; exit cleans subprocess
+
+### 3.4 Feature C: Dictation Provider Switching
+1. **Write tests first**
+   - server/routes/dictation.spec.ts: missing file→400; provider normal→200; unknown→400/422
+   - client/DictationInput.spec.tsx: after provider switch, query correct
+2. **Implementation**
+   - openaiWhisper.ts / openaiGpt4o.ts (/audio/transcriptions)
+   - DictationInput.tsx uses MediaRecorder→FormData upload
+3. **Acceptance**: English/Chinese short recordings transcribe reliably; provider switch works
+
+---
+
+## 4. Hooks + TDD Guard + Git Hooks + CI (Enforcement)
+
+### 4.1 Goals
+- Force Claude Code to follow TDD (failing test→write code→green) before write/edit
+- Catch most automatable issues at pre-commit (format/types/unit tests)
+- CI aligns with local strategy, PR must be all green
+- Validate MCP writes for path and permissions, reject unauthorized or dangerous operations
+
+### 4.2 Install TDD Guard (Vitest Reporter)
+
+```bash
+npm i -g tdd-guard
+pnpm add -D vitest tdd-guard-vitest
+```
+
+vitest.config.ts addition:
+
+```typescript
+import { VitestReporter } from 'tdd-guard-vitest'
+export default defineConfig({
+  test: {
+    reporters: ['default', new VitestReporter(process.cwd())],
+    coverage: { provider: 'v8', thresholds: { lines: 80, branches: 70, functions: 80, statements: 80 } }
+  }
+})
+```
+
+### 4.3 Configure Claude Code Hooks (project .claude/settings.json)
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      { "matcher": ".*", "hooks": [
+        { "type": "command", "command": "echo '[Guard] RED first: write failing tests before code.' >&2" }
+      ]}
+    ],
+    "PreToolUse": [
+      { "matcher": "Write|Edit|MultiEdit|TodoWrite", "hooks": [
+        { "type": "command", "command": "tdd-guard" }
+      ]},
+      { "matcher": "mcp__.*__write.*", "hooks": [
+        { "type": "command", "command": "$CLAUDE_PROJECT_DIR/scripts/validate-mcp-write.sh" }
+      ]}
+    ],
+    "PostToolUse": [
+      { "matcher": "Write|Edit|MultiEdit", "hooks": [
+        { "type": "command", "command": "pnpm -s format:fix && pnpm -s lint -f" }
+      ]}
+    ]
+  }
+}
+```
+
+### 4.4 Write Protection Script scripts/validate-mcp-write.sh
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+payload="$(cat)"  # hooks JSON from stdin
+proj="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+abspath="$(python3 - <<'PY'
+import os,sys,json
+p=json.load(sys.stdin).get("tool_input",{})
+fp=p.get("path") or p.get("file_path") or ""
+print(os.path.abspath(fp) if fp else "")
+PY
+<<<"$payload")"
+
+# Protected paths
+case "$abspath" in
+  "$proj/.env"*) echo '{"decision":"deny","reason":".env is protected."}'; exit 0;;
+  "$proj/.git"*) echo '{"decision":"deny","reason":".git is protected."}'; exit 0;;
+esac
+
+# Block path traversal outside repo
+if [[ "$abspath" != "$proj/"* ]]; then
+  echo '{"decision":"deny","reason":"Path traversal outside project is blocked."}'; exit 0
+fi
+
+echo '{"decision":"approve","reason":"OK"}'
+```
+
+Make executable: `chmod +x scripts/validate-mcp-write.sh`
+
+### 4.5 Git Hooks (Husky + lint-staged)
+
+```bash
+pnpm add -D husky lint-staged @commitlint/{config-conventional,cli}
+pnpm dlx husky init
+
+# .husky/pre-commit
+cat > .husky/pre-commit <<'SH'
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+pnpm -s lint-staged
+pnpm -s typecheck
+pnpm -s test -- --run
+SH
+chmod +x .husky/pre-commit
+
+# .husky/pre-push
+cat > .husky/pre-push <<'SH'
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+pnpm -s test -- --run
+pnpm -s build
+SH
+chmod +x .husky/pre-push
+
+# lint-staged
+cat > .lintstagedrc.json <<'JSON'
+{
+  "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
+  "*.{json,md,yml,yaml}": ["prettier --write"]
+}
+JSON
+
+# commit-msg convention (optional)
+echo 'export default {extends: ["@commitlint/config-conventional"]}' > commitlint.config.cjs
+```
+
+### 4.6 CI (GitHub Actions)
+
+.github/workflows/ci.yml:
+
+```yaml
+name: ci
+on:
+  push: { branches: [ main ] }
+  pull_request:
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test -- --run --coverage
+      - run: pnpm build
+```
+
+Set ci as Required status check in Branch protection.
+
+### 4.7 (Optional) MCP Security Scan
+- Use trusted MCP scanner (e.g., mcp-scan) for static/dynamic checks; include reports in reports/ and upload as CI artifact
+- Local scripts (example):
+  - pnpm mcp:static → static audit of .claude/settings.json, MCP server manifest
+  - pnpm mcp:dynamic → dynamic audit of real conversation logs
+
+---
+
+## 5. Testing Strategy
+- **Unit tests**: server/routes/*.spec.ts, server/lib/*/*.spec.ts, client/*/*.spec.tsx
+- **Contract tests**: Mock upstream (Podcastfy/OpenAI), verify protocol & error handling
+- **E2E (lightweight)**: Playwright 1 smoke test
+  - Open task details → generate podcast → <audio> appears
+  - Settings page switch dictation provider → next recording request has correct query
+
+---
+
+## 6. Delivery & Commit Breakdown
+- **000** chore(ci/dev): vitest/rtl/supertest/eslint/ts/husky/lint-staged/.env.example/PR template
+- **Axx** feat(podcast): /api/podcast + provider + frontend button + tests
+- **Bxx** feat(voice): /api/voice/start|stop + spawn + LiveKit token + UI + tests
+- **Cxx** feat(dictation): /api/dictation/transcribe + providers + UI + tests
+- **D00** test(e2e): Playwright smoke test
+- **E00** chore(guard): .claude/settings.json + scripts/validate-mcp-write.sh + CI + Husky
+
+---
+
+## 7. Local Running (Verification)
+
+```bash
+pnpm i
+cp .env.example .env    # Fill LiveKit / Podcastfy / OpenAI
+pnpm dev                # Start frontend & backend together
+pnpm typecheck && pnpm lint && pnpm test
+# Optional
+pnpm test:e2e
+```
+
+---
+
+## 8. Risks & Mitigations
+- **Podcastfy returns URL**: Adapter checks Content-Type first, if JSON returns download URL, then fetches and saves
+- **voice-mode not installed/not in PATH**: /api/voice/start returns 500 + installation prompt; UI shows readable error
+- **Browser audio container differences**: Prefer audio/webm; Safari uses audio/mp4, backend allows whitelist and forwards
+- **Cost control**: Default to Whisper or self-hosted first; enable expensive TTS only for natural voices
+- **Security**: validate-mcp-write.sh blocks .env/.git writes; blocks writes outside repo; multer limits uploads ≤20MB
+
+---
+
+## 9. Execution Order for Claude Code (One-line version)
+
+1) Implement 000 initialization & .env.example
+2) A: Test-driven implementation of /api/podcast + UI
+3) B: Test-driven implementation of voice (spawn + token + UI)
+4) C: Test-driven implementation of dictation provider switching
+5) E: Write .claude/settings.json, scripts/validate-mcp-write.sh, Husky & CI
+6) D: Add 1 E2E test
+7) Ensure pre-commit/CI all green, open PR

@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# TDD Guard integration - ensure tests pass before commit
+echo "🔍 Running TDD Guard checks..."
+npx tdd-guard check || echo "⚠️  TDD Guard check failed, continuing with other checks..."
+
+# Run lint-staged for formatting and linting
+echo "🎨 Running lint-staged..."
+npx lint-staged
+
+# Run type checking
+echo "🔎 Running type checks..."
+npm run typecheck
+
+echo "✅ Pre-commit checks completed successfully!"

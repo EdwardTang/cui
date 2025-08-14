@@ -576,81 +576,6 @@
       ]
     },
     {
-      "moduleId": "/home/dev/workspace/cui/tests/integration/config-integration.test.ts",
-      "tests": [
-        {
-          "name": "should create config directory and file on first initialization",
-          "fullName": "Configuration System Basic Integration > Configuration File Creation > should create config directory and file on first initialization",
-          "state": "passed"
-        },
-        {
-          "name": "should load existing config file if it exists",
-          "fullName": "Configuration System Basic Integration > Configuration File Creation > should load existing config file if it exists",
-          "state": "passed"
-        },
-        {
-          "name": "should generate consistent machine ID format",
-          "fullName": "Configuration System Basic Integration > Machine ID Generation > should generate consistent machine ID format",
-          "state": "passed"
-        },
-        {
-          "name": "should generate the same machine ID on multiple calls",
-          "fullName": "Configuration System Basic Integration > Machine ID Generation > should generate the same machine ID on multiple calls",
-          "state": "passed"
-        },
-        {
-          "name": "should persist machine ID across config service restarts",
-          "fullName": "Configuration System Basic Integration > Machine ID Generation > should persist machine ID across config service restarts",
-          "state": "passed"
-        },
-        {
-          "name": "should return the same instance across multiple calls",
-          "fullName": "Configuration System Basic Integration > ConfigService Singleton Behavior > should return the same instance across multiple calls",
-          "state": "passed"
-        },
-        {
-          "name": "should throw error when accessing config before initialization",
-          "fullName": "Configuration System Basic Integration > ConfigService Singleton Behavior > should throw error when accessing config before initialization",
-          "state": "passed"
-        },
-        {
-          "name": "should prevent multiple initializations",
-          "fullName": "Configuration System Basic Integration > ConfigService Singleton Behavior > should prevent multiple initializations",
-          "state": "passed"
-        },
-        {
-          "name": "should fail startup on malformed config file",
-          "fullName": "Configuration System Basic Integration > Error Handling > should fail startup on malformed config file",
-          "state": "passed"
-        },
-        {
-          "name": "should allow missing fields and fill defaults",
-          "fullName": "Configuration System Basic Integration > Error Handling > should allow missing fields and fill defaults",
-          "state": "passed"
-        },
-        {
-          "name": "should create config with correct default values",
-          "fullName": "Configuration System Basic Integration > Default Configuration Values > should create config with correct default values",
-          "state": "passed"
-        },
-        {
-          "name": "should generate machine ID with correct hostname prefix",
-          "fullName": "Configuration System Basic Integration > Default Configuration Values > should generate machine ID with correct hostname prefix",
-          "state": "passed"
-        },
-        {
-          "name": "should preserve optional fields like router on initialization and not remove them when rewriting",
-          "fullName": "Configuration System Basic Integration > Preservation and Deep-Merge Behavior > should preserve optional fields like router on initialization and not remove them when rewriting",
-          "state": "passed"
-        },
-        {
-          "name": "should deep-merge partial interface updates and not reset unrelated options",
-          "fullName": "Configuration System Basic Integration > Preservation and Deep-Merge Behavior > should deep-merge partial interface updates and not reset unrelated options",
-          "state": "passed"
-        }
-      ]
-    },
-    {
       "moduleId": "/home/dev/workspace/cui/tests/unit/file-system-service.test.ts",
       "tests": [
         {
@@ -736,6 +661,81 @@
       ]
     },
     {
+      "moduleId": "/home/dev/workspace/cui/tests/integration/config-integration.test.ts",
+      "tests": [
+        {
+          "name": "should create config directory and file on first initialization",
+          "fullName": "Configuration System Basic Integration > Configuration File Creation > should create config directory and file on first initialization",
+          "state": "passed"
+        },
+        {
+          "name": "should load existing config file if it exists",
+          "fullName": "Configuration System Basic Integration > Configuration File Creation > should load existing config file if it exists",
+          "state": "passed"
+        },
+        {
+          "name": "should generate consistent machine ID format",
+          "fullName": "Configuration System Basic Integration > Machine ID Generation > should generate consistent machine ID format",
+          "state": "passed"
+        },
+        {
+          "name": "should generate the same machine ID on multiple calls",
+          "fullName": "Configuration System Basic Integration > Machine ID Generation > should generate the same machine ID on multiple calls",
+          "state": "passed"
+        },
+        {
+          "name": "should persist machine ID across config service restarts",
+          "fullName": "Configuration System Basic Integration > Machine ID Generation > should persist machine ID across config service restarts",
+          "state": "passed"
+        },
+        {
+          "name": "should return the same instance across multiple calls",
+          "fullName": "Configuration System Basic Integration > ConfigService Singleton Behavior > should return the same instance across multiple calls",
+          "state": "passed"
+        },
+        {
+          "name": "should throw error when accessing config before initialization",
+          "fullName": "Configuration System Basic Integration > ConfigService Singleton Behavior > should throw error when accessing config before initialization",
+          "state": "passed"
+        },
+        {
+          "name": "should prevent multiple initializations",
+          "fullName": "Configuration System Basic Integration > ConfigService Singleton Behavior > should prevent multiple initializations",
+          "state": "passed"
+        },
+        {
+          "name": "should fail startup on malformed config file",
+          "fullName": "Configuration System Basic Integration > Error Handling > should fail startup on malformed config file",
+          "state": "passed"
+        },
+        {
+          "name": "should allow missing fields and fill defaults",
+          "fullName": "Configuration System Basic Integration > Error Handling > should allow missing fields and fill defaults",
+          "state": "passed"
+        },
+        {
+          "name": "should create config with correct default values",
+          "fullName": "Configuration System Basic Integration > Default Configuration Values > should create config with correct default values",
+          "state": "passed"
+        },
+        {
+          "name": "should generate machine ID with correct hostname prefix",
+          "fullName": "Configuration System Basic Integration > Default Configuration Values > should generate machine ID with correct hostname prefix",
+          "state": "passed"
+        },
+        {
+          "name": "should preserve optional fields like router on initialization and not remove them when rewriting",
+          "fullName": "Configuration System Basic Integration > Preservation and Deep-Merge Behavior > should preserve optional fields like router on initialization and not remove them when rewriting",
+          "state": "passed"
+        },
+        {
+          "name": "should deep-merge partial interface updates and not reset unrelated options",
+          "fullName": "Configuration System Basic Integration > Preservation and Deep-Merge Behavior > should deep-merge partial interface updates and not reset unrelated options",
+          "state": "passed"
+        }
+      ]
+    },
+    {
       "moduleId": "/home/dev/workspace/cui/tests/integration/log-endpoints.test.ts",
       "tests": [
         {
@@ -806,6 +806,111 @@
         {
           "name": "should set proper content type for log streaming",
           "fullName": "Log Endpoints Integration > CORS and Headers > should set proper content type for log streaming",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/routes/conversation.routes.test.ts",
+      "tests": [
+        {
+          "name": "should start new conversation without resumedSessionId",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should start new conversation without resumedSessionId",
+          "state": "passed"
+        },
+        {
+          "name": "should handle resume with resumedSessionId and set continuation_session_id",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should handle resume with resumedSessionId and set continuation_session_id",
+          "state": "passed"
+        },
+        {
+          "name": "should handle missing workingDirectory validation",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should handle missing workingDirectory validation",
+          "state": "passed"
+        },
+        {
+          "name": "should handle missing initialPrompt validation",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should handle missing initialPrompt validation",
+          "state": "passed"
+        },
+        {
+          "name": "should inherit permission mode from original session when resuming",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should inherit permission mode from original session when resuming",
+          "state": "passed"
+        },
+        {
+          "name": "should archive all sessions successfully",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should archive all sessions successfully",
+          "state": "passed"
+        },
+        {
+          "name": "should handle archiving zero sessions",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should handle archiving zero sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should handle archiving one session with singular message",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should handle archiving one session with singular message",
+          "state": "passed"
+        },
+        {
+          "name": "should handle service errors",
+          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should handle service errors",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/routes/permission.routes.test.ts",
+      "tests": [
+        {
+          "name": "should approve a permission request",
+          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should approve a permission request",
+          "state": "passed"
+        },
+        {
+          "name": "should deny a permission request",
+          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should deny a permission request",
+          "state": "passed"
+        },
+        {
+          "name": "should return 400 for invalid action",
+          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should return 400 for invalid action",
+          "state": "passed"
+        },
+        {
+          "name": "should return 404 for non-existent permission request",
+          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should return 404 for non-existent permission request",
+          "state": "passed"
+        },
+        {
+          "name": "should return 404 for already processed permission request",
+          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should return 404 for already processed permission request",
+          "state": "passed"
+        },
+        {
+          "name": "should create a new permission request",
+          "fullName": "Permission Routes > POST /api/permissions/notify > should create a new permission request",
+          "state": "passed"
+        },
+        {
+          "name": "should return 400 if toolName is missing",
+          "fullName": "Permission Routes > POST /api/permissions/notify > should return 400 if toolName is missing",
+          "state": "passed"
+        },
+        {
+          "name": "should list all permissions",
+          "fullName": "Permission Routes > GET /api/permissions > should list all permissions",
+          "state": "passed"
+        },
+        {
+          "name": "should filter permissions by streamingId",
+          "fullName": "Permission Routes > GET /api/permissions > should filter permissions by streamingId",
+          "state": "passed"
+        },
+        {
+          "name": "should filter permissions by status",
+          "fullName": "Permission Routes > GET /api/permissions > should filter permissions by status",
           "state": "passed"
         }
       ]
@@ -931,111 +1036,6 @@
       ]
     },
     {
-      "moduleId": "/home/dev/workspace/cui/tests/unit/routes/conversation.routes.test.ts",
-      "tests": [
-        {
-          "name": "should start new conversation without resumedSessionId",
-          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should start new conversation without resumedSessionId",
-          "state": "passed"
-        },
-        {
-          "name": "should handle resume with resumedSessionId and set continuation_session_id",
-          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should handle resume with resumedSessionId and set continuation_session_id",
-          "state": "passed"
-        },
-        {
-          "name": "should handle missing workingDirectory validation",
-          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should handle missing workingDirectory validation",
-          "state": "passed"
-        },
-        {
-          "name": "should handle missing initialPrompt validation",
-          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should handle missing initialPrompt validation",
-          "state": "passed"
-        },
-        {
-          "name": "should inherit permission mode from original session when resuming",
-          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/start > should inherit permission mode from original session when resuming",
-          "state": "passed"
-        },
-        {
-          "name": "should archive all sessions successfully",
-          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should archive all sessions successfully",
-          "state": "passed"
-        },
-        {
-          "name": "should handle archiving zero sessions",
-          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should handle archiving zero sessions",
-          "state": "passed"
-        },
-        {
-          "name": "should handle archiving one session with singular message",
-          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should handle archiving one session with singular message",
-          "state": "passed"
-        },
-        {
-          "name": "should handle service errors",
-          "fullName": "Conversation Routes - Unified Start/Resume Endpoint > POST /api/conversations/archive-all > should handle service errors",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "/home/dev/workspace/cui/tests/unit/routes/permission.routes.test.ts",
-      "tests": [
-        {
-          "name": "should approve a permission request",
-          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should approve a permission request",
-          "state": "passed"
-        },
-        {
-          "name": "should deny a permission request",
-          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should deny a permission request",
-          "state": "passed"
-        },
-        {
-          "name": "should return 400 for invalid action",
-          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should return 400 for invalid action",
-          "state": "passed"
-        },
-        {
-          "name": "should return 404 for non-existent permission request",
-          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should return 404 for non-existent permission request",
-          "state": "passed"
-        },
-        {
-          "name": "should return 404 for already processed permission request",
-          "fullName": "Permission Routes > POST /api/permissions/:requestId/decision > should return 404 for already processed permission request",
-          "state": "passed"
-        },
-        {
-          "name": "should create a new permission request",
-          "fullName": "Permission Routes > POST /api/permissions/notify > should create a new permission request",
-          "state": "passed"
-        },
-        {
-          "name": "should return 400 if toolName is missing",
-          "fullName": "Permission Routes > POST /api/permissions/notify > should return 400 if toolName is missing",
-          "state": "passed"
-        },
-        {
-          "name": "should list all permissions",
-          "fullName": "Permission Routes > GET /api/permissions > should list all permissions",
-          "state": "passed"
-        },
-        {
-          "name": "should filter permissions by streamingId",
-          "fullName": "Permission Routes > GET /api/permissions > should filter permissions by streamingId",
-          "state": "passed"
-        },
-        {
-          "name": "should filter permissions by status",
-          "fullName": "Permission Routes > GET /api/permissions > should filter permissions by status",
-          "state": "passed"
-        }
-      ]
-    },
-    {
       "moduleId": "/home/dev/workspace/cui/tests/unit/services/config-service.test.ts",
       "tests": [
         {
@@ -1051,6 +1051,51 @@
         {
           "name": "emits change event on internal update",
           "fullName": "ConfigService interface > emits change event on internal update",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/services/WorkingDirectoriesService.test.ts",
+      "tests": [
+        {
+          "name": "should return empty array when no conversations exist",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should return empty array when no conversations exist",
+          "state": "passed"
+        },
+        {
+          "name": "should aggregate directories from conversations",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should aggregate directories from conversations",
+          "state": "passed"
+        },
+        {
+          "name": "should sort directories by lastDate descending",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should sort directories by lastDate descending",
+          "state": "passed"
+        },
+        {
+          "name": "should compute simple shortnames for unique directories",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should compute simple shortnames for unique directories",
+          "state": "passed"
+        },
+        {
+          "name": "should compute smart suffixes for conflicting directories",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should compute smart suffixes for conflicting directories",
+          "state": "passed"
+        },
+        {
+          "name": "should handle single directory",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should handle single directory",
+          "state": "passed"
+        },
+        {
+          "name": "should handle conversations without projectPath",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should handle conversations without projectPath",
+          "state": "passed"
+        },
+        {
+          "name": "should handle error from history reader",
+          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should handle error from history reader",
           "state": "passed"
         }
       ]
@@ -1131,51 +1176,6 @@
       ]
     },
     {
-      "moduleId": "/home/dev/workspace/cui/tests/unit/services/WorkingDirectoriesService.test.ts",
-      "tests": [
-        {
-          "name": "should return empty array when no conversations exist",
-          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should return empty array when no conversations exist",
-          "state": "passed"
-        },
-        {
-          "name": "should aggregate directories from conversations",
-          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should aggregate directories from conversations",
-          "state": "passed"
-        },
-        {
-          "name": "should sort directories by lastDate descending",
-          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should sort directories by lastDate descending",
-          "state": "passed"
-        },
-        {
-          "name": "should compute simple shortnames for unique directories",
-          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should compute simple shortnames for unique directories",
-          "state": "passed"
-        },
-        {
-          "name": "should compute smart suffixes for conflicting directories",
-          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should compute smart suffixes for conflicting directories",
-          "state": "passed"
-        },
-        {
-          "name": "should handle single directory",
-          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should handle single directory",
-          "state": "passed"
-        },
-        {
-          "name": "should handle conversations without projectPath",
-          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should handle conversations without projectPath",
-          "state": "passed"
-        },
-        {
-          "name": "should handle error from history reader",
-          "fullName": "WorkingDirectoriesService > getWorkingDirectories > should handle error from history reader",
-          "state": "passed"
-        }
-      ]
-    },
-    {
       "moduleId": "/home/dev/workspace/cui/tests/unit/claunch-service.test.ts",
       "tests": [
         {
@@ -1236,6 +1236,71 @@
         {
           "name": "should clean up all resources",
           "fullName": "ClaunchService > destroy > should clean up all resources",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/services/session-info-service.test.ts",
+      "tests": [
+        {
+          "name": "should create and retrieve session info",
+          "fullName": "SessionInfoService with SQLite > should create and retrieve session info",
+          "state": "passed"
+        },
+        {
+          "name": "should update session fields",
+          "fullName": "SessionInfoService with SQLite > should update session fields",
+          "state": "passed"
+        },
+        {
+          "name": "should delete session",
+          "fullName": "SessionInfoService with SQLite > should delete session",
+          "state": "passed"
+        },
+        {
+          "name": "should return all sessions",
+          "fullName": "SessionInfoService with SQLite > should return all sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should archive all sessions",
+          "fullName": "SessionInfoService with SQLite > should archive all sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should sync missing sessions",
+          "fullName": "SessionInfoService with SQLite > should sync missing sessions",
+          "state": "passed"
+        },
+        {
+          "name": "should provide stats",
+          "fullName": "SessionInfoService with SQLite > should provide stats",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/server-args.test.ts",
+      "tests": [
+        {
+          "name": "should use default port when no overrides provided",
+          "fullName": "Server Command Line Arguments > should use default port when no overrides provided",
+          "state": "passed"
+        },
+        {
+          "name": "should use overridden port when provided",
+          "fullName": "Server Command Line Arguments > should use overridden port when provided",
+          "state": "passed"
+        },
+        {
+          "name": "should use overridden host when provided",
+          "fullName": "Server Command Line Arguments > should use overridden host when provided",
+          "state": "passed"
+        },
+        {
+          "name": "should use both overridden port and host when provided",
+          "fullName": "Server Command Line Arguments > should use both overridden port and host when provided",
           "state": "passed"
         }
       ]
@@ -1346,161 +1411,6 @@
         {
           "name": "should remove all permissions when all have same streaming ID",
           "fullName": "PermissionTracker > removePermissionsByStreamingId > should remove all permissions when all have same streaming ID",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "/home/dev/workspace/cui/tests/unit/server-args.test.ts",
-      "tests": [
-        {
-          "name": "should use default port when no overrides provided",
-          "fullName": "Server Command Line Arguments > should use default port when no overrides provided",
-          "state": "passed"
-        },
-        {
-          "name": "should use overridden port when provided",
-          "fullName": "Server Command Line Arguments > should use overridden port when provided",
-          "state": "passed"
-        },
-        {
-          "name": "should use overridden host when provided",
-          "fullName": "Server Command Line Arguments > should use overridden host when provided",
-          "state": "passed"
-        },
-        {
-          "name": "should use both overridden port and host when provided",
-          "fullName": "Server Command Line Arguments > should use both overridden port and host when provided",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "/home/dev/workspace/cui/tests/unit/services/ToolMetricsService.test.ts",
-      "tests": [
-        {
-          "name": "should start listening to claude-message events",
-          "fullName": "ToolMetricsService > listenToClaudeMessages > should start listening to claude-message events",
-          "state": "passed"
-        },
-        {
-          "name": "should return undefined for unknown session",
-          "fullName": "ToolMetricsService > getMetrics > should return undefined for unknown session",
-          "state": "passed"
-        },
-        {
-          "name": "should return metrics after processing tool use",
-          "fullName": "ToolMetricsService > getMetrics > should return metrics after processing tool use",
-          "state": "passed"
-        },
-        {
-          "name": "should process Edit tool with lines added",
-          "fullName": "ToolMetricsService > tool processing > should process Edit tool with lines added",
-          "state": "passed"
-        },
-        {
-          "name": "should process Edit tool with lines removed",
-          "fullName": "ToolMetricsService > tool processing > should process Edit tool with lines removed",
-          "state": "passed"
-        },
-        {
-          "name": "should process Write tool",
-          "fullName": "ToolMetricsService > tool processing > should process Write tool",
-          "state": "passed"
-        },
-        {
-          "name": "should process MultiEdit tool",
-          "fullName": "ToolMetricsService > tool processing > should process MultiEdit tool",
-          "state": "passed"
-        },
-        {
-          "name": "should accumulate metrics across multiple tool uses",
-          "fullName": "ToolMetricsService > tool processing > should accumulate metrics across multiple tool uses",
-          "state": "passed"
-        },
-        {
-          "name": "should handle empty content gracefully",
-          "fullName": "ToolMetricsService > tool processing > should handle empty content gracefully",
-          "state": "passed"
-        },
-        {
-          "name": "should ignore non-tool-use content blocks",
-          "fullName": "ToolMetricsService > tool processing > should ignore non-tool-use content blocks",
-          "state": "passed"
-        },
-        {
-          "name": "should ignore non-assistant messages",
-          "fullName": "ToolMetricsService > tool processing > should ignore non-assistant messages",
-          "state": "passed"
-        },
-        {
-          "name": "should calculate metrics from historical messages",
-          "fullName": "ToolMetricsService > calculateMetricsFromMessages > should calculate metrics from historical messages",
-          "state": "passed"
-        },
-        {
-          "name": "should handle messages without content",
-          "fullName": "ToolMetricsService > calculateMetricsFromMessages > should handle messages without content",
-          "state": "passed"
-        },
-        {
-          "name": "should handle empty message array",
-          "fullName": "ToolMetricsService > calculateMetricsFromMessages > should handle empty message array",
-          "state": "passed"
-        },
-        {
-          "name": "should count lines correctly with trailing newline",
-          "fullName": "ToolMetricsService > line counting > should count lines correctly with trailing newline",
-          "state": "passed"
-        },
-        {
-          "name": "should handle single line without newline",
-          "fullName": "ToolMetricsService > line counting > should handle single line without newline",
-          "state": "passed"
-        },
-        {
-          "name": "should handle edit with no net line change but content change",
-          "fullName": "ToolMetricsService > line counting > should handle edit with no net line change but content change",
-          "state": "passed"
-        }
-      ]
-    },
-    {
-      "moduleId": "/home/dev/workspace/cui/tests/unit/services/session-info-service.test.ts",
-      "tests": [
-        {
-          "name": "should create and retrieve session info",
-          "fullName": "SessionInfoService with SQLite > should create and retrieve session info",
-          "state": "passed"
-        },
-        {
-          "name": "should update session fields",
-          "fullName": "SessionInfoService with SQLite > should update session fields",
-          "state": "passed"
-        },
-        {
-          "name": "should delete session",
-          "fullName": "SessionInfoService with SQLite > should delete session",
-          "state": "passed"
-        },
-        {
-          "name": "should return all sessions",
-          "fullName": "SessionInfoService with SQLite > should return all sessions",
-          "state": "passed"
-        },
-        {
-          "name": "should archive all sessions",
-          "fullName": "SessionInfoService with SQLite > should archive all sessions",
-          "state": "passed"
-        },
-        {
-          "name": "should sync missing sessions",
-          "fullName": "SessionInfoService with SQLite > should sync missing sessions",
-          "state": "passed"
-        },
-        {
-          "name": "should provide stats",
-          "fullName": "SessionInfoService with SQLite > should provide stats",
           "state": "passed"
         }
       ]
@@ -1711,36 +1621,91 @@
       ]
     },
     {
-      "moduleId": "/home/dev/workspace/cui/tests/unit/mcp-config-generator.test.ts",
+      "moduleId": "/home/dev/workspace/cui/tests/unit/services/ToolMetricsService.test.ts",
       "tests": [
         {
-          "name": "should generate MCP config file with correct structure",
-          "fullName": "MCPConfigGenerator > generateConfig > should generate MCP config file with correct structure",
+          "name": "should start listening to claude-message events",
+          "fullName": "ToolMetricsService > listenToClaudeMessages > should start listening to claude-message events",
           "state": "passed"
         },
         {
-          "name": "should generate unique config file paths",
-          "fullName": "MCPConfigGenerator > generateConfig > should generate unique config file paths",
+          "name": "should return undefined for unknown session",
+          "fullName": "ToolMetricsService > getMetrics > should return undefined for unknown session",
           "state": "passed"
         },
         {
-          "name": "should use provided port in environment variables",
-          "fullName": "MCPConfigGenerator > generateConfig > should use provided port in environment variables",
+          "name": "should return metrics after processing tool use",
+          "fullName": "ToolMetricsService > getMetrics > should return metrics after processing tool use",
           "state": "passed"
         },
         {
-          "name": "should return the generated config path",
-          "fullName": "MCPConfigGenerator > getConfigPath > should return the generated config path",
+          "name": "should process Edit tool with lines added",
+          "fullName": "ToolMetricsService > tool processing > should process Edit tool with lines added",
           "state": "passed"
         },
         {
-          "name": "should remove the generated config file",
-          "fullName": "MCPConfigGenerator > cleanup > should remove the generated config file",
+          "name": "should process Edit tool with lines removed",
+          "fullName": "ToolMetricsService > tool processing > should process Edit tool with lines removed",
           "state": "passed"
         },
         {
-          "name": "should handle cleanup when file does not exist",
-          "fullName": "MCPConfigGenerator > cleanup > should handle cleanup when file does not exist",
+          "name": "should process Write tool",
+          "fullName": "ToolMetricsService > tool processing > should process Write tool",
+          "state": "passed"
+        },
+        {
+          "name": "should process MultiEdit tool",
+          "fullName": "ToolMetricsService > tool processing > should process MultiEdit tool",
+          "state": "passed"
+        },
+        {
+          "name": "should accumulate metrics across multiple tool uses",
+          "fullName": "ToolMetricsService > tool processing > should accumulate metrics across multiple tool uses",
+          "state": "passed"
+        },
+        {
+          "name": "should handle empty content gracefully",
+          "fullName": "ToolMetricsService > tool processing > should handle empty content gracefully",
+          "state": "passed"
+        },
+        {
+          "name": "should ignore non-tool-use content blocks",
+          "fullName": "ToolMetricsService > tool processing > should ignore non-tool-use content blocks",
+          "state": "passed"
+        },
+        {
+          "name": "should ignore non-assistant messages",
+          "fullName": "ToolMetricsService > tool processing > should ignore non-assistant messages",
+          "state": "passed"
+        },
+        {
+          "name": "should calculate metrics from historical messages",
+          "fullName": "ToolMetricsService > calculateMetricsFromMessages > should calculate metrics from historical messages",
+          "state": "passed"
+        },
+        {
+          "name": "should handle messages without content",
+          "fullName": "ToolMetricsService > calculateMetricsFromMessages > should handle messages without content",
+          "state": "passed"
+        },
+        {
+          "name": "should handle empty message array",
+          "fullName": "ToolMetricsService > calculateMetricsFromMessages > should handle empty message array",
+          "state": "passed"
+        },
+        {
+          "name": "should count lines correctly with trailing newline",
+          "fullName": "ToolMetricsService > line counting > should count lines correctly with trailing newline",
+          "state": "passed"
+        },
+        {
+          "name": "should handle single line without newline",
+          "fullName": "ToolMetricsService > line counting > should handle single line without newline",
+          "state": "passed"
+        },
+        {
+          "name": "should handle edit with no net line change but content change",
+          "fullName": "ToolMetricsService > line counting > should handle edit with no net line change but content change",
           "state": "passed"
         }
       ]
@@ -1826,16 +1791,36 @@
       ]
     },
     {
-      "moduleId": "/home/dev/workspace/cui/tests/unit/claude-process-manager-git.test.ts",
+      "moduleId": "/home/dev/workspace/cui/tests/unit/mcp-config-generator.test.ts",
       "tests": [
         {
-          "name": "should set initial_commit_head when in git repo",
-          "fullName": "ClaudeProcessManager - Git Integration > executeConversationFlow git integration > should set initial_commit_head when in git repo",
+          "name": "should generate MCP config file with correct structure",
+          "fullName": "MCPConfigGenerator > generateConfig > should generate MCP config file with correct structure",
           "state": "passed"
         },
         {
-          "name": "should not set initial_commit_head when not in git repo",
-          "fullName": "ClaudeProcessManager - Git Integration > executeConversationFlow git integration > should not set initial_commit_head when not in git repo",
+          "name": "should generate unique config file paths",
+          "fullName": "MCPConfigGenerator > generateConfig > should generate unique config file paths",
+          "state": "passed"
+        },
+        {
+          "name": "should use provided port in environment variables",
+          "fullName": "MCPConfigGenerator > generateConfig > should use provided port in environment variables",
+          "state": "passed"
+        },
+        {
+          "name": "should return the generated config path",
+          "fullName": "MCPConfigGenerator > getConfigPath > should return the generated config path",
+          "state": "passed"
+        },
+        {
+          "name": "should remove the generated config file",
+          "fullName": "MCPConfigGenerator > cleanup > should remove the generated config file",
+          "state": "passed"
+        },
+        {
+          "name": "should handle cleanup when file does not exist",
+          "fullName": "MCPConfigGenerator > cleanup > should handle cleanup when file does not exist",
           "state": "passed"
         }
       ]
@@ -1851,6 +1836,21 @@
         {
           "name": "should not initialize when disabled",
           "fullName": "ClaudeRouterService > should not initialize when disabled",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "moduleId": "/home/dev/workspace/cui/tests/unit/claude-process-manager-git.test.ts",
+      "tests": [
+        {
+          "name": "should set initial_commit_head when in git repo",
+          "fullName": "ClaudeProcessManager - Git Integration > executeConversationFlow git integration > should set initial_commit_head when in git repo",
+          "state": "passed"
+        },
+        {
+          "name": "should not set initial_commit_head when not in git repo",
+          "fullName": "ClaudeProcessManager - Git Integration > executeConversationFlow git integration > should not set initial_commit_head when not in git repo",
           "state": "passed"
         }
       ]
