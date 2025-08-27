@@ -1,0 +1,370 @@
+name: Claude PR Assistant
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  pull_request_review_comment:
+    types: [created]
+  issue_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude-pr-assistant:
+    # Use self-hosted runners with GPU support for voice mode processing
+    runs-on: [self-hosted, linux, x64, gpu]
+    
+    # Only run when @claude is mentioned or for automated reviews
+    if: |
+      (github.event_name == 'pull_request' && github.event.action == 'opened') ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
+    
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+      statuses: write
+      checks: write
+    
+    env:
+      # Voice Mode and LiveKit configurations
+      LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
+      LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
+      LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
+      
+      # MCP Server configurations
+      SERENA_PORT: 9121
+      CONTEXT7_ENABLED: true
+      SEQUENTIAL_ENABLED: true
+      MORPHLLM_ENABLED: true
+      
+      # Claude configurations
+      CLAUDE_MODEL: "claude-opus-4-20250805"
+      CLAUDE_MAX_TOKENS: 32768
+      
+      # Self-hosted runner optimizations
+      RUNNER_TEMP: /tmp/claude-runner
+      RUNNER_CACHE: /var/cache/claude
+      
+    steps:
+      - name: Setup Runner Environment
+        run: |
+          # Ensure runner directories exist
+          mkdir -p ${{ env.RUNNER_TEMP }}
+          mkdir -p ${{ env.RUNNER_CACHE }}
+          
+          # Clean up old temp files
+          find ${{ env.RUNNER_TEMP }} -type f -mtime +1 -delete 2>/dev/null || true
+          
+          # Set up Python environment for Voice Mode
+          if command -v uv &> /dev/null; then
+            echo "UV package manager found"
+          else
+            echo "Installing UV package manager"
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+          fi
+          
+          # Verify GPU availability for voice processing
+          if command -v nvidia-smi &> /dev/null; then
+            echo "GPU detected:"
+            nvidia-smi --query-gpu=name,memory.total --format=csv
+          else
+            echo "No GPU detected, using CPU mode"
+          fi
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better context
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: |
+            **/requirements.txt
+            **/pyproject.toml
+
+      - name: Install Dependencies
+        run: |
+          # Install Node dependencies
+          npm ci --prefer-offline --no-audit
+          
+          # Install Python dependencies for Voice Mode
+          if [ -f "voice-mode/pyproject.toml" ]; then
+            cd voice-mode
+            uv sync --extra dev
+            cd ..
+          fi
+          
+          # Install MCP servers if configured
+          if [ -f ".mcp.json" ] || [ -f ".mcp.json.example" ]; then
+            echo "Setting up MCP servers..."
+            
+            # Start Serena MCP server if available
+            if [ -d "serena" ]; then
+              cd serena
+              uv run index-project .
+              nohup uv run serena-mcp-server --port ${{ env.SERENA_PORT }} > ${{ env.RUNNER_TEMP }}/serena.log 2>&1 &
+              echo $! > ${{ env.RUNNER_TEMP }}/serena.pid
+              cd ..
+            fi
+          fi
+
+      - name: Setup Voice Mode Hooks
+        if: github.event_name == 'pull_request'
+        run: |
+          # Install voice mode hooks if script exists
+          if [ -f "scripts/install-voice-hooks.sh" ]; then
+            echo "Installing Voice Mode hooks..."
+            chmod +x scripts/install-voice-hooks.sh
+            ./scripts/install-voice-hooks.sh --ci-mode
+          fi
+
+      - name: Run Pre-Analysis
+        id: pre-analysis
+        run: |
+          # Gather context for Claude
+          echo "Analyzing PR context..."
+          
+          # Get changed files
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "Changed files:"
+            git diff --name-status ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}
+            
+            # Count changes
+            CHANGES=$(git diff --numstat ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }} | wc -l)
+            echo "Total files changed: $CHANGES"
+            echo "changes_count=$CHANGES" >> $GITHUB_OUTPUT
+          fi
+          
+          # Check for test files
+          TEST_FILES=$(find . -type f \( -name "*.test.ts" -o -name "*.test.js" -o -name "test_*.py" \) | wc -l)
+          echo "Test files found: $TEST_FILES"
+          echo "test_files=$TEST_FILES" >> $GITHUB_OUTPUT
+
+      - name: Run Claude Code Assistant
+        id: claude
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          model: ${{ env.CLAUDE_MODEL }}
+          
+          # Enhanced permissions for self-hosted runners
+          additional_permissions: |
+            actions: read
+            checks: write
+            statuses: write
+          
+          # Custom tools for Voice Mode and self-hosted environment
+          allowed_tools: |
+            Bash(npm test),
+            Bash(npm run lint),
+            Bash(npm run typecheck),
+            Bash(npm run build),
+            Bash(uv run pytest),
+            Bash(uv run poe format),
+            Bash(uv run poe type-check),
+            Bash(python -m voice_mode.*)
+          
+          # Environment variables for Claude
+          claude_env: |
+            NODE_ENV: test
+            CI: true
+            RUNNER_TYPE: self-hosted
+            GPU_AVAILABLE: ${{ contains(runner.labels, 'gpu') }}
+            VOICE_MODE_ENABLED: true
+            LIVEKIT_ENABLED: true
+            MCP_SERVERS_ENABLED: true
+            CHANGES_COUNT: ${{ steps.pre-analysis.outputs.changes_count }}
+            TEST_FILES_COUNT: ${{ steps.pre-analysis.outputs.test_files }}
+          
+          # Dynamic prompt based on PR type and context
+          direct_prompt: |
+            You are reviewing a PR for the Vibe Whisper project with Voice Mode integration.
+            
+            This is running on a self-hosted runner with:
+            - GPU support for voice processing
+            - MCP servers (Serena, Context7, Sequential, Morphllm)
+            - Voice Mode hooks and LiveKit integration
+            - Full test environment access
+            
+            Please provide a comprehensive review focusing on:
+            
+            1. **Voice Mode Integration** (if applicable):
+               - LiveKit configuration and WebRTC setup
+               - Voice hooks implementation and event handling
+               - Real-time streaming and session management
+               - Audio processing and transcription accuracy
+            
+            2. **Code Quality**:
+               - TypeScript type safety and interfaces
+               - Python type hints and async patterns
+               - Error handling and recovery mechanisms
+               - Performance implications (especially for real-time features)
+            
+            3. **Security**:
+               - API key management and environment variables
+               - WebRTC security considerations
+               - Input validation and sanitization
+               - Rate limiting and abuse prevention
+            
+            4. **Testing**:
+               - Test coverage for new features
+               - Voice Mode specific test scenarios
+               - Integration test requirements
+               - Edge cases and error conditions
+            
+            5. **Architecture**:
+               - Adherence to project patterns
+               - Scalability considerations
+               - Resource usage (CPU/GPU/Memory)
+               - MCP server integration patterns
+            
+            ${{ github.event_name == 'pull_request' && github.event.action == 'opened' && 
+            'Since this is a new PR, please also:
+            - Suggest any missing tests
+            - Identify potential performance bottlenecks
+            - Recommend documentation updates
+            - Check for breaking changes' || '' }}
+            
+            ${{ contains(github.event.pull_request.title, 'voice') || contains(github.event.pull_request.title, 'Voice') && 
+            'This PR involves Voice Mode features. Please pay special attention to:
+            - LiveKit room configuration
+            - Voice session lifecycle management
+            - Audio streaming performance
+            - Transcription accuracy requirements' || '' }}
+            
+            Be constructive, specific, and provide code examples where helpful.
+            If you identify critical issues, mark them clearly with 🚨.
+            For suggestions, use 💡. For questions, use ❓.
+          
+          # Sticky comments for consistent feedback
+          use_sticky_comment: true
+          
+          # Skip review for certain conditions
+          skip_conditions: |
+            contains(github.event.pull_request.title, '[skip-review]') ||
+            contains(github.event.pull_request.title, '[WIP]') ||
+            contains(github.event.pull_request.title, 'Revert')
+
+      - name: Run Tests and Linting
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          # Create test results directory
+          mkdir -p ${{ env.RUNNER_TEMP }}/test-results
+          
+          # Run Node.js tests
+          echo "Running Node.js tests..."
+          npm run test -- --reporter=json > ${{ env.RUNNER_TEMP }}/test-results/jest.json 2>&1 || true
+          
+          # Run linting
+          echo "Running linting..."
+          npm run lint -- --format json > ${{ env.RUNNER_TEMP }}/test-results/eslint.json 2>&1 || true
+          
+          # Run type checking
+          echo "Running type checking..."
+          npm run typecheck > ${{ env.RUNNER_TEMP }}/test-results/typecheck.log 2>&1 || true
+          
+          # Run Python tests if Voice Mode is present
+          if [ -d "voice-mode" ]; then
+            echo "Running Voice Mode tests..."
+            cd voice-mode
+            uv run pytest --json-report --json-report-file=${{ env.RUNNER_TEMP }}/test-results/pytest.json || true
+            cd ..
+          fi
+
+      - name: Post Test Results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            const testResultsDir = '${{ env.RUNNER_TEMP }}/test-results';
+            let comment = '## 🤖 Automated Test Results\n\n';
+            
+            // Check Jest results
+            const jestPath = path.join(testResultsDir, 'jest.json');
+            if (fs.existsSync(jestPath)) {
+              try {
+                const jest = JSON.parse(fs.readFileSync(jestPath, 'utf8'));
+                const passed = jest.numPassedTests || 0;
+                const failed = jest.numFailedTests || 0;
+                const total = jest.numTotalTests || 0;
+                
+                comment += `### JavaScript Tests\n`;
+                comment += failed > 0 
+                  ? `❌ **${failed}/${total} tests failed**\n`
+                  : `✅ **All ${total} tests passed**\n`;
+                comment += '\n';
+              } catch (e) {
+                console.log('Could not parse Jest results');
+              }
+            }
+            
+            // Check Python test results
+            const pytestPath = path.join(testResultsDir, 'pytest.json');
+            if (fs.existsSync(pytestPath)) {
+              try {
+                const pytest = JSON.parse(fs.readFileSync(pytestPath, 'utf8'));
+                const passed = pytest.summary.passed || 0;
+                const failed = pytest.summary.failed || 0;
+                const total = pytest.summary.total || 0;
+                
+                comment += `### Python Tests (Voice Mode)\n`;
+                comment += failed > 0 
+                  ? `❌ **${failed}/${total} tests failed**\n`
+                  : `✅ **All ${total} tests passed**\n`;
+                comment += '\n';
+              } catch (e) {
+                console.log('Could not parse pytest results');
+              }
+            }
+            
+            // Add the comment to the PR
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            } catch (error) {
+              console.log('Could not post test results comment:', error);
+            }
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Stop MCP servers
+          if [ -f "${{ env.RUNNER_TEMP }}/serena.pid" ]; then
+            kill $(cat ${{ env.RUNNER_TEMP }}/serena.pid) 2>/dev/null || true
+            rm ${{ env.RUNNER_TEMP }}/serena.pid
+          fi
+          
+          # Clean up temp files
+          rm -rf ${{ env.RUNNER_TEMP }}/test-results
+          
+          # Clean up voice mode sessions
+          if [ -d "/tmp/voice-sessions" ]; then
+            find /tmp/voice-sessions -type f -mtime +1 -delete 2>/dev/null || true
+          fi

@@ -1,0 +1,413 @@
+name: Voice Mode Tests
+
+on:
+  push:
+    branches: [main, develop, feat/voice-*]
+    paths:
+      - 'voice-mode/**'
+      - 'src/services/voice-*.ts'
+      - 'scripts/voice-*.ts'
+      - 'tests/**/*voice*.test.ts'
+      - '.github/workflows/voice-mode-tests.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'voice-mode/**'
+      - 'src/services/voice-*.ts'
+      - 'scripts/voice-*.ts'
+      - 'tests/**/*voice*.test.ts'
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - unit
+          - integration
+          - e2e
+          - performance
+
+jobs:
+  voice-mode-unit-tests:
+    name: Voice Mode Unit Tests
+    runs-on: [self-hosted, linux, x64]
+    
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+        node-version: ['18', '20']
+    
+    env:
+      UV_CACHE_DIR: /var/cache/uv
+      NPM_CACHE_DIR: /var/cache/npm
+      TEST_RESULTS_DIR: /tmp/test-results
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install UV Package Manager
+        run: |
+          if ! command -v uv &> /dev/null; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            export PATH="$HOME/.cargo/bin:$PATH"
+          fi
+          uv --version
+
+      - name: Install Dependencies
+        run: |
+          # Install Node dependencies
+          npm ci --prefer-offline
+          
+          # Install Python dependencies for Voice Mode
+          if [ -d "voice-mode" ]; then
+            cd voice-mode
+            uv sync --extra dev --extra test
+            cd ..
+          fi
+
+      - name: Run TypeScript Voice Tests
+        run: |
+          mkdir -p ${{ env.TEST_RESULTS_DIR }}
+          
+          # Run voice mode specific tests
+          npm test -- --testPathPattern="voice" \
+            --coverage \
+            --coverageDirectory=${{ env.TEST_RESULTS_DIR }}/coverage \
+            --json --outputFile=${{ env.TEST_RESULTS_DIR }}/jest-voice.json
+
+      - name: Run Python Voice Mode Tests
+        if: matrix.python-version == '3.11'  # Primary Python version
+        run: |
+          if [ -d "voice-mode" ]; then
+            cd voice-mode
+            
+            # Run unit tests with coverage
+            uv run pytest tests/unit \
+              --cov=voice_mode \
+              --cov-report=xml:${{ env.TEST_RESULTS_DIR }}/coverage-python.xml \
+              --cov-report=html:${{ env.TEST_RESULTS_DIR }}/coverage-html \
+              --junit-xml=${{ env.TEST_RESULTS_DIR }}/pytest-unit.xml \
+              -v
+            
+            cd ..
+          fi
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-unit-py${{ matrix.python-version }}-node${{ matrix.node-version }}
+          path: ${{ env.TEST_RESULTS_DIR }}
+          retention-days: 7
+
+  voice-mode-integration-tests:
+    name: Voice Mode Integration Tests
+    runs-on: [self-hosted, linux, x64, gpu]
+    needs: voice-mode-unit-tests
+    
+    env:
+      LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
+      LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
+      LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      TEST_TIMEOUT: 300000  # 5 minutes for integration tests
+    
+    services:
+      livekit:
+        image: livekit/livekit-server:latest
+        ports:
+          - 7880:7880
+          - 7881:7881
+          - 7882:7882/udp
+        options: >-
+          --health-cmd "curl -f http://localhost:7880/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          LIVEKIT_KEYS: devkey:secret
+          LIVEKIT_LOG_LEVEL: info
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        run: |
+          # Check GPU availability
+          if command -v nvidia-smi &> /dev/null; then
+            echo "GPU detected for voice processing:"
+            nvidia-smi --query-gpu=name,memory.free --format=csv
+            echo "CUDA_VISIBLE_DEVICES=0" >> $GITHUB_ENV
+          fi
+          
+          # Setup audio processing dependencies
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg portaudio19-dev
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          
+          if [ -d "voice-mode" ]; then
+            cd voice-mode
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            export PATH="$HOME/.cargo/bin:$PATH"
+            uv sync --extra dev --extra test --extra integration
+            cd ..
+          fi
+
+      - name: Start MCP Servers
+        run: |
+          # Start Serena for code analysis
+          if [ -d "serena" ]; then
+            cd serena
+            uv run index-project ../
+            nohup uv run serena-mcp-server --port 9121 > /tmp/serena.log 2>&1 &
+            echo $! > /tmp/serena.pid
+            cd ..
+            
+            # Wait for Serena to be ready
+            for i in {1..30}; do
+              if curl -s http://localhost:9121/health > /dev/null; then
+                echo "Serena MCP server is ready"
+                break
+              fi
+              sleep 1
+            done
+          fi
+
+      - name: Run Integration Tests
+        run: |
+          mkdir -p /tmp/test-results
+          
+          # Run TypeScript integration tests
+          npm test -- --testPathPattern="integration.*voice" \
+            --testTimeout=${{ env.TEST_TIMEOUT }} \
+            --forceExit \
+            --json --outputFile=/tmp/test-results/jest-integration.json
+          
+          # Run Python integration tests
+          if [ -d "voice-mode" ]; then
+            cd voice-mode
+            
+            uv run pytest tests/integration \
+              --timeout=300 \
+              --junit-xml=/tmp/test-results/pytest-integration.xml \
+              -v
+            
+            cd ..
+          fi
+
+      - name: Run E2E Voice Tests
+        if: inputs.test_suite == 'all' || inputs.test_suite == 'e2e'
+        run: |
+          # Start the application
+          npm run dev &
+          APP_PID=$!
+          
+          # Wait for app to be ready
+          for i in {1..60}; do
+            if curl -s http://localhost:3001/health > /dev/null; then
+              echo "Application is ready"
+              break
+            fi
+            sleep 1
+          done
+          
+          # Run E2E tests with Playwright
+          if [ -f "tests/e2e/voice-mode.spec.ts" ]; then
+            npx playwright test tests/e2e/voice-mode.spec.ts \
+              --reporter=json \
+              --reporter-options="outputFile=/tmp/test-results/playwright-e2e.json"
+          fi
+          
+          # Stop the application
+          kill $APP_PID || true
+
+      - name: Performance Tests
+        if: inputs.test_suite == 'all' || inputs.test_suite == 'performance'
+        run: |
+          if [ -d "voice-mode" ]; then
+            cd voice-mode
+            
+            # Run performance benchmarks
+            uv run python -m voice_mode.benchmarks.transcription_speed \
+              --output /tmp/test-results/transcription-benchmark.json
+            
+            uv run python -m voice_mode.benchmarks.streaming_latency \
+              --output /tmp/test-results/latency-benchmark.json
+            
+            cd ..
+          fi
+          
+          # Analyze results
+          if [ -f "/tmp/test-results/transcription-benchmark.json" ]; then
+            echo "## Performance Results"
+            cat /tmp/test-results/transcription-benchmark.json | jq .
+          fi
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Stop MCP servers
+          if [ -f "/tmp/serena.pid" ]; then
+            kill $(cat /tmp/serena.pid) 2>/dev/null || true
+          fi
+          
+          # Clean up test artifacts
+          rm -rf /tmp/voice-sessions
+          rm -rf /tmp/test-audio-files
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: /tmp/test-results
+          retention-days: 7
+
+  voice-mode-security-scan:
+    name: Voice Mode Security Scan
+    runs-on: [self-hosted, linux, x64]
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Security Scan
+        run: |
+          # Check for exposed secrets
+          echo "Scanning for exposed secrets..."
+          
+          # Use git-secrets if available
+          if command -v git-secrets &> /dev/null; then
+            git secrets --scan
+          fi
+          
+          # Check for hardcoded API keys
+          grep -r "sk-proj-\|pplx-\|AIzaSy" --include="*.ts" --include="*.js" --include="*.py" \
+            --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist . || true
+          
+          # Scan Python dependencies
+          if [ -d "voice-mode" ]; then
+            cd voice-mode
+            pip install safety
+            safety check --json > /tmp/safety-report.json || true
+            cd ..
+          fi
+          
+          # Scan Node dependencies
+          npm audit --json > /tmp/npm-audit.json || true
+
+      - name: Upload Security Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-results
+          path: |
+            /tmp/safety-report.json
+            /tmp/npm-audit.json
+          retention-days: 30
+
+  test-summary:
+    name: Test Summary
+    runs-on: [self-hosted, linux, x64]
+    needs: [voice-mode-unit-tests, voice-mode-integration-tests, voice-mode-security-scan]
+    if: always()
+    
+    steps:
+      - name: Download All Test Results
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/all-test-results
+
+      - name: Generate Test Report
+        run: |
+          echo "## 🎯 Voice Mode Test Summary" > /tmp/test-summary.md
+          echo "" >> /tmp/test-summary.md
+          
+          # Check unit test results
+          if [ -d "/tmp/all-test-results/test-results-unit-py3.11-node20" ]; then
+            echo "### ✅ Unit Tests" >> /tmp/test-summary.md
+            if [ -f "/tmp/all-test-results/test-results-unit-py3.11-node20/jest-voice.json" ]; then
+              JEST_RESULTS=$(cat /tmp/all-test-results/test-results-unit-py3.11-node20/jest-voice.json)
+              echo "- TypeScript: $(echo $JEST_RESULTS | jq -r '.numPassedTests')/$(echo $JEST_RESULTS | jq -r '.numTotalTests') passed" >> /tmp/test-summary.md
+            fi
+            if [ -f "/tmp/all-test-results/test-results-unit-py3.11-node20/pytest-unit.xml" ]; then
+              echo "- Python: Tests completed" >> /tmp/test-summary.md
+            fi
+          fi
+          
+          # Check integration test results
+          if [ -d "/tmp/all-test-results/integration-test-results" ]; then
+            echo "### 🔗 Integration Tests" >> /tmp/test-summary.md
+            echo "- Integration tests completed" >> /tmp/test-summary.md
+          fi
+          
+          # Check security scan results
+          if [ -d "/tmp/all-test-results/security-scan-results" ]; then
+            echo "### 🔒 Security Scan" >> /tmp/test-summary.md
+            echo "- Security scan completed" >> /tmp/test-summary.md
+          fi
+          
+          echo "" >> /tmp/test-summary.md
+          echo "---" >> /tmp/test-summary.md
+          echo "*Generated by self-hosted Voice Mode CI*" >> /tmp/test-summary.md
+          
+          cat /tmp/test-summary.md
+
+      - name: Post Summary to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('/tmp/test-summary.md', 'utf8');
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: summary
+            });

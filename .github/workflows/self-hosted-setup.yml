@@ -1,0 +1,416 @@
+name: Self-Hosted Runner Setup
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner_name:
+        description: 'Runner name/label'
+        required: true
+        default: 'vibe-whisper-runner'
+      runner_type:
+        description: 'Runner type'
+        required: true
+        default: 'gpu'
+        type: choice
+        options:
+          - gpu
+          - cpu
+          - arm64
+
+jobs:
+  setup-runner:
+    name: Configure Self-Hosted Runner
+    runs-on: [self-hosted, linux, setup]
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: System Information
+        run: |
+          echo "## System Information"
+          echo "Hostname: $(hostname)"
+          echo "OS: $(lsb_release -d | cut -f2)"
+          echo "Kernel: $(uname -r)"
+          echo "Architecture: $(uname -m)"
+          echo "CPU: $(lscpu | grep 'Model name' | cut -d: -f2 | xargs)"
+          echo "Memory: $(free -h | grep Mem | awk '{print $2}')"
+          echo "Disk: $(df -h / | tail -1 | awk '{print $2}')"
+          
+          # Check for GPU
+          if command -v nvidia-smi &> /dev/null; then
+            echo "## GPU Information"
+            nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv
+          else
+            echo "No NVIDIA GPU detected"
+          fi
+          
+          # Check for Docker
+          if command -v docker &> /dev/null; then
+            echo "Docker version: $(docker --version)"
+          fi
+
+      - name: Install System Dependencies
+        run: |
+          echo "Installing system dependencies..."
+          
+          # Update package list
+          sudo apt-get update
+          
+          # Essential build tools
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            wget \
+            git \
+            jq \
+            unzip \
+            software-properties-common \
+            apt-transport-https \
+            ca-certificates \
+            gnupg \
+            lsb-release
+          
+          # Audio processing dependencies for Voice Mode
+          sudo apt-get install -y \
+            ffmpeg \
+            portaudio19-dev \
+            libsndfile1-dev \
+            libopus-dev \
+            libvpx-dev
+          
+          # Python development dependencies
+          sudo apt-get install -y \
+            python3-pip \
+            python3-dev \
+            python3-venv \
+            python3-setuptools
+          
+          # Node.js repository
+          curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+          
+          # Install pnpm
+          npm install -g pnpm
+          
+          # Install yarn
+          npm install -g yarn
+
+      - name: Setup Python Environment
+        run: |
+          echo "Setting up Python environment..."
+          
+          # Install UV package manager
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          export PATH="$HOME/.cargo/bin:$PATH"
+          
+          # Install Python tools
+          pip3 install --upgrade pip
+          pip3 install \
+            poetry \
+            pipenv \
+            virtualenv \
+            pytest \
+            mypy \
+            black \
+            ruff \
+            safety
+
+      - name: Setup NVIDIA Container Toolkit (GPU only)
+        if: inputs.runner_type == 'gpu'
+        run: |
+          # Check if NVIDIA GPU is present
+          if ! command -v nvidia-smi &> /dev/null; then
+            echo "No NVIDIA GPU detected, skipping NVIDIA setup"
+            exit 0
+          fi
+          
+          # Add NVIDIA container toolkit repository
+          distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+          curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+          curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | \
+            sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+          
+          # Install NVIDIA container toolkit
+          sudo apt-get update
+          sudo apt-get install -y nvidia-container-toolkit
+          
+          # Configure Docker for GPU support
+          if command -v docker &> /dev/null; then
+            sudo nvidia-ctk runtime configure --runtime=docker
+            sudo systemctl restart docker
+          fi
+          
+          # Test GPU access in Docker
+          docker run --rm --gpus all nvidia/cuda:11.8.0-base-ubuntu22.04 nvidia-smi || true
+
+      - name: Setup LiveKit Server
+        run: |
+          echo "Setting up LiveKit server..."
+          
+          # Download LiveKit server binary
+          LIVEKIT_VERSION="1.5.3"
+          wget https://github.com/livekit/livekit/releases/download/v${LIVEKIT_VERSION}/livekit-server_${LIVEKIT_VERSION}_linux_amd64.tar.gz
+          sudo tar -xzf livekit-server_${LIVEKIT_VERSION}_linux_amd64.tar.gz -C /usr/local/bin
+          rm livekit-server_${LIVEKIT_VERSION}_linux_amd64.tar.gz
+          
+          # Create LiveKit configuration
+          sudo mkdir -p /etc/livekit
+          cat << 'EOF' | sudo tee /etc/livekit/livekit.yaml
+          port: 7880
+          rtc:
+            port_range_start: 50000
+            port_range_end: 60000
+            use_external_ip: true
+          redis:
+            address: localhost:6379
+          keys:
+            devkey: secret
+          log_level: info
+          EOF
+          
+          # Create systemd service for LiveKit
+          cat << 'EOF' | sudo tee /etc/systemd/system/livekit.service
+          [Unit]
+          Description=LiveKit Server
+          After=network.target redis.service
+          
+          [Service]
+          Type=simple
+          User=runner
+          WorkingDirectory=/var/lib/livekit
+          ExecStart=/usr/local/bin/livekit-server --config /etc/livekit/livekit.yaml
+          Restart=always
+          RestartSec=5
+          
+          [Install]
+          WantedBy=multi-user.target
+          EOF
+          
+          sudo systemctl daemon-reload
+          sudo systemctl enable livekit
+
+      - name: Setup Redis
+        run: |
+          echo "Setting up Redis..."
+          
+          # Install Redis
+          sudo apt-get install -y redis-server
+          
+          # Configure Redis for LiveKit
+          sudo sed -i 's/^# maxmemory <bytes>/maxmemory 256mb/' /etc/redis/redis.conf
+          sudo sed -i 's/^# maxmemory-policy noeviction/maxmemory-policy allkeys-lru/' /etc/redis/redis.conf
+          
+          # Enable and start Redis
+          sudo systemctl enable redis-server
+          sudo systemctl restart redis-server
+
+      - name: Create Runner Directories
+        run: |
+          echo "Creating runner directories..."
+          
+          # Create cache directories
+          sudo mkdir -p /var/cache/claude
+          sudo mkdir -p /var/cache/npm
+          sudo mkdir -p /var/cache/uv
+          sudo mkdir -p /var/cache/pip
+          
+          # Create temp directories
+          sudo mkdir -p /tmp/claude-runner
+          sudo mkdir -p /tmp/voice-sessions
+          sudo mkdir -p /tmp/test-results
+          
+          # Create log directories
+          sudo mkdir -p /var/log/claude
+          sudo mkdir -p /var/log/voice-mode
+          sudo mkdir -p /var/log/mcp-servers
+          
+          # Set permissions (assuming runner user exists)
+          sudo chown -R runner:runner /var/cache/claude /var/cache/npm /var/cache/uv /var/cache/pip
+          sudo chown -R runner:runner /tmp/claude-runner /tmp/voice-sessions /tmp/test-results
+          sudo chown -R runner:runner /var/log/claude /var/log/voice-mode /var/log/mcp-servers
+
+      - name: Setup MCP Servers
+        run: |
+          echo "Setting up MCP servers..."
+          
+          # Create MCP directory
+          sudo mkdir -p /opt/mcp-servers
+          sudo chown runner:runner /opt/mcp-servers
+          
+          # Clone and setup Serena if not exists
+          if [ ! -d "/opt/mcp-servers/serena" ]; then
+            git clone https://github.com/vitche/serena.git /opt/mcp-servers/serena
+            cd /opt/mcp-servers/serena
+            uv sync --extra dev
+            cd -
+          fi
+          
+          # Create MCP server manager script
+          cat << 'EOF' | sudo tee /usr/local/bin/mcp-server-manager
+          #!/bin/bash
+          
+          MCP_DIR="/opt/mcp-servers"
+          LOG_DIR="/var/log/mcp-servers"
+          
+          start_serena() {
+            if [ -d "$MCP_DIR/serena" ]; then
+              cd "$MCP_DIR/serena"
+              nohup uv run serena-mcp-server --port 9121 > "$LOG_DIR/serena.log" 2>&1 &
+              echo $! > "$LOG_DIR/serena.pid"
+              echo "Serena MCP server started (PID: $(cat $LOG_DIR/serena.pid))"
+            fi
+          }
+          
+          stop_serena() {
+            if [ -f "$LOG_DIR/serena.pid" ]; then
+              kill $(cat "$LOG_DIR/serena.pid") 2>/dev/null || true
+              rm "$LOG_DIR/serena.pid"
+              echo "Serena MCP server stopped"
+            fi
+          }
+          
+          case "$1" in
+            start)
+              start_serena
+              ;;
+            stop)
+              stop_serena
+              ;;
+            restart)
+              stop_serena
+              start_serena
+              ;;
+            status)
+              if [ -f "$LOG_DIR/serena.pid" ] && kill -0 $(cat "$LOG_DIR/serena.pid") 2>/dev/null; then
+                echo "Serena MCP server is running (PID: $(cat $LOG_DIR/serena.pid))"
+              else
+                echo "Serena MCP server is not running"
+              fi
+              ;;
+            *)
+              echo "Usage: $0 {start|stop|restart|status}"
+              exit 1
+              ;;
+          esac
+          EOF
+          
+          sudo chmod +x /usr/local/bin/mcp-server-manager
+
+      - name: Configure GitHub Actions Runner
+        run: |
+          echo "Configuring GitHub Actions runner..."
+          
+          # Download and setup runner if not already configured
+          RUNNER_VERSION="2.311.0"
+          RUNNER_DIR="/opt/actions-runner"
+          
+          if [ ! -d "$RUNNER_DIR" ]; then
+            sudo mkdir -p $RUNNER_DIR
+            cd $RUNNER_DIR
+            
+            # Download runner
+            curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz -L \
+              https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
+            
+            tar xzf actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
+            rm actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
+            
+            # Set permissions
+            sudo chown -R runner:runner $RUNNER_DIR
+            
+            echo "GitHub Actions runner downloaded to $RUNNER_DIR"
+            echo "To complete setup, run:"
+            echo "  cd $RUNNER_DIR"
+            echo "  ./config.sh --url https://github.com/${{ github.repository }} --token YOUR_RUNNER_TOKEN"
+            echo "  sudo ./svc.sh install"
+            echo "  sudo ./svc.sh start"
+          else
+            echo "GitHub Actions runner already exists at $RUNNER_DIR"
+          fi
+
+      - name: Setup Monitoring
+        run: |
+          echo "Setting up monitoring..."
+          
+          # Install monitoring tools
+          sudo apt-get install -y htop iotop sysstat
+          
+          # Create monitoring script
+          cat << 'EOF' | sudo tee /usr/local/bin/runner-monitor
+          #!/bin/bash
+          
+          echo "=== Runner Health Check ==="
+          echo "Date: $(date)"
+          echo ""
+          
+          echo "System Load:"
+          uptime
+          echo ""
+          
+          echo "Memory Usage:"
+          free -h
+          echo ""
+          
+          echo "Disk Usage:"
+          df -h /
+          echo ""
+          
+          if command -v nvidia-smi &> /dev/null; then
+            echo "GPU Status:"
+            nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv
+            echo ""
+          fi
+          
+          echo "Running Processes:"
+          ps aux | grep -E "(node|python|java|docker)" | grep -v grep | head -10
+          echo ""
+          
+          echo "Service Status:"
+          systemctl is-active redis-server || echo "Redis: inactive"
+          systemctl is-active livekit || echo "LiveKit: inactive"
+          systemctl is-active docker || echo "Docker: inactive"
+          
+          if [ -f "/var/log/mcp-servers/serena.pid" ] && kill -0 $(cat /var/log/mcp-servers/serena.pid) 2>/dev/null; then
+            echo "Serena MCP: active"
+          else
+            echo "Serena MCP: inactive"
+          fi
+          EOF
+          
+          sudo chmod +x /usr/local/bin/runner-monitor
+          
+          # Create cron job for monitoring
+          echo "*/5 * * * * /usr/local/bin/runner-monitor >> /var/log/claude/runner-health.log 2>&1" | sudo crontab -
+
+      - name: Create Setup Summary
+        run: |
+          echo "## ✅ Self-Hosted Runner Setup Complete"
+          echo ""
+          echo "### Runner Configuration"
+          echo "- Name: ${{ inputs.runner_name }}"
+          echo "- Type: ${{ inputs.runner_type }}"
+          echo "- Labels: self-hosted, linux, x64, ${{ inputs.runner_type }}"
+          echo ""
+          echo "### Installed Components"
+          echo "- Node.js: $(node --version)"
+          echo "- Python: $(python3 --version)"
+          echo "- UV: $(uv --version 2>/dev/null || echo 'Not installed')"
+          echo "- Docker: $(docker --version 2>/dev/null || echo 'Not installed')"
+          echo "- LiveKit: Configured at port 7880"
+          echo "- Redis: Running on port 6379"
+          echo ""
+          echo "### Next Steps"
+          echo "1. Register this runner with GitHub:"
+          echo "   - Go to Settings > Actions > Runners"
+          echo "   - Click 'New self-hosted runner'"
+          echo "   - Follow the configuration instructions"
+          echo ""
+          echo "2. Start services:"
+          echo "   - sudo systemctl start redis-server"
+          echo "   - sudo systemctl start livekit"
+          echo "   - /usr/local/bin/mcp-server-manager start"
+          echo ""
+          echo "3. Monitor health:"
+          echo "   - /usr/local/bin/runner-monitor"
+          echo "   - tail -f /var/log/claude/runner-health.log"
