@@ -1,0 +1,550 @@
+name: Claude PR Assistant (Oppie-Thunder Pattern)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_review_comment:
+    types: [created]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to analyze'
+        required: false
+        type: number
+
+# Cancel previous runs on same PR
+concurrency:
+  group: claude-pr-${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  claude-pr-review:
+    name: Claude Code PR Review
+    # Use self-hosted runners with GPU support - similar to oppie-thunder setup
+    runs-on: [self-hosted, linux, x64, gpu]
+    
+    # Run conditions
+    if: |
+      (github.event_name == 'pull_request' && !contains(github.event.pull_request.title, '[skip-claude]')) ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'workflow_dispatch')
+    
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      statuses: write
+      checks: write
+      actions: read
+    
+    env:
+      # Claude Code Authentication (using refresh token pattern from oppie-thunder)
+      CLAUDE_CODE_REFRESH_TOKEN: ${{ secrets.CLAUDE_CODE_REFRESH_TOKEN }}
+      CLAUDE_CODE_SESSION_KEY: ${{ secrets.CLAUDE_CODE_SESSION_KEY }}
+      
+      # Voice Mode and LiveKit configurations
+      LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
+      LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
+      LIVEKIT_URL: ${{ vars.LIVEKIT_URL || 'ws://localhost:7880' }}
+      
+      # MCP Server configurations (oppie-thunder pattern)
+      MCP_SERVERS_CONFIG: /opt/mcp-servers/config.json
+      SERENA_PORT: 9121
+      SERENA_ENABLED: true
+      CONTEXT7_ENABLED: true
+      SEQUENTIAL_ENABLED: true
+      MORPHLLM_ENABLED: true
+      MAGIC_ENABLED: true
+      PLAYWRIGHT_ENABLED: false
+      
+      # Claude configurations
+      CLAUDE_MODEL: claude-opus-4-1-20250805
+      CLAUDE_MAX_TOKENS: 32768
+      CLAUDE_TEMPERATURE: 0.2
+      
+      # Self-hosted runner optimizations
+      RUNNER_WORKSPACE: /opt/claude-workspace
+      RUNNER_TEMP: /tmp/claude-runner
+      RUNNER_CACHE: /var/cache/claude
+      RUNNER_LOGS: /var/log/claude
+      
+      # Performance settings
+      NODE_OPTIONS: "--max-old-space-size=8192"
+      UV_CACHE_DIR: /var/cache/uv
+      NPM_CONFIG_CACHE: /var/cache/npm
+      PIP_CACHE_DIR: /var/cache/pip
+    
+    steps:
+      - name: Initialize Claude Session
+        id: init-claude
+        run: |
+          echo "Initializing Claude Code session..."
+          
+          # Create workspace directories
+          mkdir -p ${{ env.RUNNER_TEMP }}
+          mkdir -p ${{ env.RUNNER_CACHE }}
+          mkdir -p ${{ env.RUNNER_LOGS }}
+          
+          # Refresh Claude Code token (oppie-thunder pattern)
+          if [ -n "${{ env.CLAUDE_CODE_REFRESH_TOKEN }}" ]; then
+            echo "Refreshing Claude Code authentication token..."
+            
+            # Use refresh token to get new access token
+            RESPONSE=$(curl -s -X POST https://api.anthropic.com/v1/claude-code/refresh \
+              -H "Content-Type: application/json" \
+              -H "X-Session-Key: ${{ env.CLAUDE_CODE_SESSION_KEY }}" \
+              -d '{
+                "refresh_token": "${{ env.CLAUDE_CODE_REFRESH_TOKEN }}",
+                "session_id": "gh-action-${{ github.run_id }}"
+              }')
+            
+            ACCESS_TOKEN=$(echo $RESPONSE | jq -r '.access_token')
+            if [ "$ACCESS_TOKEN" != "null" ] && [ -n "$ACCESS_TOKEN" ]; then
+              echo "CLAUDE_ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+              echo "claude_token_refreshed=true" >> $GITHUB_OUTPUT
+            else
+              echo "Failed to refresh Claude token, using fallback"
+              echo "claude_token_refreshed=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+          
+          # Set session metadata
+          echo "session_id=claude-pr-${{ github.run_id }}-$(date +%s)" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+      
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Start MCP Servers
+        id: mcp-servers
+        run: |
+          echo "Starting MCP servers for enhanced Claude capabilities..."
+          
+          # Start Serena MCP server
+          if [ "${{ env.SERENA_ENABLED }}" == "true" ] && [ -d "/opt/mcp-servers/serena" ]; then
+            echo "Starting Serena MCP server..."
+            cd /opt/mcp-servers/serena
+            
+            # Index the current project
+            uv run index-project ${{ github.workspace }} || true
+            
+            # Start server
+            nohup uv run serena-mcp-server \
+              --port ${{ env.SERENA_PORT }} \
+              --project-root ${{ github.workspace }} \
+              > ${{ env.RUNNER_LOGS }}/serena.log 2>&1 &
+            echo $! > ${{ env.RUNNER_TEMP }}/serena.pid
+            
+            # Wait for server to be ready
+            sleep 3
+            
+            if curl -s http://localhost:${{ env.SERENA_PORT }}/health > /dev/null; then
+              echo "✅ Serena MCP server started successfully"
+              echo "serena_running=true" >> $GITHUB_OUTPUT
+            else
+              echo "⚠️ Serena MCP server failed to start"
+              echo "serena_running=false" >> $GITHUB_OUTPUT
+            fi
+            
+            cd ${{ github.workspace }}
+          fi
+          
+          # Generate MCP configuration
+          cat > ${{ env.MCP_SERVERS_CONFIG }} << 'EOF'
+          {
+            "servers": {
+              "serena": {
+                "enabled": ${{ env.SERENA_ENABLED }},
+                "url": "http://localhost:${{ env.SERENA_PORT }}",
+                "capabilities": ["code_analysis", "symbol_search", "refactoring"]
+              },
+              "context7": {
+                "enabled": ${{ env.CONTEXT7_ENABLED }},
+                "capabilities": ["documentation", "library_knowledge"]
+              },
+              "sequential": {
+                "enabled": ${{ env.SEQUENTIAL_ENABLED }},
+                "capabilities": ["deep_reasoning", "complex_analysis"]
+              },
+              "morphllm": {
+                "enabled": ${{ env.MORPHLLM_ENABLED }},
+                "capabilities": ["bulk_edits", "pattern_application"]
+              },
+              "magic": {
+                "enabled": ${{ env.MAGIC_ENABLED }},
+                "capabilities": ["ui_generation", "component_creation"]
+              }
+            }
+          }
+          EOF
+      
+      - name: Setup Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: |
+          echo "Installing project dependencies..."
+          
+          # Install Node dependencies
+          npm ci --prefer-offline --no-audit || npm install
+          
+          # Install Python dependencies if Voice Mode exists
+          if [ -f "voice-mode/pyproject.toml" ]; then
+            echo "Installing Voice Mode dependencies..."
+            cd voice-mode
+            uv sync --extra dev || pip install -e ".[dev]"
+            cd ..
+          fi
+      
+      - name: Gather PR Context
+        id: pr-context
+        run: |
+          echo "Analyzing PR #${{ github.event.pull_request.number || inputs.pr_number }}..."
+          
+          PR_NUMBER="${{ github.event.pull_request.number || inputs.pr_number }}"
+          
+          if [ -n "$PR_NUMBER" ]; then
+            # Get PR details using GitHub CLI
+            gh pr view $PR_NUMBER --json title,body,files,additions,deletions,commits > ${{ env.RUNNER_TEMP }}/pr-info.json
+            
+            # Extract metrics
+            ADDITIONS=$(jq -r '.additions' ${{ env.RUNNER_TEMP }}/pr-info.json)
+            DELETIONS=$(jq -r '.deletions' ${{ env.RUNNER_TEMP }}/pr-info.json)
+            FILES_CHANGED=$(jq -r '.files | length' ${{ env.RUNNER_TEMP }}/pr-info.json)
+            COMMITS=$(jq -r '.commits | length' ${{ env.RUNNER_TEMP }}/pr-info.json)
+            
+            echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
+            echo "deletions=$DELETIONS" >> $GITHUB_OUTPUT
+            echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
+            echo "commits=$COMMITS" >> $GITHUB_OUTPUT
+            
+            # Determine review depth based on PR size
+            if [ "$FILES_CHANGED" -gt 50 ] || [ "$ADDITIONS" -gt 1000 ]; then
+              echo "review_depth=comprehensive" >> $GITHUB_OUTPUT
+            elif [ "$FILES_CHANGED" -gt 20 ] || [ "$ADDITIONS" -gt 500 ]; then
+              echo "review_depth=detailed" >> $GITHUB_OUTPUT
+            else
+              echo "review_depth=standard" >> $GITHUB_OUTPUT
+            fi
+            
+            # Check for Voice Mode changes
+            if gh pr view $PR_NUMBER --json files -q '.files[].path' | grep -qE "(voice|audio|livekit|webrtc)"; then
+              echo "voice_mode_changes=true" >> $GITHUB_OUTPUT
+            else
+              echo "voice_mode_changes=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+      
+      - name: Run Claude Code Analysis
+        id: claude-analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Running Claude Code analysis..."
+          
+          # Create analysis request
+          cat > ${{ env.RUNNER_TEMP }}/claude-request.json << 'EOF'
+          {
+            "model": "${{ env.CLAUDE_MODEL }}",
+            "max_tokens": ${{ env.CLAUDE_MAX_TOKENS }},
+            "temperature": ${{ env.CLAUDE_TEMPERATURE }},
+            "session_id": "${{ steps.init-claude.outputs.session_id }}",
+            "mcp_servers": ${{ env.MCP_SERVERS_CONFIG }},
+            "context": {
+              "repository": "${{ github.repository }}",
+              "pr_number": "${{ github.event.pull_request.number || inputs.pr_number }}",
+              "pr_title": "${{ github.event.pull_request.title }}",
+              "author": "${{ github.event.pull_request.user.login || github.actor }}",
+              "base_branch": "${{ github.event.pull_request.base.ref || github.ref }}",
+              "head_branch": "${{ github.event.pull_request.head.ref }}",
+              "additions": "${{ steps.pr-context.outputs.additions }}",
+              "deletions": "${{ steps.pr-context.outputs.deletions }}",
+              "files_changed": "${{ steps.pr-context.outputs.files_changed }}",
+              "commits": "${{ steps.pr-context.outputs.commits }}",
+              "review_depth": "${{ steps.pr-context.outputs.review_depth }}",
+              "voice_mode_changes": "${{ steps.pr-context.outputs.voice_mode_changes }}",
+              "mcp_servers_available": {
+                "serena": "${{ steps.mcp-servers.outputs.serena_running }}",
+                "context7": "${{ env.CONTEXT7_ENABLED }}",
+                "sequential": "${{ env.SEQUENTIAL_ENABLED }}",
+                "morphllm": "${{ env.MORPHLLM_ENABLED }}"
+              }
+            },
+            "instructions": "You are Claude Code, reviewing a PR for the Vibe Whisper project.
+            
+            This is running on a self-hosted runner with:
+            - GPU support for voice processing
+            - MCP servers: ${{ steps.mcp-servers.outputs.serena_running == 'true' && 'Serena (active)' || '' }}
+            - Voice Mode capabilities with LiveKit
+            - Full access to project codebase
+            
+            Review Depth: ${{ steps.pr-context.outputs.review_depth }}
+            Voice Mode Changes: ${{ steps.pr-context.outputs.voice_mode_changes }}
+            
+            Please provide a comprehensive review focusing on:
+            
+            1. **Code Quality & Best Practices**:
+               - TypeScript type safety and proper error handling
+               - Python type hints and async/await patterns
+               - Adherence to project conventions and patterns
+               - Performance implications and optimization opportunities
+            
+            2. **Security Considerations**:
+               - No hardcoded secrets or API keys
+               - Proper input validation and sanitization
+               - WebRTC security (if Voice Mode changes)
+               - Rate limiting and abuse prevention
+            
+            3. **Testing Coverage**:
+               - Identify missing test cases
+               - Suggest edge cases to test
+               - Voice Mode specific test scenarios (if applicable)
+            
+            4. **Architecture & Design**:
+               - Scalability considerations
+               - Resource usage (CPU/GPU/Memory)
+               - MCP server integration patterns
+               - LiveKit/WebRTC implementation (if applicable)
+            
+            5. **Documentation**:
+               - Missing or outdated documentation
+               - API changes that need documentation
+               - Configuration changes
+            
+            ${{ steps.pr-context.outputs.voice_mode_changes == 'true' && '
+            6. **Voice Mode Specific** (PRIORITY):
+               - LiveKit room configuration and security
+               - Voice session lifecycle management
+               - Audio streaming performance and latency
+               - Transcription accuracy and error handling
+               - WebRTC connection stability
+               - GPU utilization for voice processing
+            ' || '' }}
+            
+            Use these markers for clarity:
+            🚨 Critical issues that must be fixed
+            ⚠️ Important issues that should be addressed
+            💡 Suggestions for improvement
+            ✅ Good practices observed
+            ❓ Questions or clarifications needed
+            🎯 Performance optimizations
+            🔒 Security considerations
+            🧪 Testing recommendations
+            📚 Documentation needs
+            
+            If using MCP servers, leverage:
+            - Serena: For semantic code analysis and symbol navigation
+            - Context7: For library documentation and best practices
+            - Sequential: For deep reasoning about complex logic
+            - Morphllm: For suggesting refactoring patterns"
+          }
+          EOF
+          
+          # Execute Claude analysis with proper authentication
+          if [ -n "${{ env.CLAUDE_ACCESS_TOKEN }}" ]; then
+            AUTH_HEADER="Authorization: Bearer ${{ env.CLAUDE_ACCESS_TOKEN }}"
+          else
+            AUTH_HEADER="X-API-Key: ${{ secrets.CLAUDE_CODE_API_KEY || secrets.ANTHROPIC_API_KEY }}"
+          fi
+          
+          RESPONSE=$(curl -s -X POST https://api.anthropic.com/v1/claude-code/analyze \
+            -H "$AUTH_HEADER" \
+            -H "Content-Type: application/json" \
+            -H "X-Session-Key: ${{ env.CLAUDE_CODE_SESSION_KEY }}" \
+            -d @${{ env.RUNNER_TEMP }}/claude-request.json)
+          
+          # Save response
+          echo "$RESPONSE" > ${{ env.RUNNER_TEMP }}/claude-response.json
+          
+          # Extract review content
+          REVIEW=$(echo "$RESPONSE" | jq -r '.review // .content // .message // "Failed to get review"')
+          
+          if [ "$REVIEW" != "Failed to get review" ]; then
+            echo "review_generated=true" >> $GITHUB_OUTPUT
+            echo "$REVIEW" > ${{ env.RUNNER_TEMP }}/review.md
+          else
+            echo "review_generated=false" >> $GITHUB_OUTPUT
+            echo "Error: Failed to generate review" > ${{ env.RUNNER_TEMP }}/review.md
+            echo "Response: $RESPONSE" >> ${{ env.RUNNER_TEMP }}/review.md
+          fi
+      
+      - name: Run Tests
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        id: tests
+        run: |
+          echo "Running automated tests..."
+          
+          # Create test results directory
+          mkdir -p ${{ env.RUNNER_TEMP }}/test-results
+          
+          # Run JavaScript/TypeScript tests
+          if [ -f "package.json" ]; then
+            echo "Running JavaScript tests..."
+            npm test -- --reporter=json > ${{ env.RUNNER_TEMP }}/test-results/jest.json 2>&1 || true
+            
+            # Run linting
+            npm run lint -- --format json > ${{ env.RUNNER_TEMP }}/test-results/eslint.json 2>&1 || true
+            
+            # Run type checking
+            npm run typecheck > ${{ env.RUNNER_TEMP }}/test-results/typecheck.log 2>&1 || true
+          fi
+          
+          # Run Python tests for Voice Mode
+          if [ -d "voice-mode" ] && [ -f "voice-mode/pyproject.toml" ]; then
+            echo "Running Voice Mode tests..."
+            cd voice-mode
+            uv run pytest \
+              --json-report \
+              --json-report-file=${{ env.RUNNER_TEMP }}/test-results/pytest.json \
+              --cov=voice_mode \
+              --cov-report=json:${{ env.RUNNER_TEMP }}/test-results/coverage.json \
+              || true
+            cd ..
+          fi
+          
+          # Analyze test results
+          if [ -f "${{ env.RUNNER_TEMP }}/test-results/jest.json" ]; then
+            JEST_PASSED=$(jq -r '.numPassedTests // 0' ${{ env.RUNNER_TEMP }}/test-results/jest.json)
+            JEST_FAILED=$(jq -r '.numFailedTests // 0' ${{ env.RUNNER_TEMP }}/test-results/jest.json)
+            echo "jest_passed=$JEST_PASSED" >> $GITHUB_OUTPUT
+            echo "jest_failed=$JEST_FAILED" >> $GITHUB_OUTPUT
+          fi
+          
+          if [ -f "${{ env.RUNNER_TEMP }}/test-results/pytest.json" ]; then
+            PYTEST_PASSED=$(jq -r '.summary.passed // 0' ${{ env.RUNNER_TEMP }}/test-results/pytest.json)
+            PYTEST_FAILED=$(jq -r '.summary.failed // 0' ${{ env.RUNNER_TEMP }}/test-results/pytest.json)
+            echo "pytest_passed=$PYTEST_PASSED" >> $GITHUB_OUTPUT
+            echo "pytest_failed=$PYTEST_FAILED" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Post Review Comment
+        if: steps.claude-analysis.outputs.review_generated == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Read the review
+            const reviewPath = path.join('${{ env.RUNNER_TEMP }}', 'review.md');
+            let review = fs.readFileSync(reviewPath, 'utf8');
+            
+            // Add header
+            let comment = `## 🤖 Claude Code Review\n\n`;
+            comment += `**Session**: \`${{ steps.init-claude.outputs.session_id }}\`\n`;
+            comment += `**Model**: \`${{ env.CLAUDE_MODEL }}\`\n`;
+            comment += `**Timestamp**: ${{ steps.init-claude.outputs.timestamp }}\n`;
+            
+            // Add MCP server status
+            if ('${{ steps.mcp-servers.outputs.serena_running }}' === 'true') {
+              comment += `**MCP Servers**: ✅ Serena\n`;
+            }
+            
+            comment += `\n---\n\n`;
+            comment += review;
+            
+            // Add test results if available
+            const jestPassed = '${{ steps.tests.outputs.jest_passed }}';
+            const jestFailed = '${{ steps.tests.outputs.jest_failed }}';
+            const pytestPassed = '${{ steps.tests.outputs.pytest_passed }}';
+            const pytestFailed = '${{ steps.tests.outputs.pytest_failed }}';
+            
+            if (jestPassed || pytestPassed) {
+              comment += `\n\n---\n\n### 🧪 Test Results\n\n`;
+              
+              if (jestPassed) {
+                const jestStatus = jestFailed === '0' ? '✅' : '❌';
+                comment += `**JavaScript Tests**: ${jestStatus} ${jestPassed} passed, ${jestFailed} failed\n`;
+              }
+              
+              if (pytestPassed) {
+                const pytestStatus = pytestFailed === '0' ? '✅' : '❌';
+                comment += `**Python Tests (Voice Mode)**: ${pytestStatus} ${pytestPassed} passed, ${pytestFailed} failed\n`;
+              }
+            }
+            
+            // Add footer
+            comment += `\n\n---\n\n`;
+            comment += `<details>\n<summary>📊 PR Metrics</summary>\n\n`;
+            comment += `- **Files Changed**: ${{ steps.pr-context.outputs.files_changed }}\n`;
+            comment += `- **Lines Added**: +${{ steps.pr-context.outputs.additions }}\n`;
+            comment += `- **Lines Deleted**: -${{ steps.pr-context.outputs.deletions }}\n`;
+            comment += `- **Commits**: ${{ steps.pr-context.outputs.commits }}\n`;
+            comment += `- **Review Depth**: ${{ steps.pr-context.outputs.review_depth }}\n`;
+            comment += `- **Voice Mode Changes**: ${{ steps.pr-context.outputs.voice_mode_changes }}\n`;
+            comment += `</details>\n\n`;
+            
+            comment += `<sub>Powered by Claude Code with self-hosted runner (GPU-enabled)</sub>\n`;
+            comment += `<sub>💬 Mention @claude in a comment to trigger a new review</sub>`;
+            
+            // Post the comment
+            const pr_number = ${{ github.event.pull_request.number || inputs.pr_number }};
+            
+            if (pr_number) {
+              // Check for existing Claude comment to update
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr_number
+              });
+              
+              const existingComment = comments.find(c => 
+                c.body.includes('🤖 Claude Code Review') && 
+                c.user.login === 'github-actions[bot]'
+              );
+              
+              if (existingComment) {
+                // Update existing comment
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existingComment.id,
+                  body: comment
+                });
+                console.log(`Updated existing comment: ${existingComment.html_url}`);
+              } else {
+                // Create new comment
+                const { data: newComment } = await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr_number,
+                  body: comment
+                });
+                console.log(`Created new comment: ${newComment.html_url}`);
+              }
+            }
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "Cleaning up resources..."
+          
+          # Stop MCP servers
+          if [ -f "${{ env.RUNNER_TEMP }}/serena.pid" ]; then
+            kill $(cat ${{ env.RUNNER_TEMP }}/serena.pid) 2>/dev/null || true
+            rm ${{ env.RUNNER_TEMP }}/serena.pid
+          fi
+          
+          # Clean up temp files
+          rm -rf ${{ env.RUNNER_TEMP }}/test-results
+          rm -f ${{ env.RUNNER_TEMP }}/*.json
+          rm -f ${{ env.RUNNER_TEMP }}/*.md
+          
+          # Clean up old cache entries (keep last 7 days)
+          find ${{ env.RUNNER_CACHE }} -type f -mtime +7 -delete 2>/dev/null || true
+          
+          # Log session summary
+          echo "Session completed: ${{ steps.init-claude.outputs.session_id }}"
+          echo "Review generated: ${{ steps.claude-analysis.outputs.review_generated }}"
